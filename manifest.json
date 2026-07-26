@@ -1,0 +1,35 @@
+{
+  "name": "نظام ادارة الباحثين - جمعية التنمية الاسرية بالاحساء",
+  "short_name": "نظام الباحثين",
+  "description": "توثيق الزيارات الميدانية ومتابعة طلبات الباحثين وتقاريرهم اليومية",
+  "id": "osarya-field-visits",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#f4f9f5",
+  "theme_color": "#4a8794",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

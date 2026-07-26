@@ -80,6 +80,24 @@
 
     <link rel="icon" href="logo.jpg" type="image/jpeg">
 
+    <!-- ==========================================================
+         ملف تعريف التطبيق
+         ----------------------------------------------------------
+         ملف حقيقي مرفوع بجوار الصفحة. كروم يشترط ذلك ويرفض ملفات
+         التعريف المولدة في ذاكرة المتصفح، ولذلك لا يعمل زر التثبيت
+         بدونه. يجب رفع هذه الملفات معا في نفس المجلد:
+           manifest.json · sw.js · icon-192.png · icon-512.png
+           icon-maskable-512.png
+         ========================================================== -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- وسوم تثبيت التطبيق: لون شريط المتصفح ودعم اجهزة ابل -->
+    <meta name="theme-color" content="#4a8794">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="نظام الباحثين">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <!-- الخط العربي: display=swap يعرض نصا بديلا فورا بدل انتظار تحميل الخط -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 
@@ -2434,6 +2452,125 @@
         }
         body.dark-mode .rule-note-danger { background: rgba(192, 57, 43, 0.15); color: #ff9d9d; }
 
+        /* ==================================================================
+           (جديد) زر تثبيت التطبيق العائم
+           ------------------------------------------------------------------
+           في اسفل يمين الشاشة، مقابل زر الوضع الليلي في اسفل اليسار.
+           يختفي تلقائيا بعد تثبيت التطبيق او عند فتحه كتطبيق مثبت.
+           ================================================================== */
+        .install-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 9000;
+            width: auto;
+            margin: 0;
+            padding: 14px 22px;
+            display: none;            /* يظهر من الجافاسكربت */
+            align-items: center;
+            gap: 10px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #4a8794, #396d78);
+            color: #fff;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 10px 28px rgba(57, 109, 120, 0.4);
+            animation: installPulse 2.6s ease-in-out infinite;
+        }
+        .install-btn::after { display: none; }
+        .install-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 34px rgba(57, 109, 120, 0.5);
+            animation: none;
+        }
+        .install-btn i { font-size: 18px; }
+
+        /* نبضة خفيفة تلفت الانتباه دون ازعاج */
+        @keyframes installPulse {
+            0%, 100% { box-shadow: 0 10px 28px rgba(57, 109, 120, 0.4); }
+            50%      { box-shadow: 0 10px 28px rgba(57, 109, 120, 0.4), 0 0 0 12px rgba(74, 135, 148, 0.12); }
+        }
+
+        /* نافذة الارشاد اليدوي للتثبيت */
+        .install-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 13000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+        .install-modal-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 28px 26px;
+            max-width: 470px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            text-align: right;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeAndSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 1;
+        }
+        body.dark-mode .install-modal-box { background: #16282c; color: #e2ecee; }
+
+        .install-modal-box h3 {
+            margin-top: 0;
+            color: #4a8794;
+            font-size: 20px;
+            border-bottom: 2px solid rgba(74, 135, 148, 0.15);
+            padding-bottom: 12px;
+        }
+        body.dark-mode .install-modal-box h3 { color: #7fb1bc; }
+
+        .install-modal-box ol { padding-right: 22px; margin: 18px 0; }
+        .install-modal-box li { font-size: 15px; line-height: 2.2; font-weight: 700; margin-bottom: 6px; }
+
+        .install-help-note {
+            font-size: 13px;
+            color: #6c757d;
+            line-height: 1.9;
+            background: rgba(108, 117, 125, 0.09);
+            padding: 12px 14px;
+            border-radius: 10px;
+        }
+        body.dark-mode .install-help-note { color: #9aabae; background: rgba(255, 255, 255, 0.05); }
+
+        .icon-install::before { content: "\f019"; }
+
+        @media (max-width: 768px) {
+            .install-btn { bottom: 18px; right: 15px; padding: 12px 18px; font-size: 14px; }
+        }
+
+        /* لا يظهر زر التثبيت عند الطباعة */
+        @media print { .install-btn, .install-modal { display: none !important; } }
+
+        /* لوحة تشخيص متطلبات التثبيت */
+        .install-diag {
+            margin-top: 14px;
+            padding: 13px 15px;
+            border-radius: 11px;
+            background: rgba(74, 135, 148, 0.09);
+            font-size: 13.5px;
+            line-height: 2;
+        }
+        body.dark-mode .install-diag { background: rgba(74, 135, 148, 0.16); }
+        .diag-row { font-weight: 800; }
+        .diag-ok  { color: #0f5132; }
+        .diag-bad { color: #c0392b; }
+        body.dark-mode .diag-ok  { color: #75d1a1; }
+        body.dark-mode .diag-bad { color: #ff9d9d; }
+        .diag-hint { margin-top: 8px; font-size: 12.5px; font-weight: 600; color: #6c757d; line-height: 1.9; }
+        body.dark-mode .diag-hint { color: #9aabae; }
+
     </style>
 </head>
 <body>
@@ -2528,6 +2665,33 @@
     <span>لم تسجل رقم جوالك في النظام بعد. تسجيله يساعد الادارة على التواصل معك، وهو مطلوب قبل تغيير كلمة المرور.</span>
     <button type="button" class="phone-reminder-btn" onclick="openAccount()">تسجيله الان</button>
     <button type="button" class="phone-reminder-close" onclick="snoozePhoneReminder()" title="تذكيري لاحقا">&times;</button>
+</div>
+
+<!-- ==============================================================
+     زر تثبيت التطبيق العائم
+     --------------------------------------------------------------
+     يظهر في اسفل يمين الشاشة مقابل زر الوضع الليلي.
+     يثبت الموقع كتطبيق مستقل على سطح المكتب او شاشة تطبيقات الجوال.
+     يختفي تلقائيا بعد التثبيت او عند فتح النظام كتطبيق مثبت.
+     ============================================================== -->
+<button type="button" id="installAppBtn" class="install-btn" onclick="installApp()" title="تثبيت التطبيق على جهازك">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    <span>تثبيت التطبيق</span>
+</button>
+
+<!-- نافذة ارشادية تظهر في المتصفحات التي لا تتيح التثبيت بضغطة واحدة -->
+<div id="installHelpModal" class="install-modal" onclick="if(event.target===this) closeInstallHelp()">
+    <div class="install-modal-box">
+        <h3><i class="fas fa-mobile-screen"></i> تثبيت التطبيق على جهازك</h3>
+        <ol id="installHelpSteps"></ol>
+        <div id="installHelpNote" class="install-help-note"></div>
+
+        <!-- لوحة تشخيص تبين اي متطلب ناقص عند تعذر التثبيت -->
+        <div id="installDiag" class="install-diag" style="display:none;"></div>
+        <div class="btn-group">
+            <button class="btn-neutral btn-icon-watermark icon-check" onclick="closeInstallHelp()">فهمت، اغلاق</button>
+        </div>
+    </div>
 </div>
 
 <!-- حاوية الرسائل المنبثقة (Toast) المستخدمة بدل نوافذ alert -->
@@ -4440,7 +4604,17 @@
        بغض النظر عن هذين الحدين، فلا يمكن ابدا تنفيذ اجراء بصلاحية
        سحبت من المدير. */
     const PERM_SYNC_THROTTLE_MS = 8 * 1000;
-    const PERM_SYNC_INTERVAL_MS = 60 * 1000;
+    /* رفعت من دقيقة الى ثلاث دقائق لتقليل القراءات، فالحماية الفعلية
+       تأتي من المزامنة الاجبارية قبل كل اجراء حساس لا من الدورية */
+    const PERM_SYNC_INTERVAL_MS = 180 * 1000;
+
+    /* ---------------- حدود جلب البيانات ----------------
+       وضعت هذه الحدود لترشيد استهلاك حصة القراءة اليومية في Firestore.
+       بدونها كانت بعض الشاشات تجلب مجموعات كاملة في كل فتحة. */
+    const MY_VISITS_LIMIT     = 300;   /* شاشة زياراتي وبلاغات الزيارات */
+    const NOTICE_LOG_LIMIT    = 300;   /* سجل التنبيهات والانذارات */
+    const REQUESTS_LIMIT      = 300;   /* صناديق البلاغات */
+    const FALLBACK_SCAN_LIMIT = 1000;  /* سقف الفلترة المحلية الاحتياطية */
 
     /* ---------------- تسميات الصلاحيات ----------------
        تغيرت صلاحية "الاستعلام عن زيارات" لتصبح خاصة بالزر الثاني
@@ -5827,8 +6001,16 @@
         if (isFirstPage) window.switchScreen('resultsScreen');
     }
 
+    /* ------------------------------------------------------------------
+       الفلترة المحلية الاحتياطية
+       ------------------------------------------------------------------
+       تستخدم فقط اذا لم يكن الفهرس المركب جاهزا في Firestore.
+       خطرها انها تجلب مجموعة الزيارات كاملة، لذلك وضعنا لها سقفا
+       صارما يمنع استنزاف حصة القراءة اليومية دفعة واحدة.
+       الحل الدائم: انشاء الفهرس من الرابط الذي يظهر في كونسول المتصفح.
+       ------------------------------------------------------------------ */
     async function clientSideVisitsFilter(p) {
-        const snap = await getDocs(collection(db, "visits"));
+        const snap = await getDocs(query(collection(db, "visits"), limit(FALLBACK_SCAN_LIMIT)));
         let visits = [];
         snap.forEach(function(d) { visits.push(Object.assign({ id: d.id }, d.data())); });
         if (p.empId) visits = visits.filter(function(v) { return v.empId === p.empId; });
@@ -8447,7 +8629,8 @@
         } catch (e) {
             /* بديل احتياطي اذا لم يكن الفهرس جاهزا او الحقل مفقود في سجلات قديمة */
             try {
-                const snap2 = await getDocs(collection(db, "leaves"));
+                /* سقف للنسخة الاحتياطية ايضا حتى لا تجلب المجموعة كاملة */
+                const snap2 = await getDocs(query(collection(db, "leaves"), limit(LEAVE_PAGE_SIZE)));
                 leaveList = [];
                 snap2.forEach(function(d) { leaveList.push(Object.assign({ id: d.id }, d.data())); });
                 leaveList.sort(function(a, b) { return String(b.createdAt || "").localeCompare(String(a.createdAt || "")); });
@@ -9435,7 +9618,24 @@
         if (loading) loading.style.display = "block";
 
         try {
-            const snap = await getDocs(query(collection(db, "visits"), where("empId", "==", session.empId)));
+            /* تحسين استهلاك: نجلب احدث MY_VISITS_LIMIT زيارة فقط بدل كل
+               السجل التاريخي. المحاولة الاولى بترتيب من طرف الخادم،
+               وان لم يكن الفهرس المركب جاهزا نرجع للجلب العادي */
+            let snap;
+            try {
+                snap = await getDocs(query(
+                    collection(db, "visits"),
+                    where("empId", "==", session.empId),
+                    orderBy("execDate", "desc"),
+                    limit(MY_VISITS_LIMIT)
+                ));
+            } catch (idxErr) {
+                snap = await getDocs(query(
+                    collection(db, "visits"),
+                    where("empId", "==", session.empId),
+                    limit(MY_VISITS_LIMIT)
+                ));
+            }
             myVisits = [];
             snap.forEach(function(d) { myVisits.push(Object.assign({ id: d.id }, d.data())); });
             /* الاحدث تنفيذا اولا */
@@ -9989,7 +10189,8 @@
         loading.style.display = "block";
 
         try {
-            const snap = await getDocs(collection(db, "notices"));
+            /* حد اقصى لعدد السجلات المجلوبة دفعة واحدة */
+            const snap = await getDocs(query(collection(db, "notices"), limit(NOTICE_LOG_LIMIT)));
             noticeLog = [];
             snap.forEach(function(d) { noticeLog.push(Object.assign({ id: d.id }, d.data())); });
             /* الاحدث اصدارا اولا */
@@ -10649,11 +10850,24 @@
         });
     }
 
-    /* حساب عدد الزيارات التي وثقها الباحث بتاريخ اليوم */
+    /* ------------------------------------------------------------------
+       حساب عدد الزيارات التي وثقها الباحث بتاريخ اليوم
+       ------------------------------------------------------------------
+       تحسين جوهري في الاستهلاك:
+       كانت الدالة تجلب كل زيارات الباحث منذ بدء عمله ثم تعد ما يوافق
+       تاريخ اليوم. بعد سنة يعني ذلك قراءة الفي سجل لمعرفة رقم واحد،
+       ومع خمسين باحثا يستهلك ذلك حصة القراءة اليومية كلها قبل الظهر.
+
+       الان نستعلم بتاريخ اليوم فقط، فيرجع عدد زيارات اليوم لكل
+       الباحثين (عشرات لا الاف)، ثم نصفي على الرقم الوظيفي محليا.
+       استعلام بحقل واحد فلا يحتاج فهرسا مركبا.
+
+       الاثر: من الاف القراءات الى عشرات، اي توفير يتجاوز 95 بالمئة.
+       ------------------------------------------------------------------ */
     async function computeExecutedVisits() {
-        const snap = await getDocs(query(collection(db, "visits"), where("empId", "==", session.empId)));
+        const snap = await getDocs(query(collection(db, "visits"), where("execDate", "==", drTodayISO)));
         let n = 0;
-        snap.forEach(function(d) { if (String(d.data().execDate) === drTodayISO) n++; });
+        snap.forEach(function(d) { if (String(d.data().empId) === session.empId) n++; });
         drExecutedCount = n;
 
         const box = document.getElementById("drExecuted");
@@ -10988,7 +11202,12 @@
         const loading = document.getElementById("vrLoading");
         loading.style.display = "block";
         try {
-            const snap = await getDocs(query(collection(db, "visits"), where("empId", "==", session.empId)));
+            /* احدث الزيارات فقط، فالبلاغ عادة يخص زيارة قريبة */
+            const snap = await getDocs(query(
+                collection(db, "visits"),
+                where("empId", "==", session.empId),
+                limit(MY_VISITS_LIMIT)
+            ));
             vrVisits = [];
             snap.forEach(function(d) { vrVisits.push(Object.assign({ id: d.id }, d.data())); });
             vrVisits.sort(function(a, b) { return String(b.execDate || "").localeCompare(String(a.execDate || "")); });
@@ -11394,7 +11613,7 @@
         loading.style.display = "block";
 
         try {
-            const snap = await getDocs(collection(db, REQ_TYPES[reqType].coll));
+            const snap = await getDocs(query(collection(db, REQ_TYPES[reqType].coll), limit(REQUESTS_LIMIT)));
             reqList = [];
             snap.forEach(function(d) { reqList.push(Object.assign({ id: d.id }, d.data())); });
             reqList.sort(function(a, b) { return String(b.createdAt || "").localeCompare(String(a.createdAt || "")); });
@@ -11717,6 +11936,223 @@
             toast("حدث خطأ اثناء تنفيذ القرار: " + ((e && e.message) || "غير معروف"), "error");
         }
     }
+
+
+    /* ==================================================================
+       (31) تثبيت التطبيق على الجهاز (PWA)
+       ==================================================================
+
+       الهدف: زر عائم يمكّن الباحث او المدير من تثبيت الموقع كتطبيق
+       مستقل على سطح المكتب او شاشة تطبيقات الجوال، فيفتحه بايقونة
+       مباشرة بلا متصفح ولا رابط يكتبه في كل مرة.
+
+       ما يتطلبه المتصفح للتثبيت:
+       --------------------------
+       1) اتصال آمن HTTPS         -> متوفر تلقائيا في GitHub Pages
+       2) ملف تعريف التطبيق manifest -> ينشأ هنا في وقت التشغيل
+       3) عامل خدمة service worker  -> ملف مستقل اسمه sw.js
+
+       لماذا ينشأ ملف التعريف في وقت التشغيل؟
+       --------------------------------------
+       حتى يبقى النظام ملفا واحدا يسهل تحديثه. ننشئ ملف التعريف
+       ككائن Blob في الذاكرة ونربطه بالصفحة، مع كتابة المسارات
+       بشكل مطلق ماخوذ من عنوان الصفحة نفسها، فيعمل مهما كان اسم
+       المستودع او المجلد دون تعديل يدوي.
+
+       الايقونات ترسم في وقت التشغيل ايضا من شعار الجمعية logo.jpg
+       بمقاسي 192 و512 بكسل المطلوبين، وان تعذر تحميل الشعار ترسم
+       ايقونة بديلة بالوان الجمعية.
+
+       سلوك الزر بحسب المتصفح:
+       -----------------------
+       كروم وايدج : تثبيت فوري بنافذة المتصفح الرسمية
+       سفاري ايفون: نافذة ارشادية، لان ابل لا تتيح التثبيت البرمجي
+       بعد التثبيت : يختفي الزر تلقائيا
+       ================================================================== */
+
+    let deferredInstallPrompt = null;   /* حدث التثبيت المؤجل من المتصفح */
+
+    /* هل يعمل النظام الان كتطبيق مثبت؟ */
+    function isRunningStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches ||
+               window.navigator.standalone === true;
+    }
+
+    /* ------------------------------------------------------------------
+       ملاحظة على ملف التعريف manifest
+       ------------------------------------------------------------------
+       كانت النسخة السابقة تبني ملف التعريف في ذاكرة المتصفح وتربطه
+       عبر رابط Blob. وهذا هو سبب عدم عمل التثبيت: كروم يشترط ملف
+       تعريف حقيقي على نفس النطاق يستطيع جلبه والتحقق منه، ويتجاهل
+       ملفات التعريف المولدة في الذاكرة، فلا يطلق حدث التثبيت اصلا
+       ويبقى الزر عاجزا عن اكثر من عرض الارشادات.
+
+       الحل القياسي المعتمد الان: ملف manifest.json حقيقي مرفوع
+       بجوار الصفحة، مع ايقونات PNG فعلية بمقاسي 192 و512، ومربوط
+       من وسم link في راس الصفحة.
+       ------------------------------------------------------------------ */
+
+    /* حالة متطلبات التثبيت، تستخدم في نافذة التشخيص */
+    const installStatus = { https: false, manifest: false, sw: false };
+
+    /* تسجيل عامل الخدمة.
+       ملاحظة: يجب ان يكون ملفا مستقلا بجوار index.html اسمه sw.js */
+    async function registerServiceWorker() {
+        if (!("serviceWorker" in navigator)) return;
+        try {
+            await navigator.serviceWorker.register("sw.js");
+            installStatus.sw = true;
+        } catch (e) {
+            installStatus.sw = false;
+            console.warn("تعذر تسجيل عامل الخدمة (تأكد من رفع ملف sw.js بجوار الصفحة):", e && e.message);
+        }
+    }
+
+    /* فحص المتطلبات لعرضها للمستخدم عند تعذر التثبيت */
+    async function checkInstallRequirements() {
+        installStatus.https = (location.protocol === "https:" || location.hostname === "localhost");
+
+        try {
+            const link = document.querySelector('link[rel="manifest"]');
+            if (link) {
+                const res = await fetch(link.href, { cache: "no-store" });
+                installStatus.manifest = res.ok;
+            }
+        } catch (e) { installStatus.manifest = false; }
+    }
+
+    /* التقاط عرض التثبيت من المتصفح قبل ان يعرضه بنفسه */
+    window.addEventListener("beforeinstallprompt", function(e) {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        showInstallButton();
+    });
+
+    /* اخفاء الزر بعد نجاح التثبيت */
+    window.addEventListener("appinstalled", function() {
+        deferredInstallPrompt = null;
+        hideInstallButton();
+        toast("تم تثبيت التطبيق بنجاح، تجده الان في قائمة تطبيقات جهازك.", "success");
+    });
+
+    function showInstallButton() {
+        const btn = document.getElementById("installAppBtn");
+        if (btn && !isRunningStandalone()) btn.style.display = "flex";
+    }
+    function hideInstallButton() {
+        const btn = document.getElementById("installAppBtn");
+        if (btn) btn.style.display = "none";
+    }
+
+    /* الضغط على زر التثبيت */
+    window.installApp = async function() {
+        /* المسار الاول: المتصفح يدعم التثبيت البرمجي */
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            try {
+                const choice = await deferredInstallPrompt.userChoice;
+                if (choice && choice.outcome === "accepted") {
+                    hideInstallButton();
+                } 
+            } catch (e) {}
+            deferredInstallPrompt = null;
+            return;
+        }
+
+        /* المسار الثاني: ارشاد يدوي حسب نظام الجهاز */
+        showInstallHelp();
+    };
+
+    /* نافذة ارشادية تعرض خطوات التثبيت المناسبة لجهاز المستخدم */
+    function showInstallHelp() {
+        const ua = navigator.userAgent || "";
+        const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+        const isAndroid = /Android/.test(ua);
+
+        let steps;
+        if (isIOS) {
+            steps = [
+                "افتح الموقع في متصفح Safari",
+                "اضغط زر المشاركة في اسفل الشاشة (المربع الذي يخرج منه سهم لاعلى)",
+                "مرر للاسفل واختر: اضافة الى الشاشة الرئيسية",
+                "اضغط اضافة في الاعلى"
+            ];
+        } else if (isAndroid) {
+            steps = [
+                "اضغط زر القائمة في المتصفح (ثلاث نقاط راسية)",
+                "اختر: تثبيت التطبيق او اضافة الى الشاشة الرئيسية",
+                "اضغط تثبيت للتأكيد"
+            ];
+        } else {
+            steps = [
+                "ابحث عن ايقونة التثبيت في يمين شريط العنوان اعلى المتصفح",
+                "او اضغط قائمة المتصفح (ثلاث نقاط) ثم: تثبيت نظام الباحثين",
+                "اضغط تثبيت للتأكيد"
+            ];
+        }
+
+        const list = document.getElementById("installHelpSteps");
+        list.innerHTML = "";
+        steps.forEach(function(s) {
+            const li = document.createElement("li");
+            li.textContent = s;
+            list.appendChild(li);
+        });
+
+        document.getElementById("installHelpNote").textContent = isIOS
+            ? "اجهزة ايفون وايباد لا تتيح التثبيت بضغطة واحدة، وهذا قيد من شركة ابل نفسها ولا يخص هذا النظام."
+            : "اذا لم تجد الخيار، تأكد من فتح الموقع في متصفح Chrome او Edge.";
+
+        /* لوحة تشخيص تظهر لغير اجهزة ابل، تبين اي متطلب ناقص */
+        const diag = document.getElementById("installDiag");
+        if (diag) {
+            if (isIOS) {
+                diag.style.display = "none";
+            } else {
+                diag.style.display = "block";
+                const rows = [
+                    { ok: installStatus.https,    t: "اتصال آمن HTTPS" },
+                    { ok: installStatus.manifest, t: "ملف التعريف manifest.json" },
+                    { ok: installStatus.sw,       t: "عامل الخدمة sw.js" }
+                ];
+                diag.innerHTML = "<strong>حالة متطلبات التثبيت:</strong>";
+                rows.forEach(function(r) {
+                    const line = document.createElement("div");
+                    line.className = "diag-row " + (r.ok ? "diag-ok" : "diag-bad");
+                    line.textContent = (r.ok ? "✔ " : "✖ ") + r.t;
+                    diag.appendChild(line);
+                });
+                if (!installStatus.manifest || !installStatus.sw) {
+                    const hint = document.createElement("div");
+                    hint.className = "diag-hint";
+                    hint.textContent = "الملفات المعلمة بعلامة ✖ غير مرفوعة بجوار الصفحة. ارفعها ثم اعد تحميل الصفحة.";
+                    diag.appendChild(hint);
+                }
+            }
+        }
+
+        document.getElementById("installHelpModal").style.display = "flex";
+    }
+
+    window.closeInstallHelp = function() {
+        document.getElementById("installHelpModal").style.display = "none";
+    };
+
+    /* التهيئة عند تحميل الصفحة */
+    document.addEventListener("DOMContentLoaded", function() {
+        if (isRunningStandalone()) {
+            hideInstallButton();
+            return;
+        }
+        registerServiceWorker();
+        checkInstallRequirements();
+
+        /* نظهر الزر بعد ثانيتين حتى لو لم يصل عرض التثبيت من المتصفح،
+           فيبقى المستخدم قادرا على رؤية الارشادات اليدوية */
+        setTimeout(function() {
+            if (!isRunningStandalone()) showInstallButton();
+        }, 2000);
+    });
 
  </script>
 
