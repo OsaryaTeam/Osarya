@@ -1226,6 +1226,32 @@
         }
         .notif-badge[hidden] { display: none; }
 
+        /* عداد الاشعارات فوق ازرار بوابة الادارة، لكل زر مرتبط بصلاحية.
+           نفس تصميم عداد الجرس، لكن في الزاوية العلوية اليسرى للزر
+           (يسار لان مثلث ايقونة الزر واتجاه النص يشغلان الجهة الاخرى) */
+        .dash-notif-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 11px;
+            background: #d62828;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 22px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.9);
+            box-sizing: content-box;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            z-index: 3;
+            animation: dashBadgeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .dash-notif-badge[hidden] { display: none; }
+        @keyframes dashBadgeIn { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
+
         /* ---------------- لوحة الاشعارات المنسدلة ---------------- */
         .notif-panel {
             position: absolute;
@@ -2908,13 +2934,13 @@
         
         <div class="manager-dashboard-grid">
             <button class="btn-manager btn-icon-watermark icon-results" onclick="checkPermissionAndGo('managerControlScreen')">الاستعلام عن زيارات</button>
-            <button class="btn-manager btn-icon-watermark icon-search" onclick="checkPermissionAndGo('managerQueryScreen')">الاستعلام عن زيارة والتعديل على بياناتها</button>
-            <button class="btn-manager btn-icon-watermark icon-edit" onclick="checkPermissionAndGo('editVisits')">تعديل السجلات</button>
-            <button class="btn-manager btn-icon-watermark icon-users" onclick="checkPermissionAndGo('loadResearchersList')">قائمة الباحثين</button>
+            <button class="btn-manager btn-icon-watermark icon-search" data-notif-perm="الاستعلام عن زيارة والتعديل على بياناتها" onclick="checkPermissionAndGo('managerQueryScreen')">الاستعلام عن زيارة والتعديل على بياناتها</button>
+            <button class="btn-manager btn-icon-watermark icon-edit" data-notif-perm="تعديل السجلات" onclick="checkPermissionAndGo('editVisits')">تعديل السجلات</button>
+            <button class="btn-manager btn-icon-watermark icon-users" data-notif-perm="قائمة الباحثين" onclick="checkPermissionAndGo('loadResearchersList')">قائمة الباحثين</button>
             
-            <button class="btn-manager btn-icon-watermark icon-leave" onclick="checkPermissionAndGo('loadLeaveRequests')">طلبات الاجازات</button>
-            <button class="btn-manager btn-icon-watermark icon-bell" onclick="checkPermissionAndGo('openNoticeAdmin')">انشاء إنذار | تنبيه</button>
-            <button class="btn-manager btn-icon-watermark icon-daily-report" onclick="checkPermissionAndGo('openDailyReports')">التقارير اليومية</button>
+            <button class="btn-manager btn-icon-watermark icon-leave" data-notif-perm="طلبات الاجازات" onclick="checkPermissionAndGo('loadLeaveRequests')">طلبات الاجازات</button>
+            <button class="btn-manager btn-icon-watermark icon-bell" data-notif-perm="التنبيهات والانذارات" onclick="checkPermissionAndGo('openNoticeAdmin')">انشاء إنذار | تنبيه</button>
+            <button class="btn-manager btn-icon-watermark icon-daily-report" data-notif-perm="التقارير اليومية" onclick="checkPermissionAndGo('openDailyReports')">التقارير اليومية</button>
             <button class="btn-manager btn-icon-watermark icon-user-shield" onclick="loadManagersList()">الادارة العامة</button>
             
             <button class="btn-neutral btn-icon-watermark icon-logout btn-logout-full" onclick="exitManagerArea()">تسجيل خروج</button>
@@ -3567,7 +3593,7 @@
          --------------------------------------------------------------
          يعرض كل الرسائل التي وصلت للمستخدم منذ البداية سواء قرأها
          او لم يقرأها. هذا السجل من النظام ولا يمكن حذف اي رسالة منه.
-         الرسالة تبقى في الجرس يوما واحدا بعد قراءتها ثم تنتقل الى هنا.
+         الرسالة تبقى في الجرس 10 دقائق بعد قراءتها ثم تنتقل الى هنا.
          ============================================================== -->
     <div id="notifHistoryScreen" class="container screen" style="max-width: 900px;">
         <div style="text-align: left; margin-bottom: 10px;">
@@ -4517,8 +4543,8 @@
 
     /* NOTIF_READ_KEEP_MS : كم تبقى الرسالة المقروءة ظاهرة في الجرس
        قبل ان تختفي منه وتنتقل الى سجل الاشعارات الدائم.
-       المعتمد: يوم واحد. سجل الاشعارات لا يحذف منه شيء ابدا. */
-    const NOTIF_READ_KEEP_MS      = 24 * 60 * 60 * 1000;
+       المعتمد: 10 دقائق. سجل الاشعارات لا يحذف منه شيء ابدا. */
+    const NOTIF_READ_KEEP_MS      = 10 * 60 * 1000;
     const NOTIF_HISTORY_MAX       = 300;
 
     /* ---------------- اعدادات نظام الاجازات ----------------
@@ -7438,7 +7464,7 @@
        تحفظ الان كخريطة { معرف الاشعار : وقت قراءته } بدل قائمة معرفات
        فقط، لاننا نحتاج وقت القراءة لتطبيق القاعدة التالية:
 
-         الرسالة المقروءة تبقى ظاهرة في الجرس يوما واحدا فقط،
+         الرسالة المقروءة تبقى ظاهرة في الجرس 10 دقائق فقط،
          ثم تختفي منه وتنتقل الى سجل الاشعارات الدائم.
 
        الدالة تدعم الصيغة القديمة (قائمة) وتحولها تلقائيا.
@@ -7576,19 +7602,57 @@
     function updateNotifBadge() {
         const badge = document.getElementById("notifBadge");
         const bell = document.getElementById("btnNotifications");
-        if (!badge || !bell) return;
+        if (badge && bell) {
+            const map = getReadMap();
+            const unread = notifications.filter(function(n) { return !map[n.id]; }).length;
+
+            if (unread > 0) {
+                badge.textContent = unread > 99 ? "99+" : String(unread);
+                badge.hidden = false;
+                bell.classList.add("has-new");
+            } else {
+                badge.hidden = true;
+                bell.classList.remove("has-new");
+            }
+        }
+        updateDashNotifBadges();
+    }
+
+    /* ------------------------------------------------------------------
+       عداد الاشعارات فوق ازرار بوابة الادارة
+       ------------------------------------------------------------------
+       كل اشعار موجه لصلاحية معينة (حقل perm) يظهر ايضا كعداد احمر فوق
+       الزر المرتبط بتلك الصلاحية في القائمة الرئيسية، وليس في الجرس
+       فقط. الربط يتم عبر السمة data-notif-perm الموجودة على الزر،
+       وقيمتها نفس نص الصلاحية المستخدم في حقل perm عند ارسال الاشعار. */
+    function updateDashNotifBadges() {
+        const buttons = document.querySelectorAll("[data-notif-perm]");
+        if (!buttons.length) return;
 
         const map = getReadMap();
-        const unread = notifications.filter(function(n) { return !map[n.id]; }).length;
+        const counts = {};
+        notifications.forEach(function(n) {
+            if (!n.perm || map[n.id]) return;
+            counts[n.perm] = (counts[n.perm] || 0) + 1;
+        });
 
-        if (unread > 0) {
-            badge.textContent = unread > 99 ? "99+" : String(unread);
-            badge.hidden = false;
-            bell.classList.add("has-new");
-        } else {
-            badge.hidden = true;
-            bell.classList.remove("has-new");
-        }
+        buttons.forEach(function(btn) {
+            const perm = btn.getAttribute("data-notif-perm");
+            let badge = btn.querySelector(".dash-notif-badge");
+            const count = counts[perm] || 0;
+
+            if (count > 0) {
+                if (!badge) {
+                    badge = document.createElement("span");
+                    badge.className = "dash-notif-badge";
+                    btn.appendChild(badge);
+                }
+                badge.textContent = count > 99 ? "99+" : String(count);
+                badge.hidden = false;
+            } else if (badge) {
+                badge.hidden = true;
+            }
+        });
     }
 
     /* رسم قائمة الاشعارات داخل اللوحة المنسدلة */
@@ -7672,7 +7736,7 @@
         setReadMap(map);
         updateNotifBadge();
         renderNotifications();
-        toast("تم تعليم الرسائل كمقروءة. ستبقى ظاهرة يوما واحدا ثم تنتقل الى سجل الاشعارات.", "info");
+        toast("تم تعليم الرسائل كمقروءة. ستبقى ظاهرة 10 دقائق ثم تنتقل الى سجل الاشعارات.", "info");
     };
 
     /* ==================================================================
