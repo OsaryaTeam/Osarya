@@ -1568,7 +1568,7 @@
         body.dark-mode .leave-rejected  { color: #ff9d9d; }
         body.dark-mode .leave-cancelled { color: #a9b6b9; }
 
-        /* اسم المدير الذي بت في الطلب - يظهر للادارة فقط */
+        /* اسم المدير الذي اتخذ القرار في الطلب - يظهر للادارة فقط */
         .decided-by { font-size: 11px; color: #8a9a9d; margin-top: 5px; font-weight: 700; }
 
         /* خانة السبب او الملاحظات داخل الجداول */
@@ -2007,6 +2007,10 @@
         .detail-reject-label { font-weight: 800; }
         .detail-reject-text { color: #c0392b; font-weight: 700; }
         body.dark-mode .detail-reject-text { color: #ff9d9d; }
+
+        /* نظير الاحمر: رد الادارة بالقبول يظهر بالاخضر ليتضح الفرق فورا */
+        .detail-approved-text { color: #0f5132; font-weight: 700; }
+        body.dark-mode .detail-approved-text { color: #75d1a1; }
 
         /* ==================================================================
            (جديد) قوائم صيغ التنبيهات والانذارات
@@ -4247,6 +4251,45 @@
         <button class="btn-researcher btn-icon-watermark icon-search" onclick="openVisitReport()">الإبلاغ عن تسجيل زيارة خاطئة</button>
         <button class="btn-researcher btn-icon-watermark icon-calendar-plus" onclick="openLeaveReport()">الإبلاغ عن تقديم طلب اجازة بالخطأ وتم قبوله</button>
         <button class="btn-researcher btn-icon-watermark icon-daily-report" onclick="openDailyReportCreate('correction')">الإبلاغ عن تقديم تقرير يومي خاطئ</button>
+
+        <!-- متابعة كل ما سبق تقديمه من بلاغات وردود الادارة عليها -->
+        <button class="btn-neutral btn-icon-watermark icon-history" onclick="openMyReports()">متابعة البلاغات</button>
+    </div>
+
+    <!-- ==============================================================
+         شاشة الباحث: متابعة البلاغات
+         --------------------------------------------------------------
+         تجمع بلاغات الباحث الثلاثة (زيارات، اجازات، تقارير يومية) في
+         مكان واحد مرتبة بالاحدث، مع حالة كل بلاغ ورد الادارة عليه.
+
+         ملاحظة خصوصية: لا يظهر هنا اسم المدير الذي اتخذ القرار في البلاغ،
+         اتساقا مع بقية النظام (قرارات الاجازات والتنبيهات).
+         ============================================================== -->
+    <div id="myReportsScreen" class="container screen" style="max-width: 1000px;">
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="openTechReports()">العودة</button>
+        </div>
+        <h2>متابعة البلاغات</h2>
+
+        <div class="sorting-controls">
+            <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-filter"></i> تصفية حسب الحالة:</strong>
+            <div class="sorting-buttons-row" id="myRepFilterRow">
+                <button type="button" class="btn-sort active-sort" onclick="filterMyReports('all', this)">الكل (<span id="mrcount_all">0</span>)</button>
+                <button type="button" class="btn-sort" onclick="filterMyReports('pending', this)">قيد المراجعة (<span id="mrcount_pending">0</span>)</button>
+                <button type="button" class="btn-sort" onclick="filterMyReports('approved', this)">مقبولة (<span id="mrcount_approved">0</span>)</button>
+                <button type="button" class="btn-sort" onclick="filterMyReports('rejected', this)">مرفوضة (<span id="mrcount_rejected">0</span>)</button>
+            </div>
+        </div>
+
+        <div id="myRepLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري تحميل بلاغاتك...</div>
+        <div id="myRepError" class="error-message"></div>
+
+        <div id="myRepEmpty" class="empty-state" style="display:none;">
+            <i class="fas fa-inbox"></i>
+            لا توجد بلاغات في هذا التصنيف
+        </div>
+
+        <div id="myRepList"></div>
     </div>
 
     <!-- ==============================================================
@@ -5550,6 +5593,7 @@
         /* شاشات التقارير اليومية والبلاغات */
         dailyReportScreen: 'researcher', techReportScreen: 'researcher',
         visitReportScreen: 'researcher', leaveReportScreen: 'researcher',
+        myReportsScreen: 'researcher',
         dailyReportsAdminScreen: 'manager', requestsScreen: 'manager'
     };
 
@@ -7605,8 +7649,27 @@
        عمليات الكتابة وتخفيف الاستهلاك.
        ================================================================== */
 
-    let notifications = [];          /* قائمة الاشعارات المحملة حاليا */
-    let notifUnsub = null;           /* دالة الغاء الاشتراك في مستمع الاشعارات الفوري */
+    let notifications = [];          /* القائمة النهائية المدمجة المعروضة للمستخدم */
+
+    /* ------------------------------------------------------------------
+       سلتان منفصلتان للاشعارات، ولكل منهما مستمع مستقل
+       ------------------------------------------------------------------
+       personal  : الاشعارات الموجهة لهذا المستخدم بالتحديد (to = رقمه)
+       broadcast : الاشعارات العامة (to = "all")، وهي عمليا موجهة
+                   للمدراء اصحاب صلاحية معينة عبر الحقل perm
+
+       سبب الفصل مهم: كان الاستعلام سابقا واحدا بصيغة
+       where("to", "in", [رقمي, "all"]) مع limit(30). ولان الاشعارات
+       العامة (طلب اجازة جديد، بلاغ، تقرير...) تتولد باستمرار وباعداد
+       اكبر بكثير من اشعارات الباحث الشخصية، كانت تحتل نافذة الثلاثين
+       الاحدث بالكامل، ثم يحذفها الفلتر لاحقا لان الباحث ليس مديرا،
+       فيبقى الباحث بلا اشعارات مرئية اطلاقا او تصله متاخرة جدا.
+
+       بالفصل الى مستمعين، لكل سلة نافذتها الخاصة (30 لكل منهما)،
+       فلا تزاحم الاشعارات العامة اشعارات الباحث الشخصية ابدا.
+       ------------------------------------------------------------------ */
+    let notifBuckets = { personal: [], broadcast: [] };
+    let notifUnsubs  = { personal: null, broadcast: null };
 
     /* اظهار الشريط العلوي بحسب نوع المستخدم الحالي */
     function showTopBar() {
@@ -7759,62 +7822,102 @@
         stopNotificationsListener();
         if (!NOTIF_ENABLED || !session) return;
 
-        function handleSnapshot(snap) {
-            const list = [];
-            snap.forEach(function(d) { list.push(Object.assign({ id: d.id }, d.data())); });
+        notifBuckets = { personal: [], broadcast: [] };
 
-            /* تصفية اضافية على مستوى المتصفح:
-               audience : الفئة المستهدفة (باحث / مدير / الجميع)
-               perm     : اذا كان الاشعار موجها لاصحاب صلاحية معينة فقط
-                          مثل اشعارات طلبات الاجازات التي لا تصل الا للمدير
-                          الذي يملك صلاحية "طلبات الاجازات" */
-            notifications = list.filter(function(n) {
-                if (n.audience && n.audience !== "all" && n.audience !== session.type) return false;
-                if (n.perm) {
-                    if (session.type !== "manager") return false;
-                    if (!hasPerm(n.perm)) return false;
-                }
-                return true;
-            });
+        /* سلة شخصية: كل ما وجه لهذا المستخدم بالتحديد */
+        attachNotifBucket("personal", session.empId, true);
+        /* سلة عامة: الاشعارات الموجهة للجميع (يستفيد منها المدراء) */
+        attachNotifBucket("broadcast", "all", true);
+    }
 
-            /* الاحدث اولا */
-            notifications.sort(function(a, b) {
-                return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
-            });
-
-            /* بعض الاشعارات قد تكون محلولة اصلا (طلبها اغلق قبل وصولها
-               حتى)، تحقق قبل حساب العداد */
-            reconcileResolvedNotifications();
-            updateNotifBadge();
-
-            /* اذا كانت اللوحة مفتوحة حاليا نعيد رسمها مباشرة */
-            const panel = document.getElementById("notifPanel");
-            if (panel && !panel.hidden) renderNotifications();
+    /* فتح مستمع فوري لسلة واحدة.
+       useOrder = محاولة الترتيب من طرف الخادم (تحتاج فهرسا مركبا)،
+       وعند فشلها يعاد الاتصال تلقائيا بلا ترتيب مع الترتيب محليا */
+    function attachNotifBucket(bucket, toValue, useOrder) {
+        /* اغلاق اي مستمع سابق لنفس السلة قبل فتح جديد */
+        if (notifUnsubs[bucket]) {
+            try { notifUnsubs[bucket](); } catch (e) {}
+            notifUnsubs[bucket] = null;
         }
 
-        function attach(useOrder) {
-            const cons = [collection(db, "notifications"), where("to", "in", [session.empId, "all"])];
-            if (useOrder) cons.push(orderBy("createdAt", "desc"));
-            cons.push(limit(NOTIF_MAX));
+        const cons = [collection(db, "notifications"), where("to", "==", toValue)];
+        if (useOrder) cons.push(orderBy("createdAt", "desc"));
+        cons.push(limit(NOTIF_MAX));
 
-            notifUnsub = onSnapshot(query.apply(null, cons), handleSnapshot, function(err) {
+        notifUnsubs[bucket] = onSnapshot(
+            query.apply(null, cons),
+            function(snap) {
+                const arr = [];
+                snap.forEach(function(d) { arr.push(Object.assign({ id: d.id }, d.data())); });
+                notifBuckets[bucket] = arr;
+                rebuildNotifications();
+            },
+            function(err) {
                 if (useOrder) {
-                    /* الفهرس المركب غير جاهز بعد: نتحول لمستمع بديل بلا ترتيب */
-                    console.warn("تعذر الترتيب من الخادم للاشعارات (فهرس غير جاهز)، التحويل للوضع البسيط:", err && err.message);
-                    attach(false);
+                    /* الفهرس المركب غير جاهز بعد: نتحول للوضع البسيط بلا ترتيب */
+                    console.warn("تعذر الترتيب من الخادم لسلة الاشعارات (" + bucket + ")، التحويل للوضع البسيط:", err && err.message);
+                    attachNotifBucket(bucket, toValue, false);
                 } else {
-                    console.warn("تعذر متابعة الاشعارات:", err && err.message);
-                    notifications = [];
-                    updateNotifBadge();
+                    console.warn("تعذر متابعة سلة الاشعارات (" + bucket + "):", err && err.message);
+                    notifBuckets[bucket] = [];
+                    rebuildNotifications();
                 }
-            });
-        }
+            }
+        );
+    }
 
-        attach(true);
+    /* ------------------------------------------------------------------
+       دمج السلتين وبناء القائمة النهائية المعروضة
+       ------------------------------------------------------------------
+       تستدعى بعد اي تحديث لاي سلة. تدمج ثم تزيل التكرار (احتياطا)
+       ثم تطبق فلترة الفئة والصلاحية ثم ترتب الاحدث اولا.
+       ------------------------------------------------------------------ */
+    function rebuildNotifications() {
+        if (!session) { notifications = []; updateNotifBadge(); return; }
+
+        const merged = notifBuckets.personal.concat(notifBuckets.broadcast);
+
+        /* ازالة التكرار بمعرف المستند */
+        const seen = {};
+        const unique = merged.filter(function(n) {
+            if (seen[n.id]) return false;
+            seen[n.id] = true;
+            return true;
+        });
+
+        /* تصفية على مستوى المتصفح:
+           audience : الفئة المستهدفة (باحث / مدير / الجميع)
+           perm     : اذا كان الاشعار موجها لاصحاب صلاحية معينة فقط
+                      مثل اشعارات طلبات الاجازات التي لا تصل الا للمدير
+                      الذي يملك صلاحية "طلبات الاجازات" */
+        notifications = unique.filter(function(n) {
+            if (n.audience && n.audience !== "all" && n.audience !== session.type) return false;
+            if (n.perm) {
+                if (session.type !== "manager") return false;
+                if (!hasPerm(n.perm)) return false;
+            }
+            return true;
+        });
+
+        /* الاحدث اولا */
+        notifications.sort(function(a, b) {
+            return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+        });
+
+        /* بعض الاشعارات قد يكون طلبها اغلق اصلا، تحقق قبل حساب العداد */
+        reconcileResolvedNotifications();
+        updateNotifBadge();
+
+        /* اذا كانت اللوحة مفتوحة حاليا نعيد رسمها مباشرة */
+        const panel = document.getElementById("notifPanel");
+        if (panel && !panel.hidden) renderNotifications();
     }
 
     function stopNotificationsListener() {
-        if (notifUnsub) { try { notifUnsub(); } catch (e) {} notifUnsub = null; }
+        ["personal", "broadcast"].forEach(function(b) {
+            if (notifUnsubs[b]) { try { notifUnsubs[b](); } catch (e) {} notifUnsubs[b] = null; }
+        });
+        notifBuckets = { personal: [], broadcast: [] };
     }
 
     /* ==================================================================
@@ -8021,24 +8124,44 @@
         if (box) box.innerHTML = "";
 
         try {
-            let snap;
-            try {
-                snap = await getDocs(query(
-                    collection(db, "notifications"),
-                    where("to", "in", [session.empId, "all"]),
-                    orderBy("createdAt", "desc"),
-                    limit(NOTIF_HISTORY_MAX)
-                ));
-            } catch (idxErr) {
-                snap = await getDocs(query(
-                    collection(db, "notifications"),
-                    where("to", "in", [session.empId, "all"]),
-                    limit(NOTIF_HISTORY_MAX)
-                ));
+            /* ------------------------------------------------------------
+               جلب السجل بنفس مبدأ الجرس: استعلامان منفصلان لا استعلام
+               واحد بصيغة "in". السبب ذاته: الاشعارات العامة تتولد باعداد
+               اكبر بكثير، فلو جمعناها مع الشخصية في نافذة واحدة لازاحت
+               اشعارات الباحث من سجله بالكامل. بالفصل، لكل نوع نافذته.
+               ------------------------------------------------------------ */
+            async function fetchHistoryBucket(toValue) {
+                try {
+                    return await getDocs(query(
+                        collection(db, "notifications"),
+                        where("to", "==", toValue),
+                        orderBy("createdAt", "desc"),
+                        limit(NOTIF_HISTORY_MAX)
+                    ));
+                } catch (idxErr) {
+                    /* الفهرس المركب غير جاهز بعد: جلب بلا ترتيب ثم الترتيب محليا */
+                    return await getDocs(query(
+                        collection(db, "notifications"),
+                        where("to", "==", toValue),
+                        limit(NOTIF_HISTORY_MAX)
+                    ));
+                }
             }
 
+            const [personalSnap, broadcastSnap] = await Promise.all([
+                fetchHistoryBucket(session.empId),
+                fetchHistoryBucket("all")
+            ]);
+
             const all = [];
-            snap.forEach(function(d) { all.push(Object.assign({ id: d.id }, d.data())); });
+            const seenHist = {};
+            [personalSnap, broadcastSnap].forEach(function(snap) {
+                snap.forEach(function(d) {
+                    if (seenHist[d.id]) return;      /* ازالة التكرار احتياطا */
+                    seenHist[d.id] = true;
+                    all.push(Object.assign({ id: d.id }, d.data()));
+                });
+            });
 
             /* نفس تصفية الجرس: الفئة المستهدفة والصلاحية */
             const mine = all.filter(function(n) {
@@ -8148,7 +8271,7 @@
           الى كل مدير يملك صلاحية "طلبات الاجازات".
        4) المدير يفتح شاشة طلبات الاجازات ويقبل او يرفض مع كتابة السبب.
        5) يصل اشعار للباحث بالنتيجة، ويسجل القرار في الطلب وفي سجل التدقيق.
-       6) الباحث يستطيع الغاء طلبه ما دام لم يبت فيه بعد.
+       6) الباحث يستطيع الغاء طلبه ما دام لم يصدر فيه قرار بعد.
 
        سياسة الرصيد (حسب المعتمد لدى الجمعية):
        ---------------------------------------
@@ -8844,7 +8967,7 @@
             tr.appendChild(tdStatus);
 
             /* خانة السبب: سبب الرفض ان وجد، والا ملاحظة الباحث نفسه.
-               ملاحظة: لا يعرض هنا اسم المدير الذي بت في الطلب اطلاقا */
+               ملاحظة: لا يعرض هنا اسم المدير الذي اتخذ القرار في الطلب اطلاقا */
             const tdReason = document.createElement("td");
             tdReason.className = "reason-cell";
             fillDetailsCell(tdReason, l);
@@ -8901,11 +9024,11 @@
 
     async function cancelMyLeave(docId) {
         try {
-            /* اعادة القراءة اولا: قد يكون المدير بت في الطلب قبل ثوان */
+            /* اعادة القراءة اولا: قد يكون المدير اتخذ القرار في الطلب قبل ثوان */
             const snap = await getDoc(doc(db, "leaves", docId));
             if (!snap.exists()) { toast("الطلب لم يعد موجودا.", "warn"); await openLeaveHistory(); return; }
             if (snap.data().status !== "pending") {
-                toast("تم البت في الطلب بالفعل ولا يمكن الغاؤه.", "warn");
+                toast("تم اتخاذ القرار في الطلب بالفعل ولا يمكن الغاؤه.", "warn");
                 await openLeaveHistory();
                 return;
             }
@@ -9030,7 +9153,7 @@
             const tdStatus = document.createElement("td");
             tdStatus.appendChild(leaveStatusBadge(l.status));
 
-            /* بيانات من بت في الطلب تظهر للادارة فقط */
+            /* بيانات من اتخذ القرار في الطلب تظهر للادارة فقط */
             if (l.status === "approved" || l.status === "rejected") {
                 const by = document.createElement("div");
                 by.className = "decided-by";
@@ -9182,7 +9305,7 @@
             }
             const data = snap.data();
             if (data.status !== "pending") {
-                toast("تم البت في هذا الطلب مسبقا من قبل مدير اخر.", "warn");
+                toast("تم اتخاذ القرار في هذا الطلب مسبقا من قبل مدير اخر.", "warn");
                 await window.loadLeaveRequests();
                 return;
             }
@@ -11531,6 +11654,205 @@
     };
 
     /* ==================================================================
+       متابعة البلاغات (جانب الباحث)
+       ==================================================================
+       يستعرض الباحث هنا كل ما قدمه من بلاغات في المجالات الثلاثة، مع
+       حالة كل بلاغ ورد الادارة عليه، فيعرف ما تم قبوله وما رفض ولماذا،
+       وما زال قيد المراجعة.
+
+       يبنى العرض من نفس مصادر البيانات التي تعتمدها الادارة، لكن
+       مقيدا برقم الباحث الوظيفي فقط، ودون اظهار اسم المدير الذي بت
+       في البلاغ اتساقا مع سياسة الخصوصية في بقية النظام.
+       ================================================================== */
+
+    let myReportsList = [];
+    let myReportsFilter = "all";
+
+    /* وصف مختصر لما طلبه الباحث في كل بلاغ، بحسب نوعه */
+    function myReportSummary(r) {
+        if (r._kind === "visit") {
+            const cur = "الزيارة رقم " + r.oldVisitId + " بتاريخ " + fmtDate(r.oldExecDate);
+            return (r.action === "delete")
+                ? { title: "بلاغ زيارة خاطئة — طلب حذف", detail: "طلبت حذف " + cur + " نهائيا." }
+                : { title: "بلاغ زيارة خاطئة — طلب تعديل",
+                    detail: "طلبت تعديل " + cur + " لتصبح رقم " + r.newVisitId + " بتاريخ " + fmtDate(r.newExecDate) + "." };
+        }
+        if (r._kind === "leave") {
+            const cur = "الاجازة من " + fmtDate(r.oldStart) + " الى " + fmtDate(r.oldEnd) + " (" + r.oldDays + " يوم)";
+            return (r.action === "withdraw")
+                ? { title: "بلاغ طلب اجازة — طلب سحب", detail: "طلبت سحب " + cur + " بالكامل." }
+                : { title: "بلاغ طلب اجازة — طلب تعديل تواريخ",
+                    detail: "طلبت تعديل " + cur + " لتصبح من " + fmtDate(r.newStart) + " الى " + fmtDate(r.newEnd) + " (" + r.newDays + " يوم)." };
+        }
+        return { title: "بلاغ تصحيح تقرير يومي",
+                 detail: "طلبت اعتماد نسخة مصححة من تقريرك بتاريخ " + arabicDayLabel(r.reportDate) + "." };
+    }
+
+    window.openMyReports = async function() {
+        if (!isResearcher()) { window.switchScreen('researcherLoginScreen'); return; }
+
+        myReportsFilter = "all";
+        document.querySelectorAll('#myRepFilterRow .btn-sort').forEach(function(b, i) {
+            b.classList.toggle('active-sort', i === 0);
+        });
+
+        window.switchScreen('myReportsScreen');
+
+        const loading = document.getElementById("myRepLoading");
+        const box = document.getElementById("myRepList");
+        hideMsg("myRepError");
+        box.innerHTML = "";
+        loading.style.display = "block";
+
+        try {
+            /* استعلام بحقل واحد لكل مجموعة (empId)، بلا فهارس مركبة */
+            const [visits, leaves, reports] = await Promise.all([
+                getDocs(query(collection(db, "visit_reports"),  where("empId", "==", session.empId))),
+                getDocs(query(collection(db, "leave_reports"),  where("empId", "==", session.empId))),
+                getDocs(query(collection(db, "report_reports"), where("empId", "==", session.empId)))
+            ]);
+
+            myReportsList = [];
+            const push = function(snap, kind) {
+                snap.forEach(function(d) {
+                    myReportsList.push(Object.assign({ id: d.id, _kind: kind }, d.data()));
+                });
+            };
+            push(visits, "visit");
+            push(leaves, "leave");
+            push(reports, "report");
+
+            /* الاحدث تقديما اولا */
+            myReportsList.sort(function(a, b) {
+                return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+            });
+
+            updateMyReportCounts();
+            renderMyReports();
+        } catch (e) {
+            showMsg("myRepError", "<i class='fas fa-wifi'></i> تعذر تحميل بلاغاتك، تحقق من الاتصال وحاول مرة اخرى.");
+        }
+        loading.style.display = "none";
+    };
+
+    function updateMyReportCounts() {
+        const c = { all: myReportsList.length, pending: 0, approved: 0, rejected: 0 };
+        myReportsList.forEach(function(r) { if (c[r.status] !== undefined) c[r.status]++; });
+        ["all", "pending", "approved", "rejected"].forEach(function(k) {
+            const el = document.getElementById("mrcount_" + k);
+            if (el) el.textContent = c[k];
+        });
+    }
+
+    window.filterMyReports = function(status, btnEl) {
+        document.querySelectorAll('#myRepFilterRow .btn-sort').forEach(function(b) { b.classList.remove('active-sort'); });
+        if (btnEl) btnEl.classList.add('active-sort');
+        myReportsFilter = status;
+        renderMyReports();
+    };
+
+    function renderMyReports() {
+        const box = document.getElementById("myRepList");
+        const empty = document.getElementById("myRepEmpty");
+        box.innerHTML = "";
+
+        const list = (myReportsFilter === "all")
+            ? myReportsList
+            : myReportsList.filter(function(r) { return r.status === myReportsFilter; });
+
+        if (list.length === 0) { empty.style.display = "block"; return; }
+        empty.style.display = "none";
+
+        const frag = document.createDocumentFragment();
+
+        list.forEach(function(r) {
+            const card = document.createElement("div");
+            card.className = "req-card";
+
+            const info = myReportSummary(r);
+
+            /* الترويسة: نوع البلاغ + شارة الحالة */
+            const head = document.createElement("div");
+            head.className = "req-head";
+            const t = document.createElement("span");
+            t.textContent = info.title;
+            head.appendChild(t);
+            head.appendChild(reqBadge(r.status));
+            card.appendChild(head);
+
+            /* ما طلبه الباحث */
+            const detail = document.createElement("div");
+            detail.className = "req-line";
+            const dl = document.createElement("span");
+            dl.className = "req-line-label";
+            dl.textContent = "طلبك: ";
+            const dv = document.createElement("span");
+            dv.textContent = info.detail;
+            detail.appendChild(dl);
+            detail.appendChild(dv);
+            card.appendChild(detail);
+
+            /* سبب البلاغ الذي كتبه الباحث وقت التقديم */
+            if (r.reason) {
+                const rs = document.createElement("div");
+                rs.className = "req-line";
+                const rl = document.createElement("span");
+                rl.className = "req-line-label";
+                rl.textContent = "السبب الذي ذكرته: ";
+                const rv = document.createElement("span");
+                rv.textContent = r.reason;
+                rs.appendChild(rl);
+                rs.appendChild(rv);
+                card.appendChild(rs);
+            }
+
+            /* رد الادارة بحسب الحالة */
+            const resp = document.createElement("div");
+            resp.className = "req-line";
+            if (r.status === "pending") {
+                const p = document.createElement("span");
+                p.className = "req-line-label";
+                p.textContent = "رد الادارة: ";
+                const pv = document.createElement("span");
+                pv.textContent = "لم يصدر قرار في البلاغ بعد، وسيصلك اشعار فور صدوره.";
+                resp.appendChild(p);
+                resp.appendChild(pv);
+            } else if (r.status === "approved") {
+                const p = document.createElement("span");
+                p.className = "req-line-label";
+                p.textContent = "رد الادارة: ";
+                const pv = document.createElement("span");
+                pv.className = "detail-approved-text";
+                pv.textContent = "تمت الموافقة على البلاغ وتنفيذ المطلوب.";
+                resp.appendChild(p);
+                resp.appendChild(pv);
+            } else {
+                /* كلمة "سبب الرفض" بلون عادي ونص المدير وحده بالاحمر */
+                const p = document.createElement("span");
+                p.className = "detail-reject-label";
+                p.textContent = "سبب الرفض: ";
+                const pv = document.createElement("span");
+                pv.className = "detail-reject-text";
+                pv.textContent = r.rejectReason || "لم يذكر سبب";
+                resp.appendChild(p);
+                resp.appendChild(pv);
+            }
+            card.appendChild(resp);
+
+            /* تواريخ التقديم والقرار */
+            const meta = document.createElement("div");
+            meta.className = "req-meta";
+            meta.textContent = "قدم في: " + window.formatDateTimeToEnglish(r.createdAt) +
+                (r.decidedAt ? (" | تاريخ القرار: " + window.formatDateTimeToEnglish(r.decidedAt)) : "");
+            card.appendChild(meta);
+
+            frag.appendChild(card);
+        });
+
+        box.appendChild(frag);
+    }
+
+    /* ==================================================================
        (29-أ) بلاغ زيارة خاطئة
        ================================================================== */
 
@@ -12196,7 +12518,7 @@
             if (!snap.exists()) { toast("البلاغ لم يعد موجودا.", "error"); await loadRequests(); return; }
             const r = snap.data();
             if (r.status !== "pending") {
-                toast("تم البت في هذا البلاغ مسبقا من مدير اخر.", "warn");
+                toast("تم اتخاذ القرار في هذا البلاغ مسبقا من مدير اخر.", "warn");
                 await loadRequests();
                 return;
             }
