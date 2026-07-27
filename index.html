@@ -2243,6 +2243,23 @@
         body.dark-mode .phone-missing { color: #f0b473; }
 
         /* ==================================================================
+           (جديد) شارة reCAPTCHA
+           ------------------------------------------------------------------
+           تظهر افتراضيا كشارة عائمة اسفل يمين الشاشة، وهو نفس موضع زر
+           تثبيت التطبيق فتتعارض معه بصريا. جوجل تسمح باخفائها بشرط ذكر
+           الاشعار القانوني بوضوح، وقد وضع في تذييل الصفحة.
+           ================================================================== */
+        .grecaptcha-badge { visibility: hidden; }
+
+        .recaptcha-notice {
+            margin-top: 14px;
+            font-size: 11.5px;
+            line-height: 1.9;
+            opacity: 0.75;
+        }
+        .recaptcha-notice a { text-decoration: underline; }
+
+        /* ==================================================================
            (جديد) شريط انقطاع الاتصال بالانترنت
            ------------------------------------------------------------------
            مهم جدا في هذا النظام تحديدا: الباحثون يوثقون زياراتهم من
@@ -4634,10 +4651,19 @@
         </div>
     </div>
     <div class="copyright">جميع الحقوق محفوظة لادارة فريق الباحث الاجتماعي بجمعية التنمية الاسرية بالاحساء &copy; 2026</div>
+
+    <!-- اشعار reCAPTCHA: تشترطه جوجل عند اخفاء الشارة العائمة -->
+    <div class="recaptcha-notice">
+        هذا الموقع محمي بواسطة reCAPTCHA وتطبق عليه
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">سياسة الخصوصية</a>
+        و<a href="https://policies.google.com/terms" target="_blank" rel="noopener">شروط الخدمة</a>
+        الخاصة بجوجل.
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
     import { getFirestore, collection, addDoc, getDocs, getDoc, onSnapshot, query, where, updateDoc, deleteDoc, doc, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -4650,6 +4676,57 @@
     };
 
     const app = initializeApp(firebaseConfig);
+
+    /* ==================================================================
+       حماية الوصول الى قاعدة البيانات (Firebase App Check)
+       ==================================================================
+
+       المشكلة التي يعالجها:
+       ---------------------
+       اعدادات firebaseConfig اعلاه ظاهرة لاي شخص يفتح مصدر الصفحة،
+       وهذا طبيعي ومقصود من تصميم Firebase. لكن معناه ان اي شخص ينسخها
+       ويكتب برنامجا بسيطا يستطيع الوصول الى قاعدة البيانات من جهازه،
+       دون ان يفتح هذا الموقع اصلا.
+
+       ما يفعله App Check:
+       -------------------
+       يرفق مع كل طلب رمز تحقق يثبت ان الطلب صادر من هذا الموقع بالذات
+       على نطاقه المسجل، ويرفض ما عداه. فتصبح نسخ الاعدادات وحدها بلا
+       فائدة لمن اراد الوصول من خارج الموقع.
+
+       ملاحظة على النطاق:
+       ------------------
+       المفتاح ادناه مربوط بالنطاق osaryateam.github.io فقط. عند تغيير
+       اسم المستخدم في GitHub او الانتقال الى نطاق اخر، يجب اضافة
+       النطاق الجديد في اعدادات reCAPTCHA والا توقف الموقع عن العمل.
+
+       مفتاح الموقع عام بطبيعته ولا ضرر في ظهوره هنا، بخلاف المفتاح
+       السري الذي يبقى في لوحة Firebase وحدها ولا يوضع في الكود ابدا.
+       ================================================================== */
+
+    const RECAPTCHA_SITE_KEY = "6LeLnGctAAAAAJuqzdqHkux_Fnz0KgmsR8516iRH";
+
+    /* اثناء التطوير المحلي (فتح الملف من الجهاز مباشرة او localhost)
+       لا يستطيع reCAPTCHA التحقق من النطاق، فنفعل وضع التصحيح ليعمل
+       النظام. هذا السطر لا ينشط اطلاقا على النطاق الحقيقي المنشور. */
+    if (location.protocol === "file:" ||
+        location.hostname === "localhost" ||
+        location.hostname === "127.0.0.1") {
+        self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    }
+
+    try {
+        initializeAppCheck(app, {
+            provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
+            /* تجديد الرمز تلقائيا قبل انتهاء صلاحيته بلا تدخل منا */
+            isTokenAutoRefreshEnabled: true
+        });
+    } catch (e) {
+        /* فشل التهيئة لا يوقف النظام قبل تفعيل الالزام (Enforce) في
+           لوحة Firebase، لذلك نكتفي بتسجيل التحذير ونكمل العمل */
+        console.warn("تعذر تفعيل App Check:", e && e.message);
+    }
+
     const db = getFirestore(app);
 
     /* ==================================================================
