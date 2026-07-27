@@ -786,7 +786,7 @@
             border-color: rgba(222, 140, 67, 0.2);
         }
         
-        /* ---------------- قائمة منسدلة لحالة الباحث/المنصب ---------------- */
+        /* ---------------- قائمة منسدلة لحالة الباحث/المسمى ---------------- */
         .status-select {
             padding: 8px 12px;
             border-radius: 8px;
@@ -1163,11 +1163,24 @@
             min-width: 0;              /* يسمح للنص بالانكماش بدل دفع الجرس خارج الشاشة */
         }
         .top-bar-user i { font-size: 20px; opacity: 0.9; flex-shrink: 0; }
-        .top-bar-user span {
+        /* ------------------------------------------------------------------
+           نص الشريط العلوي (الاسم والرقم الوظيفي)
+           ------------------------------------------------------------------
+           بني كحاوية واحدة #topBarText تضم عدة اجزاء فرعية: تسمية الصفة
+           (المدير / الباحث)، الاسم، فاصل، تسمية الرقم الوظيفي، والرقم.
+           على الحاسب تظهر كل الاجزاء في سطر واحد. على الجوال تختفي
+           التسميات النصية (الصفة و"الرقم الوظيفي:") تلقائيا عبر media query
+           ادناه، فيبقى فقط "الاسم | الرقم" وهو اقصر بكثير، ويسمح بالتفاف
+           السطر ان لزم بدل قص المحتوى، فلا يضيع اي جزء من الاسم او الرقم
+           مهما طال الاسم او ضاق العرض.
+           ------------------------------------------------------------------ */
+        .top-bar-user #topBarText {
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;   /* اذا طال الاسم يقص بثلاث نقاط بدل كسر التصميم */
+            text-overflow: ellipsis;   /* على الحاسب فقط: قص نادر لاسماء طويلة جدا */
+            max-width: 100%;
         }
+        .tb-role, .tb-idlabel { font-weight: 800; }
 
         /* ---------------- زر الجرس ---------------- */
         .bell-btn {
@@ -1226,10 +1239,19 @@
         }
         .notif-badge[hidden] { display: none; }
 
-        /* عداد الاشعارات فوق ازرار بوابة الادارة، لكل زر مرتبط بصلاحية.
-           نفس تصميم عداد الجرس، لكن في الزاوية العلوية اليسرى للزر
-           (يسار لان مثلث ايقونة الزر واتجاه النص يشغلان الجهة الاخرى) */
-        .dash-notif-badge {
+        /* ------------------------------------------------------------------
+           شارة "يوجد طلب ينتظر قرارا" فوق ازرار بوابة الادارة
+           ------------------------------------------------------------------
+           نظام مستقل تماما عن جرس الاشعارات ولا يشترك معه في اي حالة
+           او متغير. مصدرها العدد الفعلي للسجلات بحالة pending في قاعدة
+           البيانات (طلبات اجازة، بلاغات زيارات، بلاغات اجازات، بلاغات
+           تقارير)، وليس حالة قراءة اي رسالة.
+
+           لذلك: فتح الزر او رؤية الرسالة في الجرس لا يخفي هذه الشارة
+           ابدا، ولا يخفيها الا اغلاق الطلب نفسه (قبولا او رفضا) من
+           الشاشة المختصة. انظر computeActionBadges في قسم الجافاسكربت.
+           ------------------------------------------------------------------ */
+        .action-badge {
             position: absolute;
             top: 8px;
             left: 8px;
@@ -1247,10 +1269,10 @@
             box-sizing: content-box;
             box-shadow: 0 2px 6px rgba(0,0,0,0.25);
             z-index: 3;
-            animation: dashBadgeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: actionBadgeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .dash-notif-badge[hidden] { display: none; }
-        @keyframes dashBadgeIn { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
+        .action-badge[hidden] { display: none; }
+        @keyframes actionBadgeIn { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
 
         /* ---------------- لوحة الاشعارات المنسدلة ---------------- */
         .notif-panel {
@@ -1438,10 +1460,29 @@
             th, td { padding: 12px 10px; font-size: 13px; }
             table { border-spacing: 0 8px; }
 
-            /* الشريط العلوي على الجوال */
+            /* ------------------------------------------------------------
+               الشريط العلوي على الجوال
+               ----------------------------------------------------------
+               المساحة ضيقة (زر الحساب + زر الجرس + الاسم + الرقم)، لذلك:
+               1) تختفي تسمية الصفة ("المدير:" / "الباحث:") وتسمية
+                  "الرقم الوظيفي:"، فيتبقى "الاسم | الرقم" فقط وهو اقصر
+                  بكثير ويحمل نفس المعلومة كاملة.
+               2) يسمح بالتفاف النص على سطرين بدل قصه بثلاث نقاط، حتى
+                  تبقى الاسماء الطويلة ظاهرة بالكامل مهما كانت.
+               ---------------------------------------------------------- */
+            /* الحاوية الخارجية (النص + زر الحساب + زر الجرس) تبقى سطرا
+               واحدا دائما بلا التفاف، فلا تنزل الايقونات عن بعضها.
+               الالتفاف يحدث داخليا فقط في نص الاسم والرقم اذا لزم */
             .top-bar-inner { padding: 8px 12px; }
-            .top-bar-user { font-size: 13px; }
+            .top-bar-user { font-size: 13px; min-width: 0; }
             .top-bar-user i { font-size: 18px; }
+            .tb-role, .tb-idlabel { display: none; }
+            .top-bar-user #topBarText {
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                line-height: 1.4;
+            }
             .bell-btn { width: 38px; height: 38px; min-width: 38px; font-size: 16px; }
             .notif-panel { left: 10px; width: calc(100vw - 20px); }
 
@@ -1461,7 +1502,6 @@
             .container { padding: 18px 12px; }
             .header h1 { font-size: 19px; }
             .manager-dashboard-grid { grid-template-columns: 1fr; }
-            .top-bar-user span { max-width: 150px; }
         }
 
         /* ==================================================================
@@ -2203,16 +2243,28 @@
             padding: 14px 46px 14px 16px;
             display: flex;
             align-items: center;
+            /* توسيط المحتوى كوحدة واحدة مدمجة بدل توزيعه بعرض الحاوية
+               كاملا، فيبدو الشريط مرتبا ومتماثلا على شاشات الحاسب
+               الواسعة بدل ان يتمدد النص لعرض غير مريح للقراءة */
+            justify-content: center;
             gap: 12px;
             flex-wrap: wrap;
             font-weight: 700;
             font-size: 14px;
             color: #a5601f;
             line-height: 1.8;
+            text-align: center;
         }
         body.dark-mode .phone-reminder { color: #f0b473; background: rgba(222,140,67,0.14); }
         .phone-reminder > i { font-size: 20px; flex-shrink: 0; }
-        .phone-reminder > span { flex: 1; min-width: 200px; }
+        .phone-reminder > span {
+            /* بدل flex:1 (كان يمدد النص بعرض الحاوية كاملا فيبدو
+               متناثرا)، ياخذ النص حجمه الطبيعي بحد اقصى مريح للقراءة،
+               ويتوسط مع بقية عناصر الشريط كوحدة واحدة */
+            flex: 0 1 auto;
+            max-width: 640px;
+            min-width: 0;
+        }
 
         .phone-reminder-btn {
             width: auto;
@@ -2645,7 +2697,7 @@
         <!-- معلومات المستخدم -->
         <div class="top-bar-user">
             <i class="fas fa-user-circle" aria-hidden="true"></i>
-            <span id="topBarText"></span>
+            <span id="topBarText"></span><!-- تملأ من showTopBar() بأجزاء tb-role / tb-name / tb-idlabel / tb-id -->
         </div>
 
         <!-- زر الحساب الشخصي: يعرض البيانات ويتيح تغيير كلمة المرور -->
@@ -2934,13 +2986,13 @@
         
         <div class="manager-dashboard-grid">
             <button class="btn-manager btn-icon-watermark icon-results" onclick="checkPermissionAndGo('managerControlScreen')">الاستعلام عن زيارات</button>
-            <button class="btn-manager btn-icon-watermark icon-search" data-notif-perm="الاستعلام عن زيارة والتعديل على بياناتها" onclick="checkPermissionAndGo('managerQueryScreen')">الاستعلام عن زيارة والتعديل على بياناتها</button>
-            <button class="btn-manager btn-icon-watermark icon-edit" data-notif-perm="تعديل السجلات" onclick="checkPermissionAndGo('editVisits')">تعديل السجلات</button>
-            <button class="btn-manager btn-icon-watermark icon-users" data-notif-perm="قائمة الباحثين" onclick="checkPermissionAndGo('loadResearchersList')">قائمة الباحثين</button>
+            <button class="btn-manager btn-icon-watermark icon-search" data-action-badge="visit" onclick="checkPermissionAndGo('managerQueryScreen')">الاستعلام عن زيارة والتعديل على بياناتها</button>
+            <button class="btn-manager btn-icon-watermark icon-edit" onclick="checkPermissionAndGo('editVisits')">تعديل السجلات</button>
+            <button class="btn-manager btn-icon-watermark icon-users" onclick="checkPermissionAndGo('loadResearchersList')">قائمة الباحثين</button>
             
-            <button class="btn-manager btn-icon-watermark icon-leave" data-notif-perm="طلبات الاجازات" onclick="checkPermissionAndGo('loadLeaveRequests')">طلبات الاجازات</button>
-            <button class="btn-manager btn-icon-watermark icon-bell" data-notif-perm="التنبيهات والانذارات" onclick="checkPermissionAndGo('openNoticeAdmin')">انشاء إنذار | تنبيه</button>
-            <button class="btn-manager btn-icon-watermark icon-daily-report" data-notif-perm="التقارير اليومية" onclick="checkPermissionAndGo('openDailyReports')">التقارير اليومية</button>
+            <button class="btn-manager btn-icon-watermark icon-leave" data-action-badge="leave" onclick="checkPermissionAndGo('loadLeaveRequests')">طلبات الاجازات</button>
+            <button class="btn-manager btn-icon-watermark icon-bell" onclick="checkPermissionAndGo('openNoticeAdmin')">انشاء إنذار | تنبيه</button>
+            <button class="btn-manager btn-icon-watermark icon-daily-report" data-action-badge="report" onclick="checkPermissionAndGo('openDailyReports')">التقارير اليومية</button>
             <button class="btn-manager btn-icon-watermark icon-user-shield" onclick="loadManagersList()">الادارة العامة</button>
             
             <button class="btn-neutral btn-icon-watermark icon-logout btn-logout-full" onclick="exitManagerArea()">تسجيل خروج</button>
@@ -2990,7 +3042,7 @@
                 <div class="input-group full-width" style="margin-bottom: 15px;">
                     <label for="newManRole">منصب المدير:</label>
                     <select id="newManRole" class="status-select" onchange="togglePermissionsDiv()">
-                        <option value="custom">مدير مخصص</option>
+                        <option value="custom">مدير</option>
                         <option value="general">مدير عام</option>
                     </select>
                 </div>
@@ -3028,7 +3080,7 @@
                         <th>اسم المدير</th>
                         <th class="full-access-col">الرقم الوظيفي</th>
                         <th class="full-access-col">كلمة المرور</th>
-                        <th>المنصب</th>
+                        <th>المسمى</th>
                         <th>الصلاحيات</th>
                         <th class="full-access-col">الاجراء</th>
                     </tr>
@@ -3080,7 +3132,7 @@
     <div id="managerQueryScreen" class="container screen">
         <h2>الاستعلام عن زيارة والتعديل على بياناتها</h2>
         <!-- صندوق بلاغات الزيارات الخاطئة المرفوعة من الباحثين -->
-        <button class="btn-neutral btn-icon-watermark icon-flag" onclick="openRequests('visit')">بلاغات الزيارة الخاطئة</button>
+        <button class="btn-neutral btn-icon-watermark icon-flag" data-action-badge="visit-report" onclick="openRequests('visit')">بلاغات الزيارة الخاطئة</button>
         
         <div class="input-group" style="margin-top: 15px;">
             <label for="queryVisitIdMan">رقم الزيارة المراد الاستعلام عنها:</label>
@@ -3323,7 +3375,7 @@
             <select id="leaveYearSelect" class="year-select" onchange="changeLeaveYear(this.value)"></select>
         </div>
 
-        <!-- بطاقات الرصيد: الكلي / المعتمد / قيد الدراسة / المتبقي -->
+        <!-- بطاقات الرصيد: الكلي / المعتمد / قيد المراجعة / المتبقي -->
         <div id="leaveStatsBox" class="leave-stats"></div>
 
         <!-- تنبيه بقاعدة الاشعار المسبق للاجازة الاعتيادية -->
@@ -3374,7 +3426,7 @@
          --------------------------------------------------------------
          تعرض كل طلبات الباحث بكل السنوات مع حالتها وسبب الرفض ان وجد.
          ملاحظة خصوصية: لا يظهر هنا اسم المدير الذي قبل او رفض الطلب.
-         الطلبات التي ما زالت قيد الدراسة يمكن للباحث الغاؤها.
+         الطلبات التي ما زالت قيد المراجعة يمكن للباحث الغاؤها.
          ============================================================== -->
     <div id="leaveHistoryScreen" class="container screen" style="max-width: 1000px;">
         <div style="text-align: left; margin-bottom: 10px;">
@@ -3503,7 +3555,7 @@
         <div class="sorting-controls">
             <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-filter"></i> تصفية حسب حالة الطلب:</strong>
             <div class="sorting-buttons-row" id="leaveStatusFilterRow">
-                <button type="button" class="btn-sort active-sort" onclick="filterLeaves('pending', this)">قيد الدراسة (<span id="lcount_pending">0</span>)</button>
+                <button type="button" class="btn-sort active-sort" onclick="filterLeaves('pending', this)">قيد المراجعة (<span id="lcount_pending">0</span>)</button>
                 <button type="button" class="btn-sort" onclick="filterLeaves('approved', this)">مقبولة (<span id="lcount_approved">0</span>)</button>
                 <button type="button" class="btn-sort" onclick="filterLeaves('rejected', this)">مرفوضة (<span id="lcount_rejected">0</span>)</button>
                 <button type="button" class="btn-sort" onclick="filterLeaves('cancelled', this)">ملغاة (<span id="lcount_cancelled">0</span>)</button>
@@ -3519,7 +3571,7 @@
         </div>
 
         <!-- قسم ترحيل الرصيد بين السنوات -->
-        <button class="btn-neutral btn-icon-watermark icon-flag" onclick="openRequests('leave')">بلاغات طلبات الإجازات</button>
+        <button class="btn-neutral btn-icon-watermark icon-flag" data-action-badge="leave-report" onclick="openRequests('leave')">بلاغات طلبات الإجازات</button>
         <button class="btn-manager btn-icon-watermark icon-exchange" data-requires-perm="طلبات الاجازات" onclick="toggleCarrySection()">ترحيل رصيد اجازات باحث</button>
 
         <div id="carrySection" class="add-form-section" style="display:none;">
@@ -4151,7 +4203,7 @@
         </div>
         <h2>التقارير اليومية</h2>
 
-        <button class="btn-neutral btn-icon-watermark icon-flag" onclick="openRequests('report')">بلاغات التقارير اليومية</button>
+        <button class="btn-neutral btn-icon-watermark icon-flag" data-action-badge="report-report" onclick="openRequests('report')">بلاغات التقارير اليومية</button>
 
         <div class="input-group" style="margin-top: 18px;">
             <label for="drAdminDate">اختر اليوم المراد عرض تقاريره:</label>
@@ -4286,7 +4338,7 @@
     <!-- ==============================================================
          شاشة الباحث: بلاغ طلب اجازة
          --------------------------------------------------------------
-         يخص الاجازات المعتمدة فقط، اما التي ما زالت قيد الدراسة
+         يخص الاجازات المعتمدة فقط، اما التي ما زالت قيد المراجعة
          فيلغيها الباحث بنفسه من سجل طلبات الاجازات.
          ============================================================== -->
     <div id="leaveReportScreen" class="container screen" style="max-width: 900px;">
@@ -4378,7 +4430,7 @@
         <div class="sorting-controls">
             <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-filter"></i> تصفية حسب الحالة:</strong>
             <div class="sorting-buttons-row" id="reqFilterRow">
-                <button type="button" class="btn-sort active-sort" onclick="filterRequests('pending', this)">قيد الدراسة (<span id="rcount_pending">0</span>)</button>
+                <button type="button" class="btn-sort active-sort" onclick="filterRequests('pending', this)">قيد المراجعة (<span id="rcount_pending">0</span>)</button>
                 <button type="button" class="btn-sort" onclick="filterRequests('approved', this)">مقبولة (<span id="rcount_approved">0</span>)</button>
                 <button type="button" class="btn-sort" onclick="filterRequests('rejected', this)">مرفوضة (<span id="rcount_rejected">0</span>)</button>
                 <button type="button" class="btn-sort" onclick="filterRequests('all', this)">الكل (<span id="rcount_all">0</span>)</button>
@@ -4481,7 +4533,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, getDoc, query, where, updateDoc, deleteDoc, doc, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, getDoc, onSnapshot, query, where, updateDoc, deleteDoc, doc, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD1l2V8e7tHr1M3k5EzuLhf0b8tcaf3e90",
@@ -4533,9 +4585,10 @@
        NOTIF_ENABLED           : تفعيل او تعطيل نظام الاشعارات بالكامل
        NOTIF_SHOW_FOR_MANAGERS : اظهار الجرس للمدراء ايضا (حاليا للباحثين فقط)
        NOTIF_MAX               : اقصى عدد اشعارات تجلب من قاعدة البيانات
-       NOTIF_POLL_MS           : التحديث التلقائي بالملي ثانية، صفر = معطل
-                                 (تركناه معطلا لتخفيف الاستهلاك، والتحديث
-                                  يتم عند الدخول وعند فتح لوحة الاشعارات) */
+       NOTIF_POLL_MS           : باق للتوافق فقط، لم يعد له اي اثر فعلي
+                                 بعد التحول الى البث الفوري (onSnapshot)
+                                 في startNotificationsListener، الذي
+                                 يوصل كل اشعار فور وصوله بلا استطلاع دوري */
     const NOTIF_ENABLED           = true;
     const NOTIF_SHOW_FOR_MANAGERS = true;
     const NOTIF_MAX               = 30;
@@ -5293,12 +5346,162 @@
         });
     };
 
+    /* ==================================================================
+       شارات "يوجد طلب ينتظر قرارا" فوق ازرار بوابة الادارة
+       ==================================================================
+       نظام مستقل بالكامل عن جرس الاشعارات، بلا اي متغير او دالة
+       مشتركة معه. الفكرة: عد السجلات الفعلية بحالة "pending" في اربع
+       مجموعات (اجازات، بلاغات زيارات، بلاغات اجازات، بلاغات تقارير)،
+       وعرض النتيجة كشارة حمراء فوق الزر المعني.
+
+       لماذا العد عبر getCountFromServer بدل جلب السجلات؟
+       ---------------------------------------------------
+       هذه الدالة تستدعى كثيرا (كل تنقل، وكل قرار، وكل بضع دقائق)،
+       فلو جلبنا المستندات كاملة لاستهلكنا قراءة لكل سجل معلق في كل
+       مرة. استعلام العد (Count Aggregation) يكلف قراءة واحدة تقريبا
+       بغض النظر عن عدد النتائج، فهو الاداة الصحيحة هنا تماما.
+
+       متى تختفي الشارة؟
+       ------------------
+       فقط عندما ينخفض العدد الفعلي الى صفر، اي عندما يُقبل الطلب او
+       يُرفض من الشاشة المختصة. مجرد فتح الزر او رؤية اشعار عنه في
+       الجرس لا يغير هذا العدد اطلاقا ولا يخفي الشارة.
+
+       التتبع الهرمي (تعقب الشارة حتى وجهتها الفعلية):
+       -------------------------------------------------
+       زر "طلبات الاجازات" في بوابة الادارة قد تظهر عليه الشارة لسببين
+       مختلفين: اجازة عادية قيد المراجعة، او بلاغ على اجازة قائمة.
+       فور دخول شاشة الاجازات، يظهر العدد الحقيقي للاجازات المعلقة في
+       تبويب "قيد المراجعة" نفسه (موجود اصلا)، بينما يظهر عدد بلاغات
+       الاجازات تحديدا كشارة مستقلة فوق زر "بلاغات طلبات الإجازات"
+       الفرعي، فيتتبع المدير الشارة الحمراء خطوة بخطوة حتى الطلب الفعلي
+       بدل ان يحتار من اين اتت.
+       ================================================================== */
+
+    let actionBadgeCounts = { leavePending: 0, leaveReportPending: 0, visitReportPending: 0, reportReportPending: 0 };
+
+    /* ------------------------------------------------------------------
+       معرفات السجلات المعلقة حاليا (وليس عددها فقط)
+       ------------------------------------------------------------------
+       تحفظ كمجموعات Set محدثة لحظيا من مستمعي onSnapshot ادناه. القيمة
+       الابتدائية null (لا Set فارغ) تعني عمدا "لم تصل بيانات هذا النوع
+       بعد"، فتفرق بين "لا يوجد شيء معلق" و"لم نتحقق بعد" - هذا الفرق
+       مهم لدالة reconcileResolvedNotifications في قسم الجرس، حتى لا
+       تعتبر خطأ اي اشعار وارد "محلولا" فقط لان بياناته لم تصل بعد. */
+    let pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, report_reports: null };
+    let actionBadgeUnsubs = [];   /* دوال الغاء الاشتراك في المستمعين الاربعة */
+
+    function idSetSize(s) { return s ? s.size : 0; }
+
+    /* اظهار او اخفاء شارة على كل الازرار التي تحمل قيمة معينة للسمة
+       data-action-badge، مع انشاء عنصر الشارة عند اول حاجة فقط.
+       دالة مجانية بالكامل (لا تستعلم قاعدة البيانات)، فيمكن استدعاؤها
+       عند اي تنقل بين الشاشات لضمان ظهور الشارة على الزر الصحيح فور
+       دخوله، دون اي تكلفة اضافية. */
+    function setActionBadge(key, count) {
+        document.querySelectorAll('[data-action-badge="' + key + '"]').forEach(function(btn) {
+            let badge = btn.querySelector(".action-badge");
+            if (count > 0) {
+                if (!badge) {
+                    badge = document.createElement("span");
+                    badge.className = "action-badge";
+                    btn.appendChild(badge);
+                }
+                badge.textContent = count > 99 ? "99+" : String(count);
+                badge.hidden = false;
+            } else if (badge) {
+                badge.hidden = true;
+            }
+        });
+    }
+
+    function applyActionBadges() {
+        const c = actionBadgeCounts;
+        /* الزر الرئيسي لطلبات الاجازات: يضيء لاي من السببين معا */
+        setActionBadge("leave", c.leavePending + c.leaveReportPending);
+        /* الزر الفرعي: يضيء تحديدا اذا كان السبب بلاغا على اجازة */
+        setActionBadge("leave-report", c.leaveReportPending);
+
+        /* الاستعلام عن زيارة: مصدر معلق واحد فقط (بلاغات الزيارات)،
+           فالزر الرئيسي والفرعي يضيئان معا بلا لبس */
+        setActionBadge("visit", c.visitReportPending);
+        setActionBadge("visit-report", c.visitReportPending);
+
+        /* التقارير اليومية: كذلك مصدر واحد فقط (بلاغات التصحيح) */
+        setActionBadge("report", c.reportReportPending);
+        setActionBadge("report-report", c.reportReportPending);
+    }
+
+    /* ------------------------------------------------------------------
+       بدء الاستماع الفوري للطلبات المعلقة (للمدراء فقط)
+       ------------------------------------------------------------------
+       بدلا من اعادة العد كل بضع دقائق او عند كل تنقل، نفتح اربعة
+       مستمعين دائمين (Firestore onSnapshot) على السجلات بحالة pending
+       في المجموعات الاربع. اي تغيير فعلي في قاعدة البيانات - سواء
+       بسبب طلب جديد وصل، او مدير اخر اغلق طلبا - يصل فورا لكل من فتح
+       المستمع، بلا حاجة لتنقل او تحديث للصفحة.
+
+       التكلفة: قراءة واحدة تقريبا لكل سجل معلق حاليا عند البدء، ثم
+       قراءة واحدة فقط لكل سجل يتغير لاحقا. بما ان السجلات المعلقة
+       عادة قليلة (لا تشمل الارشيف الكامل)، فالتكلفة الاجمالية اقل
+       من اعادة العد الدوري القديم على المدى المتوسط.
+       ------------------------------------------------------------------ */
+    window.startActionBadgeListeners = function() {
+        window.stopActionBadgeListeners();
+        if (!isManager()) return;
+
+        const specs = [
+            { coll: "leaves",         key: "leaves" },
+            { coll: "leave_reports",  key: "leave_reports" },
+            { coll: "visit_reports",  key: "visit_reports" },
+            { coll: "report_reports", key: "report_reports" }
+        ];
+
+        specs.forEach(function(s) {
+            const q = query(collection(db, s.coll), where("status", "==", "pending"));
+            const unsub = onSnapshot(q, function(snap) {
+                const ids = new Set();
+                snap.forEach(function(d) { ids.add(d.id); });
+                pendingIdSets[s.key] = ids;
+
+                actionBadgeCounts = {
+                    leavePending:        idSetSize(pendingIdSets.leaves),
+                    leaveReportPending:  idSetSize(pendingIdSets.leave_reports),
+                    visitReportPending:  idSetSize(pendingIdSets.visit_reports),
+                    reportReportPending: idSetSize(pendingIdSets.report_reports)
+                };
+                applyActionBadges();
+
+                /* قد يكون هذا التغيير سببه اغلاق طلب، فبعض اشعارات
+                   الجرس المشتركة (انظر القسم 21) تصبح محلولة تلقائيا */
+                reconcileResolvedNotifications();
+                updateNotifBadge();
+            }, function(err) {
+                console.warn("تعذر متابعة الطلبات المعلقة (" + s.coll + "):", err && err.message);
+            });
+            actionBadgeUnsubs.push(unsub);
+        });
+    };
+
+    /* ايقاف كل المستمعين الاربعة واعادة كل شيء الى الحالة الابتدائية،
+       يستدعى عند تسجيل الخروج لاي مستخدم (مدير او باحث) */
+    window.stopActionBadgeListeners = function() {
+        actionBadgeUnsubs.forEach(function(u) { try { u(); } catch (e) {} });
+        actionBadgeUnsubs = [];
+        actionBadgeCounts = { leavePending: 0, leaveReportPending: 0, visitReportPending: 0, reportReportPending: 0 };
+        pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, report_reports: null };
+        applyActionBadges();
+    };
+
     /* بدء المزامنة الدورية عند تسجيل الدخول */
     window.startPermSync = function() {
         if (permSyncTimer) clearInterval(permSyncTimer);
         permSyncTimer = setInterval(function() {
             if (!session || document.hidden) return;
             window.syncPermissions(true);
+            /* لا حاجة لاعادة عد شارات الطلبات هنا، فالمستمعون الفوريون
+               (startActionBadgeListeners) يحدثونها تلقائيا فور اي تغيير
+               حقيقي في قاعدة البيانات، بلا انتظار دورة المزامنة */
         }, PERM_SYNC_INTERVAL_MS);
     };
 
@@ -5433,6 +5636,7 @@
             window.startPermSync();
             await window.syncPermissions(true);
             window.updateReadOnlyBadges();
+            window.startActionBadgeListeners();
             checkPhoneReminder();
             window.switchScreen('managerPortal');
         } else if (session.type === "researcher") {
@@ -5642,6 +5846,7 @@
         showTopBar();
         window.startPermSync();
         window.updateReadOnlyBadges();
+        window.startActionBadgeListeners();
         checkPhoneReminder();
         window.switchScreen('managerPortal');
     };
@@ -5674,6 +5879,7 @@
         else if (action === 'openDailyReports') window.openDailyReports();
 
         window.updateReadOnlyBadges();
+        applyActionBadges();   /* مزامنة واجهة مجانية فقط، بلا استعلام جديد */
     };
 
 
@@ -6873,8 +7079,8 @@
 
         thead.innerHTML = "";
         const headers = hasFullAccess
-            ? ["م", "اسم المدير", "الرقم الوظيفي", "كلمة المرور", "المنصب", "الصلاحيات", "الاجراء"]
-            : ["م", "اسم المدير", "المنصب", "الصلاحيات"];
+            ? ["م", "اسم المدير", "الرقم الوظيفي", "كلمة المرور", "المسمى", "الصلاحيات", "الاجراء"]
+            : ["م", "اسم المدير", "المسمى", "الصلاحيات"];
         headers.forEach(function(h) {
             const th = document.createElement("th");
             th.textContent = h;
@@ -6954,7 +7160,7 @@
                 tdName.textContent = m.empName;
 
                 const tdRole = document.createElement("td");
-                tdRole.textContent = m.role === 'general' ? 'مدير عام' : 'مدير مخصص';
+                tdRole.textContent = m.role === 'general' ? 'مدير عام' : 'مدير';
 
                 const tdPerms = document.createElement("td");
                 if (m.role === 'general') {
@@ -7283,7 +7489,7 @@
                 const payload = { empName: name, empId: id, role: role, permissions: selectedPerms };
                 if (!keepOldPass) payload.password = await hashPassword(pass);
                 await updateDoc(doc(db, "managers", editingManagerId), payload);
-                logAudit("تعديل بيانات مدير", name + " (" + id + ") | المنصب: " + (role === 'general' ? 'مدير عام' : 'مدير مخصص') + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
+                logAudit("تعديل بيانات مدير", name + " (" + id + ") | المسمى: " + (role === 'general' ? 'مدير عام' : 'مدير') + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
                 showMsg("addManSuccess", "<i class='fas fa-check-circle'></i> تم تحديث بيانات المدير بنجاح!" +
                     (keepOldPass ? "" : "<br><span class='pass-once'>كلمة المرور الجديدة: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>"));
             } else {
@@ -7291,7 +7497,7 @@
                     empName: name, empId: id, password: await hashPassword(pass),
                     role: role, permissions: selectedPerms, createdAt: new Date().toISOString()
                 });
-                logAudit("اضافة مدير", name + " (" + id + ") | المنصب: " + (role === 'general' ? 'مدير عام' : 'مدير مخصص'));
+                logAudit("اضافة مدير", name + " (" + id + ") | المسمى: " + (role === 'general' ? 'مدير عام' : 'مدير'));
                 showMsg("addManSuccess", "<i class='fas fa-check-circle'></i> تمت اضافة المدير الى قائمة النظام بنجاح!" +
                     "<br><span class='pass-once'>كلمة المرور: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>");
             }
@@ -7400,7 +7606,7 @@
        ================================================================== */
 
     let notifications = [];          /* قائمة الاشعارات المحملة حاليا */
-    let notifPollTimer = null;       /* مؤقت التحديث الدوري ان كان مفعلا */
+    let notifUnsub = null;           /* دالة الغاء الاشتراك في مستمع الاشعارات الفوري */
 
     /* اظهار الشريط العلوي بحسب نوع المستخدم الحالي */
     function showTopBar() {
@@ -7413,31 +7619,63 @@
         bar.classList.remove("top-bar-manager", "top-bar-researcher");
         bar.classList.add(session.type === "manager" ? "top-bar-manager" : "top-bar-researcher");
 
-        /* صيغة النص: الاسم ثم فاصل | ثم الرقم الوظيفي، ومحتوى الشريط
-           كله موسط في المنتصف. المدير الاول لا يظهر رقمه الوظيفي اطلاقا */
-        if (session.type === "manager") {
-            /* المبرمج يظهر بلقبه الخاص، وبقية الحسابات بلقب المدير */
-            txt.textContent = isMaster()
-                ? (MASTER_TITLE + ": " + session.name + " | الرقم الوظيفي: " + session.empId)
-                : ("المدير: " + session.name + " | الرقم الوظيفي: " + session.empId);
-        } else {
-            txt.textContent = "الباحث: " + session.name + " | الرقم الوظيفي: " + session.empId;
-        }
+        /* ------------------------------------------------------------------
+           بناء نص الشريط من اجزاء فرعية (اسبان داخل topBarText)
+           ------------------------------------------------------------------
+           التقسيم الى اجزاء (tb-role / tb-name / tb-sep / tb-idlabel / tb-id)
+           يتيح لقواعد الجوال في CSS اخفاء تسميتي الصفة والرقم الوظيفي فقط
+           عند ضيق المساحة، مع بقاء الاسم والرقم نفسيهما ظاهرين كاملين
+           دائما. المدير الاول (المبرمج) يظهر بلقبه الخاص بدل "المدير". */
+        const roleLabel = (session.type === "manager")
+            ? (isMaster() ? MASTER_TITLE : "المدير")
+            : "الباحث";
+
+        txt.innerHTML =
+            '<span class="tb-role">' + esc(roleLabel) + ':</span> ' +
+            '<span class="tb-name">' + esc(session.name) + '</span>' +
+            '<span class="tb-sep"> | </span>' +
+            '<span class="tb-idlabel">الرقم الوظيفي:</span> ' +
+            '<span class="tb-id">' + esc(session.empId) + '</span>';
 
         /* هل يظهر الجرس لهذا المستخدم؟ */
         const showBell = NOTIF_ENABLED && (session.type === "researcher" || NOTIF_SHOW_FOR_MANAGERS);
         if (bell) bell.hidden = !showBell;
 
         bar.hidden = false;
-        /* الكلاس التالي يضيف مسافة علوية للصفحة حتى لا يغطي الشريط المحتوى */
+        /* الكلاس التالي يضيف مسافة علوية للصفحة حتى لا يغطي الشريط المحتوى،
+           وهو قيمة تقديرية تستخدم كافتراض فوري قبل ان يقيس الجافاسكربت
+           الارتفاع الحقيقي في adjustTopBarSpacing ادناه (يهم خصوصا لو
+           التف النص على سطرين بسبب اسم طويل على شاشة ضيقة) */
         document.body.classList.add("has-top-bar");
         document.body.style.paddingTop = "";
+        adjustTopBarSpacing();
 
         if (showBell) {
-            loadNotifications();
-            startNotifPolling();
+            startNotificationsListener();
         }
     }
+
+    /* ------------------------------------------------------------------
+       ضبط ارتفاع الشريط العلوي ديناميكيا
+       ------------------------------------------------------------------
+       القيمة الثابتة في CSS (76px / 66px) تكفي في الحالة العادية، لكن
+       عند التفاف اسم طويل على سطرين على شاشة ضيقة يصبح الشريط اطول،
+       فنقيس ارتفاعه الفعلي بعد الرسم ونضبط تباعد الصفحة تبعا له حتى لا
+       يغطي الشريط اي محتوى. يعاد القياس ايضا عند تدوير الجهاز او تغيير
+       حجم النافذة طالما الشريط ظاهر. */
+    function adjustTopBarSpacing() {
+        const bar = document.getElementById("topBar");
+        if (!bar || bar.hidden) return;
+        requestAnimationFrame(function() {
+            if (!bar.hidden) document.body.style.paddingTop = bar.offsetHeight + "px";
+        });
+    }
+
+    let topBarResizeTimer = null;
+    window.addEventListener("resize", function() {
+        if (topBarResizeTimer) clearTimeout(topBarResizeTimer);
+        topBarResizeTimer = setTimeout(adjustTopBarSpacing, 150);
+    });
 
     /* اخفاء الشريط عند تسجيل الخروج او انتهاء الجلسة */
     function hideTopBar() {
@@ -7447,7 +7685,8 @@
         if (panel) panel.hidden = true;
         document.body.classList.remove("has-top-bar");
         document.body.style.paddingTop = "";
-        stopNotifPolling();
+        stopNotificationsListener();
+        window.stopActionBadgeListeners();   /* ايقاف كل الاستماع الفوري عند اي خروج */
         notifications = [];
         updateNotifBadge();
     }
@@ -7505,33 +7744,22 @@
         return (Date.now() - Number(readAt)) < NOTIF_READ_KEEP_MS;
     }
 
-    /* ---------------- جلب الاشعارات ---------------- */
+    /* ==================================================================
+       الاستماع الفوري للاشعارات (onSnapshot بدل الجلب لمرة واحدة)
+       ------------------------------------------------------------------
+       بمجرد وصول اي اشعار جديد يخص المستخدم الحالي - سواء موجه اليه
+       مباشرة او للجميع - يصل فورا بلا حاجة لتنقل او تحديث الصفحة،
+       لان قاعدة البيانات نفسها تدفع التغيير للمتصفح المفتوح.
 
-    async function loadNotifications() {
+       يحاول اولا الترتيب من طرف الخادم (يحتاج فهرسا مركبا)، وعند فشله
+       (الفهرس غير جاهز بعد) يتحول تلقائيا لمستمع بديل بلا ترتيب مع
+       الترتيب محليا بعد كل دفعة، فلا ينكسر شيء قبل انشاء الفهرس.
+       ================================================================== */
+    function startNotificationsListener() {
+        stopNotificationsListener();
         if (!NOTIF_ENABLED || !session) return;
-        try {
-            /* استعلام واحد فقط: الاشعارات الموجهة لهذا المستخدم او للجميع.
-               لا يوجد orderBy هنا عمدا حتى لا يحتاج الى فهرس مركب،
-               والترتيب يتم محليا بعد الجلب. */
-            let snap;
-            try {
-                /* المحاولة الاولى: الترتيب من طرف الخادم لجلب الاحدث فعلا.
-                   يحتاج فهرسا مركبا (to + createdAt) في Firestore */
-                snap = await getDocs(query(
-                    collection(db, "notifications"),
-                    where("to", "in", [session.empId, "all"]),
-                    orderBy("createdAt", "desc"),
-                    limit(NOTIF_MAX)
-                ));
-            } catch (idxErr) {
-                /* بديل احتياطي حتى ينشأ الفهرس: جلب بدون ترتيب ثم الترتيب محليا */
-                snap = await getDocs(query(
-                    collection(db, "notifications"),
-                    where("to", "in", [session.empId, "all"]),
-                    limit(NOTIF_MAX)
-                ));
-            }
 
+        function handleSnapshot(snap) {
             const list = [];
             snap.forEach(function(d) { list.push(Object.assign({ id: d.id }, d.data())); });
 
@@ -7554,16 +7782,87 @@
                 return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
             });
 
+            /* بعض الاشعارات قد تكون محلولة اصلا (طلبها اغلق قبل وصولها
+               حتى)، تحقق قبل حساب العداد */
+            reconcileResolvedNotifications();
             updateNotifBadge();
+
             /* اذا كانت اللوحة مفتوحة حاليا نعيد رسمها مباشرة */
             const panel = document.getElementById("notifPanel");
             if (panel && !panel.hidden) renderNotifications();
-        } catch (e) {
-            /* الفشل هنا غير مؤثر: قد تكون المجموعة غير موجودة بعد،
-               فنكتفي بعدم اظهار اي اشعارات */
-            notifications = [];
-            updateNotifBadge();
         }
+
+        function attach(useOrder) {
+            const cons = [collection(db, "notifications"), where("to", "in", [session.empId, "all"])];
+            if (useOrder) cons.push(orderBy("createdAt", "desc"));
+            cons.push(limit(NOTIF_MAX));
+
+            notifUnsub = onSnapshot(query.apply(null, cons), handleSnapshot, function(err) {
+                if (useOrder) {
+                    /* الفهرس المركب غير جاهز بعد: نتحول لمستمع بديل بلا ترتيب */
+                    console.warn("تعذر الترتيب من الخادم للاشعارات (فهرس غير جاهز)، التحويل للوضع البسيط:", err && err.message);
+                    attach(false);
+                } else {
+                    console.warn("تعذر متابعة الاشعارات:", err && err.message);
+                    notifications = [];
+                    updateNotifBadge();
+                }
+            });
+        }
+
+        attach(true);
+    }
+
+    function stopNotificationsListener() {
+        if (notifUnsub) { try { notifUnsub(); } catch (e) {} notifUnsub = null; }
+    }
+
+    /* ==================================================================
+       حل الاشعارات المشتركة تلقائيا عند اغلاق طلبها
+       ------------------------------------------------------------------
+       بعض انواع الاشعارات ترتبط مباشرة بسجل قد يغلقه اي مدير (طلب
+       اجازة جديد، بلاغ زيارة، بلاغ اجازة، بلاغ تصحيح تقرير). بمجرد ان
+       يغلق ذلك السجل (يخرج من حالة pending) يعتبر الاشعار "محلولا"
+       تلقائيا لكل من يراه، فتختفي علامة الجرس الحمراء عنه فورا حتى لو
+       لم يعلمه احد كمقروء يدويا - وهذا ينطبق على كل المدراء دفعة واحدة
+       لان مصدر الحقيقة واحد (حالة السجل في قاعدة البيانات)، لا حالة
+       قراءة محلية لكل جهاز على حدة.
+
+       المصدر: مجموعات pendingIdSets نفسها التي يحدثها
+       startActionBadgeListeners في القسم السابق (لا استعلام اضافي هنا).
+       ================================================================== */
+    const RESOLVABLE_NOTIF_TYPES = {
+        leave_request:     "leaves",
+        sick_request:      "leaves",
+        visit_report:      "visit_reports",
+        leave_report:       "leave_reports",
+        report_correction: "report_reports"
+    };
+
+    function reconcileResolvedNotifications() {
+        if (!session || session.type !== "manager") return;   /* الالية خاصة باشعارات المدراء المشتركة */
+
+        const map = getReadMap();
+        const now = Date.now();
+        let changed = false;
+
+        notifications.forEach(function(n) {
+            if (map[n.id]) return;                              /* مقروءة اصلا محليا */
+            const collKey = RESOLVABLE_NOTIF_TYPES[n.type];
+            if (!collKey || !n.refId) return;                   /* نوع لا يخضع لهذه الالية */
+
+            const idSet = pendingIdSets[collKey];
+            if (!idSet) return;                                 /* بيانات هذا النوع لم تصل بعد، لا نحكم */
+
+            if (!idSet.has(n.refId)) {
+                /* السجل المرتبط لم يعد معلقا - اغلقه اي مدير - فيعتبر
+                   هذا الاشعار محلولا تلقائيا لكل المدراء دون تمييز */
+                map[n.id] = now;
+                changed = true;
+            }
+        });
+
+        if (changed) setReadMap(map);
     }
 
     /* ------------------------------------------------------------------
@@ -7615,44 +7914,6 @@
                 bell.classList.remove("has-new");
             }
         }
-        updateDashNotifBadges();
-    }
-
-    /* ------------------------------------------------------------------
-       عداد الاشعارات فوق ازرار بوابة الادارة
-       ------------------------------------------------------------------
-       كل اشعار موجه لصلاحية معينة (حقل perm) يظهر ايضا كعداد احمر فوق
-       الزر المرتبط بتلك الصلاحية في القائمة الرئيسية، وليس في الجرس
-       فقط. الربط يتم عبر السمة data-notif-perm الموجودة على الزر،
-       وقيمتها نفس نص الصلاحية المستخدم في حقل perm عند ارسال الاشعار. */
-    function updateDashNotifBadges() {
-        const buttons = document.querySelectorAll("[data-notif-perm]");
-        if (!buttons.length) return;
-
-        const map = getReadMap();
-        const counts = {};
-        notifications.forEach(function(n) {
-            if (!n.perm || map[n.id]) return;
-            counts[n.perm] = (counts[n.perm] || 0) + 1;
-        });
-
-        buttons.forEach(function(btn) {
-            const perm = btn.getAttribute("data-notif-perm");
-            let badge = btn.querySelector(".dash-notif-badge");
-            const count = counts[perm] || 0;
-
-            if (count > 0) {
-                if (!badge) {
-                    badge = document.createElement("span");
-                    badge.className = "dash-notif-badge";
-                    btn.appendChild(badge);
-                }
-                badge.textContent = count > 99 ? "99+" : String(count);
-                badge.hidden = false;
-            } else if (badge) {
-                badge.hidden = true;
-            }
-        });
     }
 
     /* رسم قائمة الاشعارات داخل اللوحة المنسدلة */
@@ -7720,9 +7981,10 @@
         if (!panel) return;
 
         if (panel.hidden) {
+            /* لا حاجة لاي جلب هنا: notifications محدثة اصلا لحظيا عبر
+               startNotificationsListener، فالرسم مباشرة من الذاكرة كاف */
             renderNotifications();
             panel.hidden = false;
-            loadNotifications();          /* تحديث صامت عند كل فتح */
         } else {
             panel.hidden = true;
         }
@@ -7851,11 +8113,12 @@
         box.appendChild(frag);
     }
 
-    /* تحديث يدوي من داخل اللوحة */
-    window.refreshNotifications = async function() {
-        await loadNotifications();
+    /* زر "تحديث" داخل اللوحة: البيانات تصل تلقائيا فور حدوثها عبر
+       البث الفوري (onSnapshot)، فهذا الزر لم يعد يستعلم قاعدة البيانات،
+       ويكتفي باعادة الرسم وتطمين المستخدم ان لا شيء ينقصه */
+    window.refreshNotifications = function() {
         renderNotifications();
-        toast("تم تحديث الاشعارات.", "info");
+        toast("اشعاراتك محدثة تلقائيا وباستمرار.", "info");
     };
 
     /* اغلاق اللوحة عند الضغط في اي مكان خارجها */
@@ -7867,20 +8130,10 @@
         panel.hidden = true;
     });
 
-    /* ---------------- التحديث الدوري (معطل افتراضيا) ---------------- */
-
-    function startNotifPolling() {
-        stopNotifPolling();
-        if (!NOTIF_POLL_MS || NOTIF_POLL_MS <= 0) return;
-        notifPollTimer = setInterval(function() {
-            /* لا نستهلك اتصالا والصفحة مخفية في الخلفية */
-            if (document.hidden || !session) return;
-            loadNotifications();
-        }, NOTIF_POLL_MS);
-    }
-    function stopNotifPolling() {
-        if (notifPollTimer) { clearInterval(notifPollTimer); notifPollTimer = null; }
-    }
+    /* ملاحظة: كانت هنا دوال استطلاع دوري (Polling) لتحديث الاشعارات
+       كل بضع دقائق، حذفت بعد التحول الى البث الفوري عبر onSnapshot
+       (انظر startNotificationsListener اعلاه)، الذي يوصل كل تغيير
+       فور حدوثه بدل انتظار دورة الاستطلاع القادمة. */
 
 
     /* ==================================================================
@@ -8041,7 +8294,7 @@
     /* شارة ملونة تعبر عن حالة الطلب */
     function leaveStatusBadge(status) {
         const map = {
-            pending:   { cls: "pending",   txt: "قيد الدراسة" },
+            pending:   { cls: "pending",   txt: "قيد المراجعة" },
             approved:  { cls: "approved",  txt: "مقبولة" },
             rejected:  { cls: "rejected",  txt: "مرفوضة" },
             cancelled: { cls: "cancelled", txt: "ملغاة" }
@@ -8364,7 +8617,7 @@
               hint: s.carryIn || s.carryOut ? ("الاساسي " + s.base + (s.carryIn ? " + مرحل " + s.carryIn : "") + (s.carryOut ? " - مرحل منها " + s.carryOut : "")) : "" },
             { label: "المعتمدة",   value: s.used,      cls: "stat-used",
               hint: "الاجازات المرضية لا تخصم من هذا الرصيد" },
-            { label: "قيد الدراسة", value: s.pending,  cls: "stat-pending" },
+            { label: "قيد المراجعة", value: s.pending,  cls: "stat-pending" },
             { label: "المتبقي",     value: s.remaining, cls: "stat-remaining" }
         ];
 
@@ -8597,7 +8850,7 @@
             fillDetailsCell(tdReason, l);
             tr.appendChild(tdReason);
 
-            /* الغاء الطلب متاح للباحث ما دام قيد الدراسة */
+            /* الغاء الطلب متاح للباحث ما دام قيد المراجعة */
             const tdAction = document.createElement("td");
             if (l.status === "pending") {
                 const wrap = document.createElement("div");
@@ -8798,7 +9051,7 @@
             fillDetailsCell(tdNotes, l);
             tr.appendChild(tdNotes);
 
-            /* الاجراءات: متاحة فقط للطلبات قيد الدراسة */
+            /* الاجراءات: متاحة فقط للطلبات قيد المراجعة */
             const tdAction = document.createElement("td");
             const wrap = document.createElement("div");
             wrap.id = "leave_act_" + idx;
@@ -9025,6 +9278,8 @@
             /* اعادة التحميل اولا ثم اظهار الرسالة، لان اعادة التحميل
                تمسح رسائل الشاشة فتختفي الرسالة قبل ان يراها المدير */
             await window.loadLeaveRequests();
+            /* لا استدعاء يدوي هنا: مستمع startActionBadgeListeners يلتقط
+               تغير حالة السجل الى غير "pending" تلقائيا خلال اجزاء الثانية */
 
             let okMsg;
             if (decision === "approved") {
@@ -10604,7 +10859,7 @@
     function accountRoleLabel() {
         if (session.type === "researcher") return "باحث";
         if (isMaster()) return MASTER_ROLE_LABEL;
-        return (session.role === "general") ? "مدير عام" : "مدير مخصص";
+        return (session.role === "general") ? "مدير عام" : "مدير";
     }
 
     /* العودة من شاشة الحساب الى بوابة المستخدم */
@@ -11061,6 +11316,17 @@
                     btn.innerHTML = "ارسال بلاغ التصحيح";
                     return;
                 }
+                /* منع بلاغ تصحيح جديد ما دام لديه بلاغ سابق قيد المراجعة
+                   في هذا المجال، بغض النظر عن تاريخ التقرير المعني */
+                try {
+                    if (await hasPendingReportIn("report_reports", session.empId)) {
+                        showMsg("drError", "<i class='fas fa-hourglass-half'></i> لديك بلاغ تصحيح سابق قيد المراجعة، ولا يمكنك تقديم بلاغ جديد في هذا المجال حتى يُبت فيه.");
+                        btn.disabled = false;
+                        btn.innerHTML = "ارسال بلاغ التصحيح";
+                        return;
+                    }
+                } catch (e) { /* فشل الفحص لا يوقف المحاولة */ }
+
                 await submitDailyCorrection(data);
                 btn.disabled = false;
                 btn.innerHTML = "ارسال بلاغ التصحيح";
@@ -11230,7 +11496,7 @@
     /* شارة حالة البلاغ */
     function reqBadge(status) {
         const map = {
-            pending:  { c: "pending",  t: "قيد الدراسة" },
+            pending:  { c: "pending",  t: "قيد المراجعة" },
             approved: { c: "approved", t: "مقبول" },
             rejected: { c: "rejected", t: "مرفوض" }
         };
@@ -11239,6 +11505,24 @@
         s.className = "leave-badge leave-" + i.c;
         s.textContent = i.t;
         return s;
+    }
+
+    /* ------------------------------------------------------------------
+       منع تكرار البلاغات في نفس المجال
+       ------------------------------------------------------------------
+       الباحث الذي لديه بلاغ قائم قيد المراجعة في مجال معين (زيارات،
+       اجازات، او تقارير يومية) لا يستطيع تقديم بلاغ جديد في نفس
+       المجال حتى يُبت في الاول (قبولا او رفضا). هذا القيد مستقل لكل
+       مجال على حدة، فتقديم بلاغ في مجال لا يمنع التبليغ في مجال اخر.
+
+       الاستعلام بحقل واحد (empId) اتساقا مع بقية النظام، وتصفية
+       الحالة تتم محليا بعد الجلب، فلا حاجة لفهرس مركب.
+       ------------------------------------------------------------------ */
+    async function hasPendingReportIn(coll, empId) {
+        const snap = await getDocs(query(collection(db, coll), where("empId", "==", empId)));
+        let found = false;
+        snap.forEach(function(d) { if (d.data().status === "pending") found = true; });
+        return found;
     }
 
     window.openTechReports = function() {
@@ -11386,6 +11670,15 @@
                 return;
             }
         }
+
+        /* منع بلاغ زيارة جديد ما دام لديه بلاغ زيارة سابق قيد المراجعة،
+           بغض النظر عن الزيارة او نوع الاجراء (حذف/تعديل) */
+        try {
+            if (await hasPendingReportIn("visit_reports", session.empId)) {
+                showMsg("vrError", "<i class='fas fa-hourglass-half'></i> لديك بلاغ زيارة سابق قيد المراجعة، ولا يمكنك تقديم بلاغ جديد في هذا المجال حتى يُبت فيه.");
+                return;
+            }
+        } catch (e) { /* فشل الفحص لا يوقف المحاولة، فهو اجراء وقائي اضافي */ }
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الارسال...';
@@ -11554,6 +11847,15 @@
 
         const note = document.getElementById("lrReason").value.trim();
 
+        /* منع بلاغ اجازة جديد ما دام لديه بلاغ اجازة سابق قيد المراجعة،
+           بغض النظر عن الاجازة او نوع الطلب (سحب/تعديل) */
+        try {
+            if (await hasPendingReportIn("leave_reports", session.empId)) {
+                showMsg("lrError", "<i class='fas fa-hourglass-half'></i> لديك بلاغ اجازة سابق قيد المراجعة، ولا يمكنك تقديم بلاغ جديد في هذا المجال حتى يُبت فيه.");
+                return;
+            }
+        } catch (e) { /* فشل الفحص لا يوقف المحاولة */ }
+
         try {
             const ref = await addDoc(collection(db, "leave_reports"), {
                 empId: session.empId,
@@ -11668,6 +11970,7 @@
 
         window.switchScreen('requestsScreen');
         window.updateReadOnlyBadges();
+        applyActionBadges();   /* مزامنة واجهة مجانية فقط، بلا استعلام جديد */
         await loadRequests();
     };
 
@@ -11994,6 +12297,7 @@
                 (extra ? " | " + extra : "") + (decision === "rejected" ? " | السبب: " + reason : ""));
 
             await loadRequests();
+            /* لا استدعاء يدوي هنا: المستمع الفوري يلتقط اغلاق البلاغ تلقائيا */
             toast(decision === "approved" ? ("تم قبول البلاغ وتنفيذه. " + extra) : "تم رفض البلاغ وابلاغ الباحث.", "success");
         } catch (e) {
             console.error("خطأ في تنفيذ قرار البلاغ:", e);
