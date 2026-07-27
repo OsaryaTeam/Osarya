@@ -2243,6 +2243,44 @@
         body.dark-mode .phone-missing { color: #f0b473; }
 
         /* ==================================================================
+           (جديد) خانة "تذكرني" في شاشات تسجيل الدخول
+           ================================================================== */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 11px;
+            background: rgba(74, 135, 148, 0.07);
+            border: 1px solid rgba(74, 135, 148, 0.18);
+            cursor: pointer;
+            user-select: none;
+        }
+        body.dark-mode .remember-row { background: rgba(74, 135, 148, 0.13); border-color: rgba(255,255,255,0.07); }
+
+        .remember-row input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            padding: 0;
+            flex-shrink: 0;
+            accent-color: #4a8794;
+            cursor: pointer;
+        }
+        .remember-row .remember-text { flex: 1; min-width: 0; }
+        .remember-row .remember-title { font-weight: 800; font-size: 15px; }
+        .remember-row .remember-hint {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6c757d;
+            line-height: 1.7;
+            margin-top: 2px;
+        }
+        body.dark-mode .remember-row .remember-hint { color: #9aabae; }
+
+        /* ==================================================================
            (جديد) شارة reCAPTCHA
            ------------------------------------------------------------------
            تظهر افتراضيا كشارة عائمة اسفل يمين الشاشة، وهو نفس موضع زر
@@ -2915,6 +2953,14 @@
                 </button>
             </div>
         </div>
+        <label class="remember-row" for="rememberResearcher">
+            <input type="checkbox" id="rememberResearcher">
+            <span class="remember-text">
+                <span class="remember-title">تذكرني</span>
+                <span class="remember-hint">ابق مسجل الدخول على هذا الجهاز حتى تضغط تسجيل خروج بنفسك. لا تفعله على جهاز مشترك.</span>
+            </span>
+        </label>
+
         <div id="resLoginError" class="error-message"></div>
         <div class="btn-group">
             <button id="btnResLogin" class="btn-researcher btn-icon-watermark icon-login" onclick="checkResearcherLogin()">تسجيل الدخول</button>
@@ -3053,6 +3099,14 @@
                 </div>
             </div>
             
+            <label class="remember-row" for="rememberManager">
+                <input type="checkbox" id="rememberManager">
+                <span class="remember-text">
+                    <span class="remember-title">تذكرني</span>
+                    <span class="remember-hint">ابق مسجل الدخول على هذا الجهاز حتى تضغط تسجيل خروج بنفسك. لا تفعله على جهاز مشترك.</span>
+                </span>
+            </label>
+
             <div id="managerLoginError" class="error-message"></div>
             
             <div class="btn-group">
@@ -4640,7 +4694,7 @@
         <div class="footer-col">
             <h4>روابط سريعة</h4>
             <ul class="footer-links">
-                <li><a href="#" onclick="window.clickLogo(); return false;">الصفحة الرئيسية</a></li>
+                <li><a href="#" onclick="switchScreen('mainScreen'); return false;">الصفحة الرئيسية</a></li>
                 <li><a href="#" onclick="switchScreen('researcherLoginScreen'); return false;">بوابة الباحث</a></li>
                 <li><a href="#" onclick="goToManagerScreen(); return false;">بوابة الادارة</a></li>
             </ul>
@@ -5141,39 +5195,99 @@
 
     const SESSION_KEY = "osaryaSession";
 
+    /* ------------------------------------------------------------------
+       مدة بقاء الجلسة المحفوظة بخيار "تذكرني"
+       ------------------------------------------------------------------
+       تتجدد مع كل استخدام، فمن يستخدم النظام بانتظام لا تنتهي جلسته
+       عمليا الا بتسجيل خروج صريح. والمدة موجودة كصمام امان لجهاز
+       نسيه صاحبه او لم يستخدمه شهرا كاملا.
+       ------------------------------------------------------------------ */
+    const REMEMBER_TTL_MS = 30 * 24 * 60 * 60 * 1000;   /* 30 يوما */
+
+    /* هل الجلسة الحالية محفوظة بخيار "تذكرني"؟ */
+    function isRememberedSession() {
+        return !!(session && session.remember);
+    }
+
+    /* ------------------------------------------------------------------
+       حفظ الجلسة
+       ------------------------------------------------------------------
+       ملاحظة امنية مهمة: لا تحفظ كلمة المرور في اي حال، لا هنا ولا في
+       اي مكان اخر. المحفوظ هو بيانات الجلسة موقعة بتوقيع مشفر، فلو
+       عبث بها احد يدويا رفضت عند القراءة.
+
+       اين تحفظ؟
+         مع "تذكرني" : localStorage، يبقى بعد اغلاق المتصفح
+         بدونها     : sessionStorage، يزول باغلاق التبويب
+       ------------------------------------------------------------------ */
     async function saveSession() {
         try {
-            if (!session) { sessionStorage.removeItem(SESSION_KEY); return; }
-            const payload = JSON.stringify(Object.assign({}, session, { exp: Date.now() + IDLE_TIMEOUT_MS }));
+            if (!session) { clearStoredSession(); return; }
+
+            const ttl = session.remember ? REMEMBER_TTL_MS : IDLE_TIMEOUT_MS;
+            const payload = JSON.stringify(Object.assign({}, session, { exp: Date.now() + ttl }));
             const sig = await sha256Hex(PEPPER + "|SESS|" + payload);
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ payload: payload, sig: sig }));
+            const record = JSON.stringify({ payload: payload, sig: sig });
+
+            if (session.remember) {
+                localStorage.setItem(SESSION_KEY, record);
+                sessionStorage.removeItem(SESSION_KEY);
+            } else {
+                sessionStorage.setItem(SESSION_KEY, record);
+                localStorage.removeItem(SESSION_KEY);
+            }
         } catch (e) { /* تجاهل */ }
     }
 
-    async function restoreSession() {
-        try {
-            const raw = sessionStorage.getItem(SESSION_KEY);
-            if (!raw) return false;
-            const obj = JSON.parse(raw);
-            if (!obj || !obj.payload || !obj.sig) { sessionStorage.removeItem(SESSION_KEY); return false; }
-            const expected = await sha256Hex(PEPPER + "|SESS|" + obj.payload);
-            if (expected !== obj.sig) { sessionStorage.removeItem(SESSION_KEY); return false; }
-            const data = JSON.parse(obj.payload);
-            if (!data.exp || Date.now() > data.exp) { sessionStorage.removeItem(SESSION_KEY); return false; }
-            delete data.exp;
-            session = data;
-            return true;
-        } catch (e) { sessionStorage.removeItem(SESSION_KEY); return false; }
+    /* مسح الجلسة من المخزنين معا، يستدعى عند اي خروج */
+    function clearStoredSession() {
+        try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+        try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
     }
 
+    async function restoreSession() {
+        /* نبحث في تخزين التبويب اولا ثم التخزين الدائم */
+        let raw = null;
+        try { raw = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY); } catch (e) {}
+        if (!raw) return false;
+
+        try {
+            const obj = JSON.parse(raw);
+            if (!obj || !obj.payload || !obj.sig) { clearStoredSession(); return false; }
+
+            const expected = await sha256Hex(PEPPER + "|SESS|" + obj.payload);
+            if (expected !== obj.sig) { clearStoredSession(); return false; }
+
+            const data = JSON.parse(obj.payload);
+            if (!data.exp || Date.now() > data.exp) { clearStoredSession(); return false; }
+
+            delete data.exp;
+            session = data;
+
+            /* تجديد المهلة مع كل استخدام، فتبقى الجلسة المتذكرة حية
+               ما دام صاحبها يستخدم النظام */
+            await saveSession();
+            return true;
+        } catch (e) { clearStoredSession(); return false; }
+    }
+
+    /* ------------------------------------------------------------------
+       مؤقت الخمول
+       ------------------------------------------------------------------
+       لا يعمل مع الجلسات المحفوظة بخيار "تذكرني"، لان معنى الخيار ان
+       يبقى المستخدم مسجلا حتى يخرج بنفسه. اما الجلسات العادية فتنتهي
+       بعد مدة خمول حماية للحسابات على الاجهزة المشتركة.
+       ------------------------------------------------------------------ */
     function resetIdleTimer() {
         if (idleTimer) clearTimeout(idleTimer);
         if (!session) return;
+        if (isRememberedSession()) return;
+
         idleTimer = setTimeout(function() {
-            if (!session) return;
+            if (!session || isRememberedSession()) return;
             const wasManager = session.type === "manager";
             session = null;
-            sessionStorage.removeItem(SESSION_KEY);
+            clearStoredSession();
             hideTopBar();
             window.switchScreen(wasManager ? 'managerScreen' : 'researcherLoginScreen');
             toast("انتهت الجلسة بسبب عدم النشاط، يرجى تسجيل الدخول مرة اخرى.", "warn");
@@ -5505,7 +5619,7 @@
     async function forceLogout(reason) {
         const wasManager = isManager();
         session = null;
-        sessionStorage.removeItem(SESSION_KEY);
+        clearStoredSession();
         if (idleTimer) clearTimeout(idleTimer);
         if (permSyncTimer) { clearInterval(permSyncTimer); permSyncTimer = null; }
         hideTopBar();
@@ -5774,9 +5888,55 @@
         }, PERM_SYNC_INTERVAL_MS);
     };
 
+    /* ------------------------------------------------------------------
+       الضغط على الشعار: تحديث الشاشة الحالية
+       ------------------------------------------------------------------
+       كان الضغط سابقا يسجل الخروج ويعيد المستخدم للقائمة الرئيسية،
+       وهو سلوك مفاجئ ومزعج. صار الان يعيد تحميل بيانات الشاشة التي
+       يقف عليها المستخدم فقط، كزر تحديث موضعي.
+
+       الشاشات التي لها دالة تحميل تعاد بها، وما ليس له بيانات تجلب
+       (كشاشات الاختيار والنماذج) يكتفى فيها برسالة تطمين، فلا يحدث
+       شيء مربك ولا تضيع مدخلات المستخدم.
+       ------------------------------------------------------------------ */
     window.clickLogo = function() {
-        window.exitManagerArea();
-        window.exitResearcherArea();
+        /* قبل تسجيل الدخول: الشعار يعيد للقائمة الرئيسية كما هو متوقع */
+        if (!session) { window.switchScreen('mainScreen'); return; }
+
+        const active = document.querySelector(".screen.active-screen");
+        const id = active ? active.id : "";
+
+        /* خريطة الشاشات التي تجلب بيانات، ودالة اعادة تحميل كل منها */
+        const reloaders = {
+            researchersListScreen:   function() { window.loadResearchersList(); },
+            adminPermissionsScreen:  function() { window.loadManagersList(); },
+            editVisitsScreen:        function() { window.loadVisitsForEditing(); },
+            leaveManageScreen:       function() { window.loadLeaveRequests(); },
+            noticeLogScreen:         function() { window.openNoticeLog(); },
+            requestsScreen:          function() { window.openRequests(reqType); },
+            dailyReportsAdminScreen: function() { window.loadDailyReportsByDate(); },
+            myVisitsScreen:          function() { window.openMyVisits(); },
+            leaveHistoryScreen:      function() { window.openLeaveHistory(); },
+            leaveRequestScreen:      function() { window.openLeaveRequest(); },
+            myReportsScreen:         function() { window.openMyReports(); },
+            myNoticesListScreen:     function() { window.openMyNoticesList(noticeType); },
+            notifHistoryScreen:      function() { window.openNotifHistory(); },
+            accountScreen:           function() { window.openAccount(); }
+        };
+
+        if (reloaders[id]) {
+            try {
+                reloaders[id]();
+                toast("تم تحديث بيانات الشاشة.", "success");
+            } catch (e) {
+                toast("تعذر التحديث، حاول مرة اخرى.", "error");
+            }
+            return;
+        }
+
+        /* شاشات بلا بيانات تجلب (نماذج وقوائم اختيار): لا شيء يعاد
+           تحميله، ونتجنب اعادة الرسم حتى لا تضيع مدخلات المستخدم */
+        toast("انت في اخر نسخة، لا يوجد ما يحدث في هذه الشاشة.", "info");
     };
 
     window.showEditConfirmation = function() {
@@ -5891,7 +6051,8 @@
     window.exitManagerArea = function() {
         if (isManager()) logAudit("تسجيل خروج", "خروج من بوابة الادارة");
         session = null;
-        sessionStorage.removeItem(SESSION_KEY);
+        /* الخروج الصريح ينهي حتى الجلسة المحفوظة بخيار "تذكرني" */
+        clearStoredSession();
         if (idleTimer) clearTimeout(idleTimer);
 
         document.getElementById("managerIdLogin").value = "";
@@ -5912,7 +6073,8 @@
     window.exitResearcherArea = function() {
         if (isResearcher()) logAudit("تسجيل خروج", "خروج من بوابة الباحث");
         session = null;
-        sessionStorage.removeItem(SESSION_KEY);
+        /* الخروج الصريح ينهي حتى الجلسة المحفوظة بخيار "تذكرني" */
+        clearStoredSession();
         if (idleTimer) clearTimeout(idleTimer);
 
         document.getElementById("resIdLogin").value = "";
@@ -6006,13 +6168,16 @@
 
             lockClear("res", rId);
 
-            /* لا يتم تخزين كلمة المرور في الجلسة اطلاقا */
+            /* لا يتم تخزين كلمة المرور في الجلسة اطلاقا.
+               remember يحدد اين تحفظ الجلسة ومدة بقائها */
+            const rememberRes = !!(document.getElementById("rememberResearcher") || {}).checked;
             session = {
                 type: "researcher",
                 id: resDoc.id,
                 name: resData.empName,
                 empId: resData.empId,
-                status: resData.status || "active"
+                status: resData.status || "active",
+                remember: rememberRes
             };
             await saveSession();
             resetIdleTimer();
@@ -6082,7 +6247,8 @@
                         empId: mId,
                         role: "general",
                         permissions: ["الكل"],
-                        isMaster: true
+                        isMaster: true,
+                        remember: !!(document.getElementById("rememberManager") || {}).checked
                     };
                     await saveSession();
                     resetIdleTimer();
@@ -6118,7 +6284,8 @@
                 empId: managerData.empId,
                 role: managerData.role || "custom",
                 permissions: Array.isArray(managerData.permissions) ? managerData.permissions : [],
-                isMaster: false
+                isMaster: false,
+                remember: !!(document.getElementById("rememberManager") || {}).checked
             };
             await saveSession();
             resetIdleTimer();
