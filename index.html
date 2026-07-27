@@ -2243,6 +2243,152 @@
         body.dark-mode .phone-missing { color: #f0b473; }
 
         /* ==================================================================
+           (جديد) استعادة كلمة المرور
+           ================================================================== */
+
+        /* رابط "نسيت كلمة المرور" اسفل نموذج الدخول */
+        .forgot-link {
+            display: block;
+            width: 100%;
+            margin-top: 14px;
+            padding: 0;
+            background: none;
+            border: none;
+            box-shadow: none;
+            color: #4a8794;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            text-decoration: underline;
+            cursor: pointer;
+            text-align: center;
+        }
+        .forgot-link::after { display: none; }
+        .forgot-link:hover { transform: none; color: #de8c43; }
+        body.dark-mode .forgot-link { color: #7fb1bc; }
+
+        /* بطاقة طلب استعادة لدى المدير */
+        .pw-card {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(74,135,148,0.18);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+            text-align: right;
+        }
+        body.dark-mode .pw-card { background: rgba(20,35,39,0.7); border-color: rgba(255,255,255,0.07); }
+
+        .pw-head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; flex-wrap: wrap;
+            font-weight: 900; font-size: 16px; color: #4a8794;
+            border-bottom: 2px solid rgba(74,135,148,0.15);
+            padding-bottom: 10px; margin-bottom: 12px;
+        }
+        body.dark-mode .pw-head { color: #7fb1bc; }
+
+        .pw-line { font-size: 14.5px; line-height: 2; word-break: break-word; }
+        .pw-line-label { font-weight: 800; color: #6c757d; }
+        body.dark-mode .pw-line-label { color: #9aabae; }
+
+        /* صندوق كلمة المرور المؤقتة بعد اصدارها */
+        .temp-pass-box {
+            margin-top: 14px;
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(15,81,50,0.08);
+            border: 2px dashed rgba(15,81,50,0.4);
+            text-align: center;
+        }
+        body.dark-mode .temp-pass-box { background: rgba(15,81,50,0.16); }
+
+        .temp-pass-value {
+            font-family: 'Courier New', monospace;
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            color: #0f5132;
+            direction: ltr;
+            unicode-bidi: embed;
+            margin: 8px 0;
+            user-select: all;
+        }
+        body.dark-mode .temp-pass-value { color: #75d1a1; }
+
+        .temp-pass-hint { font-size: 12.5px; color: #6c757d; line-height: 1.8; }
+        body.dark-mode .temp-pass-hint { color: #9aabae; }
+
+        /* زر واتساب */
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25D366, #1da851);
+            color: #fff;
+            box-shadow: 0 10px 25px rgba(29, 168, 81, 0.28);
+        }
+        .btn-whatsapp:hover { box-shadow: 0 14px 32px rgba(29, 168, 81, 0.4); }
+        .icon-whatsapp::before { content: "\f232"; font-family: "Font Awesome 6 Brands" !important; font-weight: 400 !important; }
+
+        /* تنبيه الزام تغيير كلمة المرور */
+        .must-change-banner {
+            background: rgba(222,140,67,0.14);
+            border: 2px solid rgba(222,140,67,0.5);
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin-bottom: 20px;
+            font-weight: 800;
+            font-size: 15px;
+            line-height: 1.9;
+            color: #a5601f;
+            text-align: center;
+            opacity: 1;
+        }
+        body.dark-mode .must-change-banner { color: #f0b473; background: rgba(222,140,67,0.2); }
+        .must-change-banner i { margin-left: 7px; }
+
+        /* ==================================================================
+           (جديد) شريط الالزام بتغيير كلمة المرور المؤقتة
+           ------------------------------------------------------------------
+           يظهر لمن دخل بكلمة مرور مؤقتة اصدرتها له الادارة، ولا يختفي
+           الا بعد تغييرها فعلا
+           ================================================================== */
+        .must-change-bar {
+            position: relative;
+            max-width: 1100px;
+            margin: 0 auto 18px auto;
+            background: linear-gradient(135deg, rgba(192,57,43,0.16), rgba(192,57,43,0.08));
+            border: 2px solid rgba(192,57,43,0.5);
+            border-radius: 14px;
+            padding: 16px 18px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-weight: 800;
+            font-size: 14.5px;
+            color: #96281b;
+            line-height: 1.9;
+            text-align: center;
+        }
+        body.dark-mode .must-change-bar { color: #ff9d9d; background: rgba(192,57,43,0.15); }
+        .must-change-bar > i { font-size: 22px; flex-shrink: 0; }
+        .must-change-bar > span { flex: 0 1 auto; max-width: 620px; min-width: 0; }
+
+        .must-change-btn {
+            width: auto; margin: 0; padding: 10px 18px;
+            font-size: 14px; border-radius: 9px;
+            background: #c0392b; color: #fff;
+            box-shadow: none; border: none; cursor: pointer;
+            font-family: 'Tajawal', sans-serif; font-weight: 800;
+        }
+        .must-change-btn::after { display: none; }
+        .must-change-btn:hover { background: #96281b; transform: none; }
+
+        @media (max-width: 768px) {
+            .must-change-bar { font-size: 13.5px; padding: 14px; }
+            .must-change-btn { width: 100%; }
+        }
+
+        /* ==================================================================
            (جديد) خانة "تذكرني" في شاشات تسجيل الدخول
            ================================================================== */
         .remember-row {
@@ -2882,6 +3028,18 @@
 </div>
 
 <!-- ==============================================================
+     شريط الالزام بتغيير كلمة المرور المؤقتة
+     --------------------------------------------------------------
+     يظهر لمن دخل بكلمة مرور مؤقتة اصدرتها له الادارة بعد طلب
+     استعادة، ولا يختفي الا بعد تغييرها فعلا من شاشة حسابي.
+     ============================================================== -->
+<div id="mustChangeBar" class="must-change-bar" role="alert" aria-live="assertive">
+    <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+    <span>انت تستخدم كلمة مرور مؤقتة اصدرتها الادارة. يلزمك تغييرها الان لحماية حسابك.</span>
+    <button type="button" class="must-change-btn" onclick="openAccount()">تغييرها الان</button>
+</div>
+
+<!-- ==============================================================
      شريط انقطاع الاتصال
      --------------------------------------------------------------
      يظهر تلقائيا عند فقد الاتصال بالانترنت ويختفي فور عودته.
@@ -2932,6 +3090,68 @@
          متناسق. تم توحيدها لتصبح حقلين متتاليين بعرض كامل تماما
          مثل شاشة دخول الادارة.
          ========================================================== -->
+    <!-- ==============================================================
+         شاشة استعادة كلمة المرور
+         --------------------------------------------------------------
+         يدخل المستخدم رقمه الوظيفي ورقم جواله المسجل في النظام،
+         فيتحقق النظام من تطابقهما ثم يرفع طلبا للمدير المختص.
+
+         ان لم يكن قد سجل رقم جواله سابقا، فلا سبيل للتحقق من هويته
+         اليا، فيحول الى الدعم الفني برسالة واتساب مجهزة.
+         ============================================================== -->
+    <div id="forgotPasswordScreen" class="container screen">
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="closeForgotPassword()">العودة لتسجيل الدخول</button>
+        </div>
+        <h2>استعادة كلمة المرور</h2>
+
+        <div class="rule-note">
+            <i class="fas fa-circle-info"></i>
+            ادخل رقمك الوظيفي ورقم جوالك المسجل في النظام. بعد التحقق يصل طلبك
+            للمدير المختص، فيصدر لك كلمة مرور مؤقتة ويرسلها الى جوالك، ويلزمك
+            تغييرها فور دخولك.
+        </div>
+
+        <div class="input-group" style="margin-top: 18px;">
+            <label for="fpEmpId">الرقم الوظيفي:</label>
+            <div class="input-with-icon">
+                <input type="text" id="fpEmpId" placeholder="ادخل رقمك الوظيفي">
+                <i class="fas fa-id-badge right-icon"></i>
+            </div>
+        </div>
+
+        <div class="input-group" style="margin-top: 15px;">
+            <label for="fpPhone">رقم الجوال المسجل:</label>
+            <div class="input-with-icon">
+                <input type="tel" id="fpPhone" inputmode="tel" dir="ltr" placeholder="+966512345678">
+                <i class="fas fa-phone right-icon"></i>
+            </div>
+            <div class="field-hint" style="display:block;">
+                <i class="fas fa-lightbulb"></i>
+                يمكنك كتابته بصيغة 05xxxxxxxx وسيحول تلقائيا.
+            </div>
+        </div>
+
+        <div id="fpError" class="error-message"></div>
+        <div id="fpSuccess" class="success-message"></div>
+
+        <div class="btn-group">
+            <button id="btnSendForgot" class="btn-researcher btn-icon-watermark icon-send" onclick="submitForgotPassword()">ارسال الطلب</button>
+        </div>
+
+        <div class="rule-note rule-note-medical" style="margin-top: 25px;">
+            <i class="fas fa-triangle-exclamation"></i>
+            <strong>لم تسجل رقم جوالك في النظام من قبل؟</strong><br>
+            لا يمكن التحقق من هويتك اليا في هذه الحالة، فتواصل مع الدعم الفني
+            للباحث الاجتماعي على الرقم <strong>0539864443</strong> وسنجهز لك
+            رسالة بتفاصيل مشكلتك، ما عليك الا ارسالها.
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-whatsapp btn-icon-watermark icon-whatsapp" onclick="contactSupportForPassword()">تواصل مع الدعم الفني عبر الواتساب</button>
+        </div>
+    </div>
+
     <div id="researcherLoginScreen" class="container screen">
         <h2>شاشة الباحث: تسجيل الدخول</h2>
 
@@ -2962,6 +3182,8 @@
         </label>
 
         <div id="resLoginError" class="error-message"></div>
+
+        <button type="button" class="forgot-link" onclick="openForgotPassword('researcher')">نسيت كلمة المرور؟</button>
         <div class="btn-group">
             <button id="btnResLogin" class="btn-researcher btn-icon-watermark icon-login" onclick="checkResearcherLogin()">تسجيل الدخول</button>
             <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('mainScreen')">القائمة الرئيسية</button>
@@ -3108,6 +3330,8 @@
             </label>
 
             <div id="managerLoginError" class="error-message"></div>
+
+            <button type="button" class="forgot-link" onclick="openForgotPassword('manager')">نسيت كلمة المرور؟</button>
             
             <div class="btn-group">
                 <button id="btnLoginManager" class="btn-manager btn-icon-watermark icon-login" onclick="checkManagerLogin()">تسجيل الدخول</button>
@@ -3131,6 +3355,8 @@
             <button class="btn-manager btn-icon-watermark icon-bell" onclick="checkPermissionAndGo('openNoticeAdmin')">انشاء إنذار | تنبيه</button>
             <button class="btn-manager btn-icon-watermark icon-daily-report" data-action-badge="report" onclick="checkPermissionAndGo('openDailyReports')">التقارير اليومية</button>
             <button class="btn-manager btn-icon-watermark icon-user-shield" onclick="loadManagersList()">الادارة العامة</button>
+
+            <button class="btn-manager btn-icon-watermark icon-key btn-logout-full" data-action-badge="password" onclick="checkPermissionAndGo('openPasswordRequests')">طلبات استعادة كلمة المرور</button>
             
             <button class="btn-neutral btn-icon-watermark icon-logout btn-logout-full" onclick="exitManagerArea()">تسجيل خروج</button>
         </div>
@@ -3192,6 +3418,7 @@
                         <label class="perm-item"><input type="checkbox" value="طلبات الاجازات" class="perm-checkbox"> طلبات الاجازات</label>
                         <label class="perm-item"><input type="checkbox" value="التنبيهات والانذارات" class="perm-checkbox"> التنبيهات والانذارات</label>
                         <label class="perm-item"><input type="checkbox" value="التقارير اليومية" class="perm-checkbox"> التقارير اليومية</label>
+                        <label class="perm-item"><input type="checkbox" value="استعادة كلمة المرور" class="perm-checkbox"> استعادة كلمة المرور</label>
                     </div>
                 </div>
             </div>
@@ -4592,6 +4819,47 @@
          الاطلاع لكل المدراء، والقبول والرفض محروسان بصلاحية كل نوع.
          القبول ينفذ التعديل على السجل الاصلي تلقائيا.
          ============================================================== -->
+    <!-- ==============================================================
+         شاشة الادارة: طلبات استعادة كلمة المرور
+         --------------------------------------------------------------
+         تتطلب صلاحية "استعادة كلمة المرور".
+         المدير يصدر كلمة مرور مؤقتة، فيحدثها النظام في حساب صاحب
+         الطلب ويعلمه بوجوب تغييرها عند اول دخول، ثم يجهز للمدير
+         رسالة واتساب جاهزة الى رقم صاحب الطلب المسجل.
+         ============================================================== -->
+    <div id="passwordRequestsScreen" class="container screen" style="max-width: 1000px;">
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+        <h2>طلبات استعادة كلمة المرور</h2>
+
+        <div class="readonly-badge" data-perm="استعادة كلمة المرور" style="display:none;">
+            <i class="fas fa-eye"></i>
+            وضع العرض فقط: يمكنك الاطلاع على الطلبات، ولا تملك صلاحية اصدار كلمات مرور مؤقتة.
+        </div>
+
+        <div class="sorting-controls">
+            <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-filter"></i> تصفية حسب الحالة:</strong>
+            <div class="sorting-buttons-row" id="pwFilterRow">
+                <button type="button" class="btn-sort active-sort" onclick="filterPwRequests('pending', this)">قيد المراجعة (<span id="pwcount_pending">0</span>)</button>
+                <button type="button" class="btn-sort" onclick="filterPwRequests('done', this)">تم اصدارها (<span id="pwcount_done">0</span>)</button>
+                <button type="button" class="btn-sort" onclick="filterPwRequests('rejected', this)">مرفوضة (<span id="pwcount_rejected">0</span>)</button>
+                <button type="button" class="btn-sort" onclick="filterPwRequests('all', this)">الكل (<span id="pwcount_all">0</span>)</button>
+            </div>
+        </div>
+
+        <div id="pwLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري تحميل الطلبات...</div>
+        <div id="pwError" class="error-message"></div>
+        <div id="pwSuccess" class="success-message"></div>
+
+        <div id="pwEmpty" class="empty-state" style="display:none;">
+            <i class="fas fa-inbox"></i>
+            لا توجد طلبات في هذا التصنيف
+        </div>
+
+        <div id="pwList"></div>
+    </div>
+
     <div id="requestsScreen" class="container screen" style="max-width: 1000px;">
         <div style="text-align: left; margin-bottom: 10px;">
             <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
@@ -4941,6 +5209,15 @@
         "الاستعلام عن زيارات": PERM_VISIT_EDIT
     };
 
+    /* ---------------- الدعم الفني واستعادة كلمة المرور ----------------
+       SUPPORT_WHATSAPP : رقم الدعم الفني للباحث الاجتماعي، يستخدم حين
+             لا يكون للمستخدم رقم جوال مسجل في النظام فلا يمكن التحقق
+             من هويته اليا، فيحول الى الدعم مباشرة برسالة مجهزة.
+       PERM_PASSWORD_RECOVERY : الصلاحية التي تخول المدير التعامل مع
+             طلبات استعادة كلمة المرور واصدار كلمات مرور مؤقتة. */
+    const SUPPORT_WHATSAPP = "966539864443";
+    const PERM_PASSWORD_RECOVERY = "استعادة كلمة المرور";
+
     /* ---------------- بيانات الحساب الشخصي ----------------
        PHONE_REMIND_DAYS : كل كم يوم يعاد تذكير من لم يسجل رقم جواله.
        التذكير يظهر كشريط مستقل اعلى البوابة، ولا يدخل في جرس
@@ -5047,6 +5324,29 @@
     }
 
     async function hashPassword(pass) { return "sha256$" + await sha256Hex(PEPPER + pass); }
+
+    /* ------------------------------------------------------------------
+       توليد كلمة مرور مؤقتة
+       ------------------------------------------------------------------
+       تستوفي شروط النظام حتما: ثمان خانات، حرف كبير وحروف صغيرة
+       وارقام. واستبعدت الاحرف والارقام المتشابهة بصريا
+       (O و 0، l و 1 و I) لان الباحث سيقرأها من رسالة ويكتبها يدويا،
+       فالخلط بينها سبب شائع لفشل الدخول.
+       ------------------------------------------------------------------ */
+    function generateTempPassword() {
+        const upper  = "ABCDEFGHJKLMNPQRSTUVWXYZ";   /* بلا I و O */
+        const lower  = "abcdefghijkmnpqrstuvwxyz";   /* بلا l و o */
+        const digits = "23456789";                   /* بلا 0 و 1 */
+
+        const pick = function(set, n) {
+            let out = "";
+            for (let i = 0; i < n; i++) out += set.charAt(Math.floor(Math.random() * set.length));
+            return out;
+        };
+
+        /* النمط: حرف كبير + ثلاثة صغيرة + اربعة ارقام */
+        return pick(upper, 1) + pick(lower, 3) + pick(digits, 4);
+    }
     function isHashed(v) { return typeof v === "string" && /^sha256\$[a-f0-9]{64}$/.test(v); }
 
     /* التحقق من كلمة المرور مع دعم الحسابات القديمة المخزنة كنص صريح */
@@ -5654,6 +5954,8 @@
                 session.name = d.empName || session.name;
                 session.empId = d.empId || session.empId;
                 session.phone = d.phone || "";
+                /* قد تصدر له الادارة كلمة مؤقتة وهو داخل النظام */
+                session.mustChangePassword = (d.mustChangePassword === true);
 
                 const after = JSON.stringify([session.role, session.permissions]);
                 await saveSession();
@@ -5677,6 +5979,8 @@
                 }
                 session.name = d.empName || session.name;
                 session.phone = d.phone || "";
+                /* قد تصدر له الادارة كلمة مؤقتة وهو داخل النظام */
+                session.mustChangePassword = (d.mustChangePassword === true);
                 await saveSession();
             }
             return true;
@@ -5761,7 +6065,7 @@
        بدل ان يحتار من اين اتت.
        ================================================================== */
 
-    let actionBadgeCounts = { leavePending: 0, leaveReportPending: 0, visitReportPending: 0, reportReportPending: 0 };
+    let actionBadgeCounts = { leavePending: 0, leaveReportPending: 0, visitReportPending: 0, reportReportPending: 0, passwordPending: 0 };
 
     /* ------------------------------------------------------------------
        معرفات السجلات المعلقة حاليا (وليس عددها فقط)
@@ -5771,7 +6075,7 @@
        بعد"، فتفرق بين "لا يوجد شيء معلق" و"لم نتحقق بعد" - هذا الفرق
        مهم لدالة reconcileResolvedNotifications في قسم الجرس، حتى لا
        تعتبر خطأ اي اشعار وارد "محلولا" فقط لان بياناته لم تصل بعد. */
-    let pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, report_reports: null };
+    let pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, report_reports: null, password_requests: null };
     let actionBadgeUnsubs = [];   /* دوال الغاء الاشتراك في المستمعين الاربعة */
 
     function idSetSize(s) { return s ? s.size : 0; }
@@ -5813,6 +6117,9 @@
         /* التقارير اليومية: كذلك مصدر واحد فقط (بلاغات التصحيح) */
         setActionBadge("report", c.reportReportPending);
         setActionBadge("report-report", c.reportReportPending);
+
+        /* طلبات استعادة كلمة المرور */
+        setActionBadge("password", c.passwordPending);
     }
 
     /* ------------------------------------------------------------------
@@ -5834,10 +6141,11 @@
         if (!isManager()) return;
 
         const specs = [
-            { coll: "leaves",         key: "leaves" },
-            { coll: "leave_reports",  key: "leave_reports" },
-            { coll: "visit_reports",  key: "visit_reports" },
-            { coll: "report_reports", key: "report_reports" }
+            { coll: "leaves",            key: "leaves" },
+            { coll: "leave_reports",     key: "leave_reports" },
+            { coll: "visit_reports",     key: "visit_reports" },
+            { coll: "report_reports",    key: "report_reports" },
+            { coll: "password_requests", key: "password_requests" }
         ];
 
         specs.forEach(function(s) {
@@ -5851,7 +6159,8 @@
                     leavePending:        idSetSize(pendingIdSets.leaves),
                     leaveReportPending:  idSetSize(pendingIdSets.leave_reports),
                     visitReportPending:  idSetSize(pendingIdSets.visit_reports),
-                    reportReportPending: idSetSize(pendingIdSets.report_reports)
+                    reportReportPending: idSetSize(pendingIdSets.report_reports),
+                    passwordPending:     idSetSize(pendingIdSets.password_requests)
                 };
                 applyActionBadges();
 
@@ -5871,8 +6180,8 @@
     window.stopActionBadgeListeners = function() {
         actionBadgeUnsubs.forEach(function(u) { try { u(); } catch (e) {} });
         actionBadgeUnsubs = [];
-        actionBadgeCounts = { leavePending: 0, leaveReportPending: 0, visitReportPending: 0, reportReportPending: 0 };
-        pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, report_reports: null };
+        actionBadgeCounts = { leavePending: 0, leaveReportPending: 0, visitReportPending: 0, reportReportPending: 0, passwordPending: 0 };
+        pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, report_reports: null, password_requests: null };
         applyActionBadges();
     };
 
@@ -5980,7 +6289,8 @@
         dailyReportScreen: 'researcher', techReportScreen: 'researcher',
         visitReportScreen: 'researcher', leaveReportScreen: 'researcher',
         myReportsScreen: 'researcher',
-        dailyReportsAdminScreen: 'manager', requestsScreen: 'manager'
+        dailyReportsAdminScreen: 'manager', requestsScreen: 'manager',
+        passwordRequestsScreen: 'manager'
     };
 
     /* الشاشة المعروضة حاليا. عرّفت قبل switchScreen عمدا: متغيرات let
@@ -6099,6 +6409,7 @@
             window.updateReadOnlyBadges();
             window.startActionBadgeListeners();
             checkPhoneReminder();
+            updateMustChangeBar();
             window.switchScreen('managerPortal');
         } else if (session.type === "researcher") {
             document.getElementById("empName").value = session.name || "";
@@ -6106,6 +6417,7 @@
             showTopBar();
             window.startPermSync();
             checkPhoneReminder();
+            updateMustChangeBar();
             window.switchScreen('researcherPortal');
         }
     }
@@ -6177,7 +6489,9 @@
                 name: resData.empName,
                 empId: resData.empId,
                 status: resData.status || "active",
-                remember: rememberRes
+                remember: rememberRes,
+                /* هل دخل بكلمة مرور مؤقتة اصدرتها الادارة؟ */
+                mustChangePassword: resData.mustChangePassword === true
             };
             await saveSession();
             resetIdleTimer();
@@ -6195,6 +6509,7 @@
             showTopBar();
             window.startPermSync();
             checkPhoneReminder();
+            updateMustChangeBar();
             window.switchScreen('researcherPortal');
         } catch (e) {
             const info = lockAddTry("res", rId);
@@ -6285,7 +6600,9 @@
                 role: managerData.role || "custom",
                 permissions: Array.isArray(managerData.permissions) ? managerData.permissions : [],
                 isMaster: false,
-                remember: !!(document.getElementById("rememberManager") || {}).checked
+                remember: !!(document.getElementById("rememberManager") || {}).checked,
+                /* هل دخل بكلمة مرور مؤقتة اصدرتها الادارة؟ */
+                mustChangePassword: managerData.mustChangePassword === true
             };
             await saveSession();
             resetIdleTimer();
@@ -6314,6 +6631,7 @@
         window.updateReadOnlyBadges();
         window.startActionBadgeListeners();
         checkPhoneReminder();
+        updateMustChangeBar();
         window.switchScreen('managerPortal');
     };
 
@@ -6343,6 +6661,7 @@
         else if (action === 'loadLeaveRequests') window.loadLeaveRequests();
         else if (action === 'openNoticeAdmin') window.openNoticeAdmin();
         else if (action === 'openDailyReports') window.openDailyReports();
+        else if (action === 'openPasswordRequests') window.openPasswordRequests();
 
         window.updateReadOnlyBadges();
         applyActionBadges();   /* مزامنة واجهة مجانية فقط، بلا استعلام جديد */
@@ -11552,7 +11871,16 @@
                 return;
             }
 
-            await updateDoc(doc(db, myCollection(), id), { password: await hashPassword(np1) });
+            /* رفع علامة الالزام مع التغيير في عملية كتابة واحدة، فان
+               نجح التغيير سقط الالزام حتما ولا يبقى شريط عالق */
+            await updateDoc(doc(db, myCollection(), id), {
+                password: await hashPassword(np1),
+                mustChangePassword: false
+            });
+
+            session.mustChangePassword = false;
+            await saveSession();
+            updateMustChangeBar();
 
             logAudit("تغيير كلمة المرور", "قام المستخدم بتغيير كلمة مروره بنفسه");
 
@@ -11580,6 +11908,37 @@
 
     function phoneRemindKey() {
         return "phoneRemind_" + (session ? (session.type + "_" + session.empId) : "guest");
+    }
+
+    /* ------------------------------------------------------------------
+       الالزام بتغيير كلمة المرور المؤقتة
+       ------------------------------------------------------------------
+       تكمل الحلقة الاخيرة في نظام استعادة كلمة المرور: كانت العلامة
+       mustChangePassword تكتب على الحساب عند اصدار كلمة مؤقتة، لكن لا
+       يقرأها احد، فكان بامكان صاحبها الاستمرار بها الى الابد.
+
+       الان تقرأ عند الدخول وعند كل مزامنة، ويظهر لصاحبها شريط احمر
+       ثابت اعلى الصفحة لا يختفي الا بتغييرها فعلا.
+       ------------------------------------------------------------------ */
+    /* يمنع تكرار التوجيه التلقائي في نفس الجلسة.
+       عرّف قبل الدالة عمدا تفاديا لخطأ منطقة الموت المؤقتة (TDZ) */
+    let mustChangeRedirected = false;
+
+    function updateMustChangeBar() {
+        const bar = document.getElementById("mustChangeBar");
+        if (!bar) return;
+        const needed = !!(session && session.mustChangePassword);
+        bar.style.display = needed ? "flex" : "none";
+
+        /* عند اول ظهور بعد الدخول ناخذه مباشرة الى شاشة الحساب، فلا
+           يضيع وقته بحثا عن مكان التغيير. مرة واحدة فقط حتى لا نمنعه
+           من التنقل ان اراد */
+        if (needed && !mustChangeRedirected) {
+            mustChangeRedirected = true;
+            toast("دخلت بكلمة مرور مؤقتة، يلزمك تغييرها الان.", "warn");
+            setTimeout(function() { if (session && session.mustChangePassword) window.openAccount(); }, 600);
+        }
+        if (!needed) mustChangeRedirected = false;
     }
 
     function checkPhoneReminder() {
@@ -13073,6 +13432,517 @@
         }
     }
 
+
+
+    /* ==================================================================
+       (32) استعادة كلمة المرور
+       ==================================================================
+
+       دورة الطلب كاملة:
+       ------------------
+       1) المستخدم يضغط "نسيت كلمة المرور" في شاشة الدخول.
+       2) يدخل رقمه الوظيفي ورقم جواله المسجل، فيتحقق النظام من
+          تطابقهما مع سجله في قاعدة البيانات.
+       3) يحفظ الطلب في مجموعة password_requests بحالة pending،
+          ويصل اشعار للمدراء اصحاب صلاحية "استعادة كلمة المرور".
+       4) المدير يفتح شاشة الطلبات ويصدر كلمة مرور مؤقتة، فيحدثها
+          النظام في حساب صاحب الطلب ويضع عليه علامة تلزمه بتغييرها.
+       5) يجهز النظام للمدير رسالة واتساب جاهزة الى رقم صاحب الطلب
+          تحوي رقمه الوظيفي وكلمة المرور المؤقتة.
+       6) عند دخول صاحب الطلب لا يستطيع استخدام النظام حتى يغير
+          كلمة المرور من شاشة حسابي.
+
+       من لا رقم جوال له:
+       ------------------
+       لا سبيل للتحقق من هويته اليا، فيحول الى الدعم الفني برسالة
+       واتساب مجهزة تحوي تفاصيل مشكلته.
+
+       ملاحظة امنية: لا تحفظ كلمة المرور المؤقتة نصا في مستند الطلب،
+       بل تعرض للمدير مرة واحدة عند الاصدار فقط، وتخزن مشفرة في حساب
+       صاحبها كبقية كلمات المرور.
+       ================================================================== */
+
+    let fpUserType = "researcher";   /* نوع الحساب الذي جاء منه المستخدم */
+
+    window.openForgotPassword = function(type) {
+        fpUserType = (type === "manager") ? "manager" : "researcher";
+        document.getElementById("fpEmpId").value = "";
+        document.getElementById("fpPhone").value = "";
+        hideMsg("fpError");
+        hideMsg("fpSuccess");
+        window.switchScreen('forgotPasswordScreen');
+    };
+
+    window.closeForgotPassword = function() {
+        window.switchScreen(fpUserType === "manager" ? 'managerScreen' : 'researcherLoginScreen');
+    };
+
+    /* البحث عن الحساب في المجموعتين، فقد ينسى المستخدم اي بوابة يتبع */
+    async function findAccountByEmpId(empId) {
+        const collections = [
+            { name: "researchers", type: "researcher" },
+            { name: "managers",    type: "manager" }
+        ];
+        for (let i = 0; i < collections.length; i++) {
+            const c = collections[i];
+            const snap = await getDocs(query(collection(db, c.name), where("empId", "==", empId)));
+            if (!snap.empty) {
+                const d = snap.docs[0];
+                return { docId: d.id, coll: c.name, userType: c.type, data: d.data() };
+            }
+        }
+        return null;
+    }
+
+    window.submitForgotPassword = async function() {
+        const empId = window.toEnglishDigits(document.getElementById("fpEmpId").value.trim()).toUpperCase();
+        const phone = normalizeSaudiPhone(document.getElementById("fpPhone").value);
+        const btn = document.getElementById("btnSendForgot");
+
+        hideMsg("fpError");
+        hideMsg("fpSuccess");
+
+        if (!empId) {
+            showMsg("fpError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال رقمك الوظيفي.");
+            return;
+        }
+        if (!validSaudiPhone(phone)) {
+            showMsg("fpError", "<i class='fas fa-times-circle'></i> رقم الجوال غير صحيح. الصيغة المطلوبة: +966 يليها تسعة ارقام.");
+            return;
+        }
+        if (!requireOnline("fpError")) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+
+        try {
+            const account = await findAccountByEmpId(empId);
+
+            /* رسالة موحدة عند عدم التطابق، سواء كان الرقم الوظيفي غير
+               موجود او الجوال لا يطابقه، فلا نكشف اي البيانات كان خطأ */
+            if (!account || !account.data.phone || account.data.phone !== phone) {
+                showMsg("fpError", "<i class='fas fa-triangle-exclamation'></i> البيانات لا تطابق سجلاتنا. " +
+                    "تأكد من رقمك الوظيفي ومن رقم الجوال المسجل، وان لم تكن سجلت جوالك من قبل فتواصل مع الدعم الفني ادناه.");
+                btn.disabled = false;
+                btn.innerHTML = "ارسال الطلب";
+                return;
+            }
+
+            /* منع تكرار الطلبات المعلقة لنفس الشخص */
+            const existing = await getDocs(query(collection(db, "password_requests"), where("empId", "==", empId)));
+            let hasPending = false;
+            existing.forEach(function(d) { if (d.data().status === "pending") hasPending = true; });
+            if (hasPending) {
+                showMsg("fpError", "<i class='fas fa-hourglass-half'></i> لديك طلب سابق قيد المراجعة. " +
+                    "انتظر تواصل الادارة معك، وان طال الامر فراجع الدعم الفني.");
+                btn.disabled = false;
+                btn.innerHTML = "ارسال الطلب";
+                return;
+            }
+
+            await addDoc(collection(db, "password_requests"), {
+                empId: empId,
+                empName: account.data.empName || "",
+                phone: phone,
+                userType: account.userType,
+                accountDocId: account.docId,
+                accountColl: account.coll,
+                status: "pending",
+                createdAt: new Date().toISOString(),
+                handledById: "", handledByName: "", handledAt: "", rejectReason: ""
+            });
+
+            await pushNotification({
+                title: "طلب استعادة كلمة مرور",
+                body: (account.userType === "manager" ? "المدير " : "الباحث ") +
+                      (account.data.empName || "") + " (" + empId + ") يطلب استعادة كلمة مروره. " +
+                      "جواله المسجل: " + phone,
+                to: "all",
+                audience: "manager",
+                perm: PERM_PASSWORD_RECOVERY,
+                type: "password_request"
+            });
+
+            showMsg("fpSuccess", "<i class='fas fa-check-circle'></i> تم ارسال طلبك بنجاح. " +
+                "سيتواصل معك المدير المختص على جوالك المسجل برسالة تحتوي كلمة مرور مؤقتة، ويلزمك تغييرها فور دخولك.");
+
+            document.getElementById("fpEmpId").value = "";
+            document.getElementById("fpPhone").value = "";
+        } catch (e) {
+            showMsg("fpError", "<i class='fas fa-wifi'></i> تعذر ارسال الطلب، تحقق من الاتصال وحاول مرة اخرى.");
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = "ارسال الطلب";
+    };
+
+    /* رسالة واتساب مجهزة للدعم الفني لمن لا رقم جوال له في النظام */
+    window.contactSupportForPassword = function() {
+        const empId = window.toEnglishDigits(document.getElementById("fpEmpId").value.trim()).toUpperCase();
+
+        const lines = [
+            "السلام عليكم ورحمة الله وبركاته",
+            "",
+            "اواجه مشكلة في الدخول الى نظام ادارة الباحثين، فقد نسيت كلمة المرور،",
+            "ولم اسجل رقم جوالي في النظام من قبل فتعذر التحقق من هويتي اليا.",
+            "",
+            "رقمي الوظيفي: " + (empId || "(لم يذكر)"),
+            "نوع الحساب: " + (fpUserType === "manager" ? "مدير" : "باحث"),
+            "",
+            "ارجو مساعدتي في استعادة حسابي. وشكرا لكم."
+        ];
+
+        window.open("https://wa.me/" + SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
+    };
+
+    /* ==================================================================
+       (32-ب) جانب الادارة: معالجة الطلبات
+       ================================================================== */
+
+    let pwRequests = [];
+    let pwFilter = "pending";
+
+    window.openPasswordRequests = async function() {
+        if (!isManager()) { window.switchScreen('managerScreen'); return; }
+
+        pwFilter = "pending";
+        document.querySelectorAll('#pwFilterRow .btn-sort').forEach(function(b, i) {
+            b.classList.toggle('active-sort', i === 0);
+        });
+
+        window.switchScreen('passwordRequestsScreen');
+        window.updateReadOnlyBadges();
+        await loadPasswordRequests();
+    };
+
+    async function loadPasswordRequests() {
+        const loading = document.getElementById("pwLoading");
+        hideMsg("pwError");
+        loading.style.display = "block";
+
+        try {
+            const snap = await getDocs(query(collection(db, "password_requests"), limit(REQUESTS_LIMIT)));
+            pwRequests = [];
+            snap.forEach(function(d) { pwRequests.push(Object.assign({ id: d.id }, d.data())); });
+            pwRequests.sort(function(a, b) {
+                return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+            });
+            updatePwCounts();
+            renderPwRequests();
+        } catch (e) {
+            showMsg("pwError", "<i class='fas fa-wifi'></i> تعذر جلب الطلبات.");
+        }
+        loading.style.display = "none";
+    }
+
+    function updatePwCounts() {
+        const c = { all: pwRequests.length, pending: 0, done: 0, rejected: 0 };
+        pwRequests.forEach(function(r) { if (c[r.status] !== undefined) c[r.status]++; });
+        ["all", "pending", "done", "rejected"].forEach(function(k) {
+            const el = document.getElementById("pwcount_" + k);
+            if (el) el.textContent = c[k];
+        });
+    }
+
+    window.filterPwRequests = function(status, btnEl) {
+        document.querySelectorAll('#pwFilterRow .btn-sort').forEach(function(b) { b.classList.remove('active-sort'); });
+        if (btnEl) btnEl.classList.add('active-sort');
+        pwFilter = status;
+        renderPwRequests();
+    };
+
+    function pwStatusBadge(status) {
+        const map = {
+            pending:  { c: "pending",  t: "قيد المراجعة" },
+            done:     { c: "approved", t: "تم اصدارها" },
+            rejected: { c: "rejected", t: "مرفوض" }
+        };
+        const i = map[status] || map.pending;
+        const s = document.createElement("span");
+        s.className = "leave-badge leave-" + i.c;
+        s.textContent = i.t;
+        return s;
+    }
+
+    function renderPwRequests() {
+        const box = document.getElementById("pwList");
+        const empty = document.getElementById("pwEmpty");
+        box.innerHTML = "";
+
+        const list = (pwFilter === "all") ? pwRequests : pwRequests.filter(function(r) { return r.status === pwFilter; });
+        if (list.length === 0) { empty.style.display = "block"; return; }
+        empty.style.display = "none";
+
+        const canAct = hasPerm(PERM_PASSWORD_RECOVERY);
+        const frag = document.createDocumentFragment();
+
+        list.forEach(function(r, idx) {
+            const card = document.createElement("div");
+            card.className = "pw-card";
+
+            const head = document.createElement("div");
+            head.className = "pw-head";
+            const who = document.createElement("span");
+            who.textContent = (r.userType === "manager" ? "مدير: " : "باحث: ") + (r.empName || "-");
+            head.appendChild(who);
+            head.appendChild(pwStatusBadge(r.status));
+            card.appendChild(head);
+
+            [
+                { l: "الرقم الوظيفي", v: r.empId || "-" },
+                { l: "الجوال المسجل", v: r.phone || "-" },
+                { l: "تاريخ الطلب",   v: window.formatDateTimeToEnglish(r.createdAt) }
+            ].forEach(function(row) {
+                const line = document.createElement("div");
+                line.className = "pw-line";
+                const l = document.createElement("span");
+                l.className = "pw-line-label";
+                l.textContent = row.l + ": ";
+                const v = document.createElement("span");
+                v.textContent = row.v;
+                line.appendChild(l); line.appendChild(v);
+                card.appendChild(line);
+            });
+
+            if (r.status === "rejected" && r.rejectReason) {
+                const rej = document.createElement("div");
+                rej.className = "pw-line";
+                const l = document.createElement("span");
+                l.className = "detail-reject-label";
+                l.textContent = "سبب الرفض: ";
+                const v = document.createElement("span");
+                v.className = "detail-reject-text";
+                v.textContent = r.rejectReason;
+                rej.appendChild(l); rej.appendChild(v);
+                card.appendChild(rej);
+            }
+
+            if (r.status !== "pending") {
+                const by = document.createElement("div");
+                by.className = "req-meta";
+                by.textContent = "بواسطة: " + (r.handledByName || "-") +
+                    (r.handledAt ? (" | " + window.formatDateTimeToEnglish(r.handledAt)) : "");
+                card.appendChild(by);
+            }
+
+            const acts = document.createElement("div");
+            acts.className = "req-actions";
+            acts.id = "pw_act_" + idx;
+
+            if (r.status === "pending") {
+                if (canAct) {
+                    const ok = document.createElement("button");
+                    ok.type = "button";
+                    ok.className = "btn-manager btn-icon-watermark icon-key btn-table";
+                    ok.textContent = "اصدار كلمة مرور مؤقتة";
+                    ok.onclick = function() { issueTempPassword(r.id, idx); };
+                    acts.appendChild(ok);
+
+                    const no = document.createElement("button");
+                    no.type = "button";
+                    no.className = "btn-neutral btn-icon-watermark icon-times btn-table";
+                    no.textContent = "رفض";
+                    no.onclick = function() { showPwRejectBox(idx, r.id); };
+                    acts.appendChild(no);
+                } else {
+                    const note = document.createElement("span");
+                    note.className = "no-perm-note";
+                    note.textContent = "عرض فقط";
+                    acts.appendChild(note);
+                }
+            }
+            card.appendChild(acts);
+            frag.appendChild(card);
+        });
+
+        box.appendChild(frag);
+    }
+
+    function showPwRejectBox(idx, docId) {
+        const box = document.getElementById("pw_act_" + idx);
+        if (!box) return;
+        box.innerHTML = "";
+
+        const ta = document.createElement("textarea");
+        ta.className = "reject-input";
+        ta.rows = 2;
+        ta.placeholder = "اكتب سبب الرفض...";
+        box.appendChild(ta);
+
+        const yes = document.createElement("button");
+        yes.type = "button";
+        yes.className = "btn-neutral btn-icon-watermark icon-times btn-table";
+        yes.textContent = "تأكيد الرفض";
+        yes.onclick = function() {
+            const reason = ta.value.trim();
+            if (!reason) { toast("لا يمكن الرفض بدون كتابة السبب.", "error"); return; }
+            rejectPwRequest(docId, reason);
+        };
+        box.appendChild(yes);
+
+        const cancel = document.createElement("button");
+        cancel.type = "button";
+        cancel.className = "btn-neutral btn-icon-watermark icon-check btn-table";
+        cancel.textContent = "تراجع";
+        cancel.onclick = function() { renderPwRequests(); };
+        box.appendChild(cancel);
+
+        ta.focus();
+    }
+
+    async function rejectPwRequest(docId, reason) {
+        if (!(await guardLive(PERM_PASSWORD_RECOVERY))) return;
+        if (!requireOnline()) return;
+
+        try {
+            const snap = await getDoc(doc(db, "password_requests", docId));
+            if (!snap.exists() || snap.data().status !== "pending") {
+                toast("تم اتخاذ القرار في هذا الطلب مسبقا.", "warn");
+                await loadPasswordRequests();
+                return;
+            }
+            await updateDoc(doc(db, "password_requests", docId), {
+                status: "rejected",
+                handledById: session.empId || session.id,
+                handledByName: session.name,
+                handledAt: new Date().toISOString(),
+                rejectReason: reason
+            });
+
+            logAudit("رفض طلب استعادة كلمة مرور", snap.data().empName + " (" + snap.data().empId + ") | السبب: " + reason);
+            await loadPasswordRequests();
+            toast("تم رفض الطلب.", "success");
+        } catch (e) {
+            toast("تعذر تنفيذ الرفض، حاول مرة اخرى.", "error");
+        }
+    }
+
+    /* ------------------------------------------------------------------
+       اصدار كلمة مرور مؤقتة
+       ------------------------------------------------------------------
+       يحدث حساب صاحب الطلب بكلمة مرور جديدة مشفرة، ويضع عليه علامة
+       mustChangePassword فيلزم بتغييرها عند اول دخول.
+       ثم يعرض للمدير كلمة المرور مرة واحدة مع رسالة واتساب جاهزة.
+       ------------------------------------------------------------------ */
+    async function issueTempPassword(docId, idx) {
+        if (!(await guardLive(PERM_PASSWORD_RECOVERY))) return;
+        if (!requireOnline()) return;
+
+        const box = document.getElementById("pw_act_" + idx);
+        if (box) box.innerHTML = '<div class="loading-inline"><i class="fas fa-spinner fa-spin"></i> جاري الاصدار...</div>';
+
+        try {
+            const snap = await getDoc(doc(db, "password_requests", docId));
+            if (!snap.exists() || snap.data().status !== "pending") {
+                toast("تم اتخاذ القرار في هذا الطلب مسبقا من مدير اخر.", "warn");
+                await loadPasswordRequests();
+                return;
+            }
+            const r = snap.data();
+
+            /* تاكيد وجود الحساب قبل التعديل عليه */
+            const accRef = doc(db, r.accountColl, r.accountDocId);
+            const accSnap = await getDoc(accRef);
+            if (!accSnap.exists()) {
+                toast("حساب صاحب الطلب لم يعد موجودا في النظام.", "error");
+                await loadPasswordRequests();
+                return;
+            }
+
+            const tempPass = generateTempPassword();
+            await updateDoc(accRef, {
+                password: await hashPassword(tempPass),
+                mustChangePassword: true
+            });
+
+            await updateDoc(doc(db, "password_requests", docId), {
+                status: "done",
+                handledById: session.empId || session.id,
+                handledByName: session.name,
+                handledAt: new Date().toISOString()
+            });
+
+            /* لا تسجل كلمة المرور في سجل التدقيق، يكفي توثيق الواقعة */
+            logAudit("اصدار كلمة مرور مؤقتة", (r.empName || "") + " (" + r.empId + ")");
+
+            await loadPasswordRequests();
+            showTempPasswordResult(r, tempPass);
+        } catch (e) {
+            toast("تعذر اصدار كلمة المرور، حاول مرة اخرى.", "error");
+            await loadPasswordRequests();
+        }
+    }
+
+    /* عرض كلمة المرور المؤقتة مرة واحدة مع رسالة واتساب جاهزة */
+    function showTempPasswordResult(r, tempPass) {
+        const box = document.getElementById("pwList");
+        if (!box) return;
+
+        const panel = document.createElement("div");
+        panel.className = "temp-pass-box";
+
+        const title = document.createElement("div");
+        title.style.cssText = "font-weight:900;font-size:16px;margin-bottom:6px;";
+        title.textContent = "كلمة المرور المؤقتة لـ " + (r.empName || r.empId);
+        panel.appendChild(title);
+
+        const val = document.createElement("div");
+        val.className = "temp-pass-value";
+        val.textContent = tempPass;
+        panel.appendChild(val);
+
+        const hint = document.createElement("div");
+        hint.className = "temp-pass-hint";
+        hint.textContent = "تظهر هذه الكلمة مرة واحدة فقط ولا يمكن استرجاعها لاحقا، فارسلها الان. " +
+                           "وقد وضعت على الحساب علامة تلزم صاحبه بتغييرها فور دخوله.";
+        panel.appendChild(hint);
+
+        /* رسالة واتساب جاهزة الى رقم صاحب الطلب المسجل */
+        const lines = [
+            "مرحبا " + (r.empName || ""),
+            "",
+            "تم اعادة تعيين كلمة مرور حسابك في نظام ادارة الباحثين بناء على طلبك.",
+            "",
+            "الرقم الوظيفي: " + r.empId,
+            "كلمة المرور المؤقتة: " + tempPass,
+            "",
+            "يرجى تسجيل الدخول ثم تغييرها فورا من: حسابي ثم تغيير كلمة المرور.",
+            "لن تتمكن من استخدام النظام قبل تغييرها.",
+            "",
+            "ولا تشارك هذه الرسالة مع احد."
+        ];
+        const waNumber = String(r.phone || "").replace(/^\+/, "");
+        const waUrl = "https://wa.me/" + waNumber + "?text=" + encodeURIComponent(lines.join("\n"));
+
+        const btnRow = document.createElement("div");
+        btnRow.className = "btn-group";
+
+        const waBtn = document.createElement("button");
+        waBtn.type = "button";
+        waBtn.className = "btn-whatsapp btn-icon-watermark icon-whatsapp";
+        waBtn.textContent = "ارسال الرسالة عبر الواتساب";
+        waBtn.onclick = function() { window.open(waUrl, "_blank"); };
+        btnRow.appendChild(waBtn);
+
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "btn-neutral btn-icon-watermark icon-copy";
+        copyBtn.textContent = "نسخ الرسالة";
+        copyBtn.onclick = async function() {
+            try {
+                await navigator.clipboard.writeText(lines.join("\n"));
+                toast("تم نسخ الرسالة.", "success");
+            } catch (e) {
+                toast("تعذر النسخ تلقائيا، حدد النص وانسخه يدويا.", "warn");
+            }
+        };
+        btnRow.appendChild(copyBtn);
+
+        panel.appendChild(btnRow);
+
+        box.insertBefore(panel, box.firstChild);
+        window.scrollTo({ top: Math.max(0, panel.offsetTop - 80), behavior: "smooth" });
+    }
 
     /* ==================================================================
        (31) تثبيت التطبيق على الجهاز (PWA)
