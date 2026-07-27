@@ -458,6 +458,16 @@
         body.dark-mode .toggle-password-btn:hover { background: rgba(255,255,255,0.1); color: #de8c43; }
 
         /* ---------------- الازرار الموحدة ---------------- */
+        /* ------------------------------------------------------------------
+           استجابة فورية للمس على الجوال
+           ------------------------------------------------------------------
+           تنتظر المتصفحات على الجوال نحو ثلث ثانية بعد كل نقرة تحسبا
+           لنقرة ثانية تعني التكبير. هذه القاعدة تلغي ذلك الانتظار
+           فتصبح الازرار والحقول فورية الاستجابة، وتمنع في الوقت نفسه
+           التكبير غير المقصود عند النقر السريع مرتين.
+           ------------------------------------------------------------------ */
+        button, input, select, textarea, a, label { touch-action: manipulation; }
+
         button { 
             position: relative; overflow: hidden; width: 100%; padding: 20px; 
             color: white; 
@@ -2233,6 +2243,46 @@
         body.dark-mode .phone-missing { color: #f0b473; }
 
         /* ==================================================================
+           (جديد) شريط انقطاع الاتصال بالانترنت
+           ------------------------------------------------------------------
+           مهم جدا في هذا النظام تحديدا: الباحثون يوثقون زياراتهم من
+           الميدان حيث قد تضعف التغطية. ومكتبة قاعدة البيانات لا تفشل
+           عند انقطاع الشبكة، بل تبقى العملية معلقة الى ما لا نهاية،
+           فيظل زر التوثيق يدور بلا نتيجة ولا رسالة خطأ.
+
+           هذا الشريط يخبر المستخدم بالحال فورا، مع منع مسبق لعمليات
+           الحفظ الحرجة (انظر requireOnline في الجافاسكربت).
+           ================================================================== */
+        .offline-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 12500;
+            display: none;
+            padding: 12px 16px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            background: linear-gradient(135deg, #c0392b, #96281b);
+            color: #fff;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 800;
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.7;
+            box-shadow: 0 -4px 18px rgba(0,0,0,0.28);
+            animation: offlineIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .offline-bar i { margin-left: 7px; }
+        @keyframes offlineIn { 0% { opacity: 0; transform: translateY(100%); } 100% { opacity: 1; transform: translateY(0); } }
+
+        /* عند ظهور الشريط نرفع زر الوضع الليلي وزر التثبيت فوقه */
+        body.is-offline .theme-toggle-btn { bottom: 76px; }
+        body.is-offline .install-btn { bottom: 76px; }
+        body.is-offline .toast-container { bottom: 82px; }
+
+        @media print { .offline-bar { display: none !important; } }
+
+        /* ==================================================================
            (جديد) شريط التذكير بتسجيل رقم الجوال
            ------------------------------------------------------------------
            مستقل عن جرس الاشعارات عمدا، فالجرس لرسائل العمل فقط
@@ -2774,6 +2824,18 @@
             <button class="btn-neutral btn-icon-watermark icon-check" onclick="closeInstallHelp()">فهمت، اغلاق</button>
         </div>
     </div>
+</div>
+
+<!-- ==============================================================
+     شريط انقطاع الاتصال
+     --------------------------------------------------------------
+     يظهر تلقائيا عند فقد الاتصال بالانترنت ويختفي فور عودته.
+     ضروري للباحثين في الميدان، لان عمليات الحفظ تبقى معلقة بلا
+     رسالة خطأ عند انقطاع الشبكة.
+     ============================================================== -->
+<div id="offlineBar" class="offline-bar" role="status" aria-live="assertive">
+    <i class="fas fa-wifi" aria-hidden="true"></i>
+    لا يوجد اتصال بالانترنت حاليا. لن تتمكن من الحفظ او التوثيق حتى يعود الاتصال.
 </div>
 
 <!-- حاوية الرسائل المنبثقة (Toast) المستخدمة بدل نوافذ alert -->
@@ -4881,6 +4943,73 @@
         });
     }
 
+    /* ==================================================================
+       مراقبة الاتصال بالانترنت
+       ==================================================================
+       مكتبة Firestore لا ترفض العملية عند انقطاع الشبكة، بل تبقيها
+       معلقة حتى يعود الاتصال. هذا يعني ان زر التوثيق يظل يدور بلا
+       نتيجة، والباحث في الميدان لا يعرف هل حفظ ام لا.
+
+       الحل شقان:
+       1) شريط سفلي واضح يظهر فور انقطاع الاتصال ويختفي فور عودته.
+       2) دالة requireOnline تستدعى قبل كل عملية حفظ حرجة، فتمنعها
+          برسالة صريحة بدل تركها معلقة الى ما لا نهاية.
+       ================================================================== */
+
+    function isOnline() {
+        /* navigator.onLine يعني "متصل بشبكة"، وقد يكون متصلا بشبكة بلا
+           انترنت فعلي، لكنه يغطي الحالة الاشيع: انقطاع التغطية تماما */
+        return (typeof navigator.onLine === "boolean") ? navigator.onLine : true;
+    }
+
+    function updateOfflineBar() {
+        const bar = document.getElementById("offlineBar");
+        if (!bar) return;
+        const offline = !isOnline();
+        bar.style.display = offline ? "block" : "none";
+        document.body.classList.toggle("is-offline", offline);
+    }
+
+    /* حارس يستدعى قبل عمليات الحفظ الحرجة.
+       msgElId اختياري: عند تمريره تظهر الرسالة داخل الشاشة نفسها،
+       والا فرسالة منبثقة */
+    function requireOnline(msgElId) {
+        if (isOnline()) return true;
+        const text = "لا يوجد اتصال بالانترنت. تحقق من التغطية ثم اعد المحاولة، ولن تفقد ما ادخلته.";
+        if (msgElId && document.getElementById(msgElId)) {
+            showMsg(msgElId, "<i class='fas fa-wifi'></i> " + text);
+        } else {
+            toast(text, "error");
+        }
+        return false;
+    }
+
+    window.addEventListener("online", function() {
+        updateOfflineBar();
+        toast("عاد الاتصال بالانترنت.", "success");
+    });
+    window.addEventListener("offline", updateOfflineBar);
+
+    /* ==================================================================
+       تنظيف نسخ التقويم قبل اعادة رسم الجداول
+       ==================================================================
+       مكتبة التقويم تنشئ لكل حقل عنصر تقويم مستقلا يلحق بجسم الصفحة،
+       لا داخل الحقل نفسه. وعند اعادة رسم الجدول (فرز، حفظ، حذف، عرض
+       المزيد) تمسح الحقول لكن تبقى عناصر التقويم معلقة في الذاكرة.
+
+       مع تكرار العمليات تتراكم هذه العناصر ويثقل المتصفح، والاثر
+       اوضح على الجوال لمحدودية ذاكرته. هذه الدالة تتلف النسخ اتلافا
+       صحيحا قبل مسح محتوى الجدول.
+       ================================================================== */
+    function destroyDatePickersIn(container) {
+        if (!container) return;
+        container.querySelectorAll(".custom-date-picker").forEach(function(el) {
+            if (el._flatpickr) {
+                try { el._flatpickr.destroy(); } catch (e) {}
+            }
+        });
+    }
+
     /* رسالة منبثقة موحدة بدلا من alert */
     function toast(msg, type) {
         let box = document.getElementById("toastContainer");
@@ -5104,6 +5233,26 @@
     document.addEventListener("DOMContentLoaded", function() {
         window.initializeDatePickers();
         bootstrapSession();
+
+        /* ------------------------------------------------------------------
+           الوصولية: اعلان الرسائل لقارئات الشاشة
+           ------------------------------------------------------------------
+           رسائل الخطأ والنجاح تظهر وتختفي ديناميكيا، وبدون هذه السمات
+           لا ينطقها قارئ الشاشة فلا يعرف الكفيف نتيجة ما فعل.
+           تضاف برمجيا لتشمل كل الرسائل الحالية والمضافة مستقبلا بلا
+           تعديل يدوي على عشرات العناصر.
+           ------------------------------------------------------------------ */
+        document.querySelectorAll(".error-message").forEach(function(el) {
+            el.setAttribute("role", "alert");
+            el.setAttribute("aria-live", "assertive");
+        });
+        document.querySelectorAll(".success-message, .loading-message").forEach(function(el) {
+            el.setAttribute("role", "status");
+            el.setAttribute("aria-live", "polite");
+        });
+
+        /* حالة الاتصال عند اول تحميل */
+        updateOfflineBar();
     });
 
     /* اعدادات التقويم مكتوبة مرة واحدة ويعاد استخدامها لكل حقل،
@@ -5597,6 +5746,11 @@
         dailyReportsAdminScreen: 'manager', requestsScreen: 'manager'
     };
 
+    /* الشاشة المعروضة حاليا. عرّفت قبل switchScreen عمدا: متغيرات let
+       تبقى في "منطقة الموت المؤقتة" حتى ينفذ سطر تعريفها، فلو استدعيت
+       الدالة قبل ذلك لرمت خطأ مرجعي */
+    let lastActiveScreenId = null;
+
     window.switchScreen = function(screenId) {
         const need = PROTECTED_SCREENS[screenId];
         if (need === 'manager' && !isManager()) { screenId = 'managerScreen'; }
@@ -5610,6 +5764,30 @@
         const newScreen = document.getElementById(screenId);
         if (newScreen) newScreen.classList.add('active-screen');
         window.clearAllErrors();
+
+        /* ------------------------------------------------------------------
+           العودة الى اعلى الصفحة عند الانتقال لشاشة مختلفة
+           ------------------------------------------------------------------
+           بدون هذا كان المستخدم اذا تصفح جدولا طويلا ثم انتقل لشاشة
+           اخرى، يجد نفسه في منتصفها او اسفلها، وهو ارباك واضح على
+           الجوال خصوصا. نتحقق من تغير الشاشة فعلا حتى لا نلغي تمريرا
+           مقصودا عند اعادة عرض نفس الشاشة (كاعادة رسم جدول بعد حفظ).
+           ------------------------------------------------------------------ */
+        if (screenId !== lastActiveScreenId) {
+            lastActiveScreenId = screenId;
+            window.scrollTo(0, 0);
+
+            /* نقل تركيز قارئ الشاشة الى عنوان الشاشة الجديدة، فيعرف
+               مستخدمو التقنيات المساعدة اين صاروا بدل بقاء التركيز
+               على زر في شاشة اختفت */
+            if (newScreen) {
+                const heading = newScreen.querySelector("h2");
+                if (heading) {
+                    heading.setAttribute("tabindex", "-1");
+                    try { heading.focus({ preventScroll: true }); } catch (e) {}
+                }
+            }
+        }
 
         /* تحديث شارات وضع العرض فقط عند كل تنقل، حتى تعكس الواجهة
            حالة الصلاحيات اللحظية في اي شاشة يفتحها المستخدم */
@@ -5954,6 +6132,9 @@
             showMsg("researcherError", "<i class='fas fa-exclamation-circle'></i> عذرا، يجب تعبئة جميع الحقول قبل التوثيق!");
             return;
         }
+
+        /* الباحث غالبا في الميدان: نتحقق من الاتصال قبل ان تعلق العملية */
+        if (!requireOnline("researcherError")) return;
 
         rLoading.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاتصال بالسحابة وتوثيق البيانات...';
         rLoading.style.display = "block";
@@ -6429,6 +6610,8 @@
 
     function renderEditTable() {
         const tbody = document.getElementById("editTableBody");
+        /* اتلاف نسخ التقويم القديمة قبل المسح منعا لتراكمها في الذاكرة */
+        destroyDatePickersIn(tbody);
         tbody.innerHTML = "";
 
         /* البناء داخل الذاكرة اولا ثم الادراج دفعة واحدة (اسرع بكثير) */
@@ -8830,6 +9013,8 @@
 
         const year = Number(startDate.slice(0, 4));
 
+        if (!requireOnline("leaveReqError")) return;
+
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الارسال...';
 
@@ -9294,6 +9479,8 @@
 
         hideMsg("leaveMngError");
         hideMsg("leaveMngSuccess");
+
+        if (!requireOnline()) return;
 
         try {
             /* اعادة قراءة المستند لمنع تعارض قرارين من مديرين في نفس اللحظة */
@@ -9929,6 +10116,9 @@
             return;
         }
 
+        /* الانقطاع اثناء رفع مرفق اسوأ من غيره: قد يحفظ الطلب بلا مرفق */
+        if (!requireOnline("sickError")) return;
+
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري رفع المرفق...';
 
@@ -10305,6 +10495,8 @@
         const r = activeResearchers.find(function(x) { return x.id === resId; });
         if (!r) { showMsg("noticeCreateError", "<i class='fas fa-times-circle'></i> الباحث غير موجود."); return; }
 
+        if (!requireOnline("noticeCreateError")) return;
+
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاصدار...';
 
@@ -10667,6 +10859,8 @@
         const tbody = document.getElementById("noticeLogBody");
         const empty = document.getElementById("noticeLogEmpty");
         if (!tbody) return;
+        /* اتلاف نسخ التقويم القديمة قبل المسح منعا لتراكمها في الذاكرة */
+        destroyDatePickersIn(tbody);
         tbody.innerHTML = "";
 
         const list = (noticeLogFilter === 'all')
@@ -11427,6 +11621,8 @@
 
         hideMsg("drError"); hideMsg("drSuccess");
 
+        if (!requireOnline("drError")) return;
+
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الارسال...';
 
@@ -11993,6 +12189,8 @@
             }
         }
 
+        if (!requireOnline("vrError")) return;
+
         /* منع بلاغ زيارة جديد ما دام لديه بلاغ زيارة سابق قيد المراجعة،
            بغض النظر عن الزيارة او نوع الاجراء (حذف/تعديل) */
         try {
@@ -12168,6 +12366,8 @@
         }
 
         const note = document.getElementById("lrReason").value.trim();
+
+        if (!requireOnline("lrError")) return;
 
         /* منع بلاغ اجازة جديد ما دام لديه بلاغ اجازة سابق قيد المراجعة،
            بغض النظر عن الاجازة او نوع الطلب (سحب/تعديل) */
@@ -12510,6 +12710,8 @@
     async function decideRequest(docId, decision, reason, idx) {
         const permName = (reqType === "visit") ? PERM_VISIT_EDIT : REQ_TYPES[reqType].perm;
         if (!(await guardLive(permName))) return;
+
+        if (!requireOnline()) return;
 
         const coll = REQ_TYPES[reqType].coll;
 
