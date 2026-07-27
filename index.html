@@ -28,7 +28,7 @@
                   { action, details, actorName, actorId, actorType, at }
   notifications : اشعارات الجرس التي تصل للمستخدمين
                   { title, body, to, audience, type, createdAt }
-                  to = الرقم الوظيفي للمستلم او "all" للجميع
+                  to = الاسم المستخدم للمستلم او "all" للجميع
 
   3) المسارات الرئيسية
   --------------------
@@ -1127,7 +1127,7 @@
            (جديد) الشريط العلوي الموحد للمستخدم المسجل دخوله
            ------------------------------------------------------------------
            شريط واحد يخدم الباحث والمدير معا:
-           - يعرض اسم المستخدم ورقمه الوظيفي
+           - يعرض اسم المستخدم واسمه المستخدم
            - يحتوي على جرس الاشعارات مع عداد الرسائل غير المقروءة
            الفرق بينهما هو اللون فقط:
            .top-bar-manager   = برتقالي (لون الادارة)
@@ -1153,7 +1153,7 @@
         .top-bar-researcher { background: linear-gradient(135deg, #4a8794, #396d78); }
 
         /* الصف الداخلي: كل المحتوى موسط في منتصف الشريط،
-           والجرس يأتي مباشرة بعد الاسم والرقم الوظيفي */
+           والجرس يأتي مباشرة بعد الاسم والاسم المستخدم */
         .top-bar-inner {
             max-width: 1100px;
             margin: 0 auto;
@@ -1174,12 +1174,12 @@
         }
         .top-bar-user i { font-size: 20px; opacity: 0.9; flex-shrink: 0; }
         /* ------------------------------------------------------------------
-           نص الشريط العلوي (الاسم والرقم الوظيفي)
+           نص الشريط العلوي (الاسم والاسم المستخدم)
            ------------------------------------------------------------------
            بني كحاوية واحدة #topBarText تضم عدة اجزاء فرعية: تسمية الصفة
-           (المدير / الباحث)، الاسم، فاصل، تسمية الرقم الوظيفي، والرقم.
+           (المدير / الباحث)، الاسم، فاصل، تسمية الاسم المستخدم، والرقم.
            على الحاسب تظهر كل الاجزاء في سطر واحد. على الجوال تختفي
-           التسميات النصية (الصفة و"الرقم الوظيفي:") تلقائيا عبر media query
+           التسميات النصية (الصفة و"الاسم المستخدم:") تلقائيا عبر media query
            ادناه، فيبقى فقط "الاسم | الرقم" وهو اقصر بكثير، ويسمح بالتفاف
            السطر ان لزم بدل قص المحتوى، فلا يضيع اي جزء من الاسم او الرقم
            مهما طال الاسم او ضاق العرض.
@@ -1475,7 +1475,7 @@
                ----------------------------------------------------------
                المساحة ضيقة (زر الحساب + زر الجرس + الاسم + الرقم)، لذلك:
                1) تختفي تسمية الصفة ("المدير:" / "الباحث:") وتسمية
-                  "الرقم الوظيفي:"، فيتبقى "الاسم | الرقم" فقط وهو اقصر
+                  "الاسم المستخدم:"، فيتبقى "الاسم | الرقم" فقط وهو اقصر
                   بكثير ويحمل نفس المعلومة كاملة.
                2) يسمح بالتفاف النص على سطرين بدل قصه بثلاث نقاط، حتى
                   تبقى الاسماء الطويلة ظاهرة بالكامل مهما كانت.
@@ -1860,7 +1860,7 @@
         .btn-dev:hover { opacity: 0.75; }
 
         /* ==================================================================
-           (جديد) تلميح الرقم الوظيفي المقترح
+           (جديد) تلميح الاسم المستخدم المقترح
            ================================================================== */
         .field-hint {
             display: none;
@@ -2343,6 +2343,13 @@
         }
         body.dark-mode .must-change-banner { color: #f0b473; background: rgba(222,140,67,0.2); }
         .must-change-banner i { margin-left: 7px; }
+
+        /* زر واتساب داخل جدول المدراء (يظهر للمبرمج وحده) */
+        .btn-whatsapp-row {
+            background: linear-gradient(135deg, #25D366, #1da851) !important;
+            color: #fff !important;
+        }
+        .btn-whatsapp-row:disabled { background: #9aa5a1 !important; }
 
         /* ==================================================================
            (جديد) شريط الالزام بتغيير كلمة المرور المؤقتة
@@ -2942,7 +2949,7 @@
      مخفي افتراضيا (hidden) ويظهر تلقائيا بعد تسجيل الدخول عبر
      الدالة showTopBar() الموجودة في القسم 21 من الجافاسكربت.
      يحتوي على:
-       - اسم المستخدم ورقمه الوظيفي
+       - اسم المستخدم واسمه المستخدم
        - جرس الاشعارات مع عداد الرسائل غير المقروءة ولوحة منسدلة
      لون الشريط يتغير تلقائيا: برتقالي للادارة، ازرق مخضر للباحث.
      ============================================================== -->
@@ -3086,14 +3093,14 @@
     <!-- ==========================================================
          شاشة تسجيل دخول الباحث
          ملاحظة تصميم: كانت الحقول داخل form-grid فيظهر حقل الرقم
-         الوظيفي بنصف العرض وحقل كلمة المرور بعرض كامل، فيبدو غير
+         المستخدم بنصف العرض وحقل كلمة المرور بعرض كامل، فيبدو غير
          متناسق. تم توحيدها لتصبح حقلين متتاليين بعرض كامل تماما
          مثل شاشة دخول الادارة.
          ========================================================== -->
     <!-- ==============================================================
          شاشة استعادة كلمة المرور
          --------------------------------------------------------------
-         يدخل المستخدم رقمه الوظيفي ورقم جواله المسجل في النظام،
+         يدخل المستخدم اسمه المستخدم ورقم جواله المسجل في النظام،
          فيتحقق النظام من تطابقهما ثم يرفع طلبا للمدير المختص.
 
          ان لم يكن قد سجل رقم جواله سابقا، فلا سبيل للتحقق من هويته
@@ -3107,15 +3114,15 @@
 
         <div class="rule-note">
             <i class="fas fa-circle-info"></i>
-            ادخل رقمك الوظيفي ورقم جوالك المسجل في النظام. بعد التحقق يصل طلبك
+            ادخل اسمك المستخدم ورقم جوالك المسجل في النظام. بعد التحقق يصل طلبك
             للمدير المختص، فيصدر لك كلمة مرور مؤقتة ويرسلها الى جوالك، ويلزمك
             تغييرها فور دخولك.
         </div>
 
         <div class="input-group" style="margin-top: 18px;">
-            <label for="fpEmpId">الرقم الوظيفي:</label>
+            <label for="fpEmpId">الاسم المستخدم:</label>
             <div class="input-with-icon">
-                <input type="text" id="fpEmpId" placeholder="ادخل رقمك الوظيفي">
+                <input type="text" id="fpEmpId" placeholder="ادخل اسمك المستخدم">
                 <i class="fas fa-id-badge right-icon"></i>
             </div>
         </div>
@@ -3123,7 +3130,7 @@
         <div class="input-group" style="margin-top: 15px;">
             <label for="fpPhone">رقم الجوال المسجل:</label>
             <div class="input-with-icon">
-                <input type="tel" id="fpPhone" inputmode="tel" dir="ltr" placeholder="+966512345678">
+                <input type="tel" id="fpPhone" inputmode="tel" dir="ltr" placeholder="0512345678  او  +966512345678">
                 <i class="fas fa-phone right-icon"></i>
             </div>
             <div class="field-hint" style="display:block;">
@@ -3148,7 +3155,59 @@
         </div>
 
         <div class="btn-group">
-            <button class="btn-whatsapp btn-icon-watermark icon-whatsapp" onclick="contactSupportForPassword()">تواصل مع الدعم الفني عبر الواتساب</button>
+            <button class="btn-whatsapp btn-icon-watermark icon-whatsapp" onclick="openSupportForm()">تواصل مع الدعم الفني عبر الواتساب</button>
+        </div>
+
+        <!-- ==========================================================
+             نموذج بيانات التواصل مع الدعم الفني
+             ----------------------------------------------------------
+             يظهر عند الضغط على زر الدعم. الغرض منه ان تصل رسالة
+             مكتملة البيانات بدل رسالة ناقصة يضطر الدعم لمراسلة صاحبها
+             مرارا ليكملها.
+             الاسم والجوال الزاميان لانهما وسيلة التعرف والتواصل،
+             والاسم المستخدم اختياري لان الشخص قد يكون نسيه فعلا.
+             ========================================================== -->
+        <div id="supportFormBox" class="add-form-section" style="display:none;">
+            <h3><i class="fab fa-whatsapp"></i> بيانات التواصل مع الدعم الفني</h3>
+
+            <div class="input-group">
+                <label for="supName">الاسم الكامل:</label>
+                <div class="input-with-icon">
+                    <input type="text" id="supName" placeholder="اكتب اسمك الكامل">
+                    <i class="fas fa-user right-icon"></i>
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-top: 15px;">
+                <label for="supPhone">رقم جوالك:</label>
+                <div class="input-with-icon">
+                    <input type="tel" id="supPhone" inputmode="tel" dir="ltr" placeholder="0512345678  او  +966512345678">
+                    <i class="fas fa-phone right-icon"></i>
+                </div>
+                <div class="field-hint" style="display:block;">
+                    <i class="fas fa-lightbulb"></i>
+                    اكتبه بأي من الصيغتين وسيحول تلقائيا الى الصيغة الدولية.
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-top: 15px;">
+                <label for="supEmpId">الاسم المستخدم (اختياري):</label>
+                <div class="input-with-icon">
+                    <input type="text" id="supEmpId" placeholder="اتركه فارغا اذا كنت لا تتذكره">
+                    <i class="fas fa-id-badge right-icon"></i>
+                </div>
+                <div class="field-hint" style="display:block;">
+                    <i class="fas fa-circle-info"></i>
+                    لا مشكلة ان تركته فارغا، سيتولى الدعم الفني البحث عن حسابك باسمك وجوالك.
+                </div>
+            </div>
+
+            <div id="supError" class="error-message"></div>
+
+            <div class="btn-group">
+                <button class="btn-whatsapp btn-icon-watermark icon-whatsapp" onclick="sendSupportMessage()">فتح الواتساب وارسال الرسالة</button>
+                <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeSupportForm()">الغاء</button>
+            </div>
         </div>
     </div>
 
@@ -3156,9 +3215,9 @@
         <h2>شاشة الباحث: تسجيل الدخول</h2>
 
         <div class="input-group">
-            <label for="resIdLogin">الرقم الوظيفي:</label>
+            <label for="resIdLogin">الاسم المستخدم:</label>
             <div class="input-with-icon">
-                <input type="text" id="resIdLogin" inputmode="text" autocomplete="username" placeholder="ادخل الرقم الوظيفي للباحث">
+                <input type="text" id="resIdLogin" inputmode="text" autocomplete="username" placeholder="ادخل الاسم المستخدم للباحث">
                 <i class="fas fa-id-badge right-icon"></i>
             </div>
         </div>
@@ -3242,9 +3301,9 @@
             </div>
 
             <div class="input-group">
-                <label for="empId">الرقم الوظيفي:</label>
+                <label for="empId">الاسم المستخدم:</label>
                 <div class="input-with-icon">
-                    <input type="text" id="empId" placeholder="ادخل رقمك الوظيفي" readonly style="background: rgba(0,0,0,0.05); color: #666;">
+                    <input type="text" id="empId" placeholder="ادخل اسمك المستخدم" readonly style="background: rgba(0,0,0,0.05); color: #666;">
                     <i class="fas fa-id-badge right-icon"></i>
                 </div>
             </div>
@@ -3303,9 +3362,9 @@
             <h2>شاشة الادارة: تسجيل الدخول</h2>
             
             <div class="input-group">
-                <label for="managerIdLogin">الرقم الوظيفي:</label>
+                <label for="managerIdLogin">الاسم المستخدم:</label>
                 <div class="input-with-icon">
-                    <input type="text" id="managerIdLogin" autocomplete="username" placeholder="ادخل الرقم الوظيفي للادارة">
+                    <input type="text" id="managerIdLogin" autocomplete="username" placeholder="ادخل الاسم المستخدم للادارة">
                     <i class="fas fa-id-badge right-icon"></i>
                 </div>
             </div>
@@ -3369,6 +3428,14 @@
         </div>
         <h2>الادارة العامة والصلاحيات</h2>
 
+        <!-- ==========================================================
+             تصفير بيانات النظام: للمبرمج وحده
+             ----------------------------------------------------------
+             اداة تشغيلية لمرة واحدة عند الانتقال من التجربة الى
+             الاطلاق الرسمي. يخفى الزر عن الجميع الا المبرمج.
+             ========================================================== -->
+        <button id="btnResetSystem" class="btn-danger btn-icon-watermark icon-times" style="display:none;" onclick="openResetPanel()">تصفير بيانات النظام (اطلاق رسمي)</button>
+
         <button id="btnAddNewManager" class="btn-manager btn-icon-watermark icon-user-plus" onclick="toggleAddManagerForm()">اضافة مدير جديد</button>
 
         <div id="addManagerSection" class="add-form-section" style="display: none;">
@@ -3382,9 +3449,9 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="newManId">الرقم الوظيفي:</label>
+                    <label for="newManId">الاسم المستخدم:</label>
                     <div class="input-with-icon">
-                        <input type="text" id="newManId" inputmode="text" placeholder="ادخل الرقم الوظيفي">
+                        <input type="text" id="newManId" inputmode="text" placeholder="ادخل الاسم المستخدم">
                         <i class="fas fa-id-badge right-icon"></i>
                     </div>
                     <!-- يظهر عند اضافة مدير جديد ليوضح ان الرقم مقترح وقابل للتعديل -->
@@ -3433,6 +3500,52 @@
             </div>
         </div>
 
+        <!-- ==========================================================
+             لوحة تصفير بيانات النظام
+             ========================================================== -->
+        <div id="resetPanel" class="danger-panel" style="display:none;">
+            <div class="danger-title">
+                <i class="fas fa-triangle-exclamation"></i>
+                تصفير بيانات النظام قبل الاطلاق الرسمي
+            </div>
+
+            <p class="danger-text">
+                هذا الاجراء يمسح كل السجلات التشغيلية التي تراكمت اثناء التجربة،
+                <strong>ولا يمكن التراجع عنه اطلاقا</strong>.
+            </p>
+
+            <div class="danger-box">
+                <div class="danger-box-title">ما سيمسح بالكامل:</div>
+                <div id="resetStats"></div>
+            </div>
+
+            <div class="safe-box">
+                <div class="safe-box-title"><i class="fas fa-shield-halved"></i> ما لن يمس:</div>
+                <div class="safe-box-row">حسابات المدراء وصلاحياتهم — تبقى كما هي تماما</div>
+                <div class="safe-box-note">
+                    كل ما عدا حسابات المدراء يمسح: الزيارات والاجازات والتقارير والتنبيهات
+                    والبلاغات والاشعارات وسجل التدقيق وحسابات الباحثين ان بقي منها شيء.
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-top:15px;">
+                <label for="resetConfirmInput">للتأكيد النهائي اكتب هذه العبارة بالضبط: <strong>تصفير</strong></label>
+                <div class="input-with-icon">
+                    <input type="text" id="resetConfirmInput" placeholder="اكتب: تصفير">
+                    <i class="fas fa-keyboard right-icon"></i>
+                </div>
+            </div>
+
+            <div id="resetError" class="error-message"></div>
+            <div id="resetSuccess" class="success-message"></div>
+            <div id="resetProgress" class="loading-message" style="display:none;"></div>
+
+            <div class="btn-group">
+                <button id="btnConfirmReset" class="btn-danger btn-icon-watermark icon-times" onclick="confirmResetSystem()">تنفيذ التصفير النهائي</button>
+                <button class="btn-neutral btn-icon-watermark icon-check" onclick="closeResetPanel()">الغاء والعودة</button>
+            </div>
+        </div>
+
         <div id="manListLoading" class="loading-message" style="display: none;"><i class="fas fa-spinner fa-spin"></i> جاري تحميل المدراء...</div>
         <div id="manListError" class="error-message"></div>
 
@@ -3442,7 +3555,7 @@
                     <tr>
                         <th>م</th>
                         <th>اسم المدير</th>
-                        <th class="full-access-col">الرقم الوظيفي</th>
+                        <th class="full-access-col">الاسم المستخدم</th>
                         <th class="full-access-col">كلمة المرور</th>
                         <th>المسمى</th>
                         <th>الصلاحيات</th>
@@ -3460,9 +3573,9 @@
         
         <div class="form-grid">
             <div class="input-group full-width">
-                <label for="searchEmpId">الرقم الوظيفي للباحث (اختياري):</label>
+                <label for="searchEmpId">الاسم المستخدم للباحث (اختياري):</label>
                 <div class="input-with-icon">
-                    <input type="text" id="searchEmpId" placeholder="ادخل الرقم الوظيفي للباحث">
+                    <input type="text" id="searchEmpId" placeholder="ادخل الاسم المستخدم للباحث">
                     <i class="fas fa-id-badge right-icon"></i>
                 </div>
             </div>
@@ -3534,7 +3647,7 @@
              حذف الباحث يمسح معه كل سجلاته: الاجازات ومرفقاتها الطبية
              والتنبيهات والانذارات والاشعارات. العملية غير قابلة
              للتراجع، لذلك تعرض هنا ارقام حقيقية لما سيمسح، ويطلب من
-             المدير كتابة الرقم الوظيفي للباحث بيده كتأكيد نهائي.
+             المدير كتابة الاسم المستخدم للباحث بيده كتأكيد نهائي.
              ========================================================== -->
         <div id="deleteResPanel" class="danger-panel" style="display:none;">
             <div class="danger-title">
@@ -3557,15 +3670,15 @@
                 <div id="deleteResVisitsCount" class="safe-box-row"></div>
                 <div class="safe-box-note">
                     الزيارات الموثقة سجل عمل دائم للجمعية وليست بيانات شخصية، لذلك تبقى كما هي
-                    ويبقى معها اسم الباحث ورقمه الوظيفي داخل كل زيارة، حفاظا على صحة احصاءات
+                    ويبقى معها اسم الباحث واسمه المستخدم داخل كل زيارة، حفاظا على صحة احصاءات
                     الجمعية وسجلاتها التاريخية. كذلك يبقى سجل التدقيق كاملا دون مساس.
                 </div>
             </div>
 
             <div class="input-group" style="margin-top:15px;">
-                <label for="deleteResConfirmInput">للتأكيد النهائي، اكتب الرقم الوظيفي للباحث:</label>
+                <label for="deleteResConfirmInput">للتأكيد النهائي، اكتب الاسم المستخدم للباحث:</label>
                 <div class="input-with-icon">
-                    <input type="text" id="deleteResConfirmInput" placeholder="اكتب الرقم الوظيفي بالضبط">
+                    <input type="text" id="deleteResConfirmInput" placeholder="اكتب الاسم المستخدم بالضبط">
                     <i class="fas fa-keyboard right-icon"></i>
                 </div>
             </div>
@@ -3601,9 +3714,9 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="newResId">الرقم الوظيفي:</label>
+                    <label for="newResId">الاسم المستخدم:</label>
                     <div class="input-with-icon">
-                        <input type="text" id="newResId" placeholder="ادخل الرقم الوظيفي">
+                        <input type="text" id="newResId" placeholder="ادخل الاسم المستخدم">
                         <i class="fas fa-id-badge right-icon"></i>
                     </div>
                     <!-- يظهر عند اضافة باحث جديد: رقم مولد عشوائيا بصيغة OSB#### -->
@@ -3642,7 +3755,7 @@
                     <tr>
                         <th>م</th>
                         <th>اسم الباحث</th>
-                        <th>الرقم الوظيفي</th>
+                        <th>الاسم المستخدم</th>
                         <th>كلمة المرور</th>
                         <th>حالة الباحث</th>
                         <th>الاجراء</th>
@@ -3699,7 +3812,7 @@
                     <tr>
                         <th>م</th>
                         <th>اسم الباحث</th>
-                        <th>الرقم الوظيفي</th>
+                        <th>الاسم المستخدم</th>
                         <th>رقم الزيارة</th>
                         <th>تاريخ التنفيذ</th>
                         <th>تاريخ التوثيق</th>
@@ -3988,7 +4101,7 @@
                         <th>م</th>
                         <th>النوع</th>
                         <th>اسم الباحث</th>
-                        <th>الرقم الوظيفي</th>
+                        <th>الاسم المستخدم</th>
                         <th>من تاريخ</th>
                         <th>الى تاريخ</th>
                         <th>عدد الايام</th>
@@ -4035,7 +4148,7 @@
     <!-- ==============================================================
          شاشة الباحث: زياراتي
          --------------------------------------------------------------
-         تعرض الزيارات المسجلة برقم الباحث الوظيفي فقط، مع فلترة
+         تعرض الزيارات المسجلة باسم الباحث المستخدم فقط، مع فلترة
          بنطاق تاريخ التنفيذ. الزيارات تجلب مرة واحدة والتصفية تتم
          داخل المتصفح، فتكون فورية دون اي استعلام اضافي.
          ============================================================== -->
@@ -4291,7 +4404,7 @@
                         <th>م</th>
                         <th>النوع</th>
                         <th>اسم الباحث</th>
-                        <th>الرقم الوظيفي</th>
+                        <th>الاسم المستخدم</th>
                         <th>السبب</th>
                         <th>ملاحظة الادارة</th>
                         <th>رقم الزيارة</th>
@@ -4359,7 +4472,7 @@
     <!-- ==============================================================
          شاشة حسابي (للباحث والمدير معا)
          --------------------------------------------------------------
-         الاسم والرقم الوظيفي للعرض فقط ولا يعدلان الا من الادارة.
+         الاسم والاسم المستخدم للعرض فقط ولا يعدلان الا من الادارة.
          رقم الجوال يسجله المستخدم بنفسه، وهو شرط لازم قبل السماح
          بتغيير كلمة المرور، حتى يكون لدى الجمعية وسيلة تواصل موثقة
          مع كل حساب.
@@ -4377,7 +4490,7 @@
                 <span class="account-value" id="accName">-</span>
             </div>
             <div class="account-row">
-                <span class="account-label"><i class="fas fa-id-badge"></i> الرقم الوظيفي:</span>
+                <span class="account-label"><i class="fas fa-id-badge"></i> الاسم المستخدم:</span>
                 <span class="account-value" id="accId">-</span>
             </div>
             <div class="account-row">
@@ -4386,7 +4499,7 @@
             </div>
             <div class="account-note">
                 <i class="fas fa-lock"></i>
-                الاسم والرقم الوظيفي لا يعدلان من هنا. لتغييرهما راجع الادارة.
+                الاسم والاسم المستخدم لا يعدلان من هنا. لتغييرهما راجع الادارة.
             </div>
         </div>
 
@@ -4399,12 +4512,13 @@
             <div class="input-group" style="margin-top:15px;">
                 <label for="accPhone">رقم الجوال السعودي:</label>
                 <div class="input-with-icon">
-                    <input type="tel" id="accPhone" inputmode="tel" dir="ltr" placeholder="+966512345678">
+                    <input type="tel" id="accPhone" inputmode="tel" dir="ltr" placeholder="0512345678  او  +966512345678">
                     <i class="fas fa-phone right-icon"></i>
                 </div>
                 <div class="field-hint" style="display:block;">
                     <i class="fas fa-lightbulb"></i>
-                    الصيغة: +966 يليها تسعة ارقام. يمكنك كتابته بصيغة 05xxxxxxxx وسيحول تلقائيا.
+                    اكتب رقمك بأي من الصيغتين: <strong>05xxxxxxxx</strong> او <strong>+966xxxxxxxxx</strong>،
+                    وسيحول ويسجل تلقائيا بالصيغة الدولية.
                 </div>
             </div>
 
@@ -5062,7 +5176,7 @@
        __genHash("كلمة المرور الجديدة")  ثم ضع الناتج في المتغير ادناه */
     /* حساب المبرمج (المدير الاول)
        ------------------------------------------------------------------
-       الرقم الوظيفي: OSP0001
+       الاسم المستخدم: OSP0001
        حرف P يرمز الى Programmer، وهو استثناء دائم خارج نظام الترقيم
        العشوائي المستخدم للمدراء (OSM####) والباحثين (OSB####)،
        فلا يمكن ان يتعارض معهما ابدا.
@@ -5169,7 +5283,7 @@
           وقوائم السنوات لا تعرض سنوات مستقبلية. */
     const LEAVE_ALLOW_FUTURE_YEARS = false;
 
-    /* ---------------- نظام الارقام الوظيفية ----------------
+    /* ---------------- نظام اسماء المستخدمين ----------------
        الباحث : OSB####     المدير : OSM####     المبرمج : OSP0001
 
        قواعد الارقام الاربعة العشوائية:
@@ -6435,7 +6549,7 @@
         loginError.style.display = "none";
 
         if (!rId || !pass) {
-            showMsg("resLoginError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال الرقم الوظيفي وكلمة المرور.");
+            showMsg("resLoginError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال الاسم المستخدم وكلمة المرور.");
             return;
         }
 
@@ -6490,6 +6604,10 @@
                 empId: resData.empId,
                 status: resData.status || "active",
                 remember: rememberRes,
+                /* الجوال المسجل: يقرأ هنا لا في المزامنة الدورية فقط،
+                   والا ظهر تذكير تسجيل الجوال لمن سجله فعلا حتى تعمل
+                   المزامنة بعد دقائق. هذا كان سبب استمرار الاشعار */
+                phone: resData.phone || "",
                 /* هل دخل بكلمة مرور مؤقتة اصدرتها الادارة؟ */
                 mustChangePassword: resData.mustChangePassword === true
             };
@@ -6505,7 +6623,7 @@
             document.getElementById("empName").value = session.name;
             document.getElementById("empId").value = session.empId;
 
-            /* اظهار الشريط العلوي للباحث (الاسم + الرقم الوظيفي + جرس الاشعارات) */
+            /* اظهار الشريط العلوي للباحث (الاسم + الاسم المستخدم + جرس الاشعارات) */
             showTopBar();
             window.startPermSync();
             checkPhoneReminder();
@@ -6517,7 +6635,7 @@
             if (info.until && Date.now() < info.until) {
                 extra = "<br>تم ايقاف المحاولات مؤقتا لمدة " + Math.ceil(LOCKOUT_MS / 1000) + " ثانية.";
             }
-            showMsg("resLoginError", "<i class='fas fa-times-circle'></i> الرقم الوظيفي او كلمة المرور غير صحيحة." + extra);
+            showMsg("resLoginError", "<i class='fas fa-times-circle'></i> الاسم المستخدم او كلمة المرور غير صحيحة." + extra);
         }
         loginBtn.disabled = false;
         loginBtn.innerHTML = 'تسجيل الدخول';
@@ -6535,7 +6653,7 @@
         hideMsg("managerLoginError");
 
         if (!mId || !pass) {
-            showMsg("managerLoginError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال الرقم الوظيفي وكلمة المرور.");
+            showMsg("managerLoginError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال الاسم المستخدم وكلمة المرور.");
             return;
         }
 
@@ -6601,6 +6719,8 @@
                 permissions: Array.isArray(managerData.permissions) ? managerData.permissions : [],
                 isMaster: false,
                 remember: !!(document.getElementById("rememberManager") || {}).checked,
+                /* الجوال المسجل: يقرأ هنا لنفس سبب الباحث اعلاه */
+                phone: managerData.phone || "",
                 /* هل دخل بكلمة مرور مؤقتة اصدرتها الادارة؟ */
                 mustChangePassword: managerData.mustChangePassword === true
             };
@@ -6614,7 +6734,7 @@
             if (info.until && Date.now() < info.until) {
                 extra = "<br>تم ايقاف المحاولات مؤقتا لمدة " + Math.ceil(LOCKOUT_MS / 1000) + " ثانية.";
             }
-            showMsg("managerLoginError", "<i class='fas fa-times-circle'></i> الرقم الوظيفي او كلمة المرور غير صحيحة." + extra);
+            showMsg("managerLoginError", "<i class='fas fa-times-circle'></i> الاسم المستخدم او كلمة المرور غير صحيحة." + extra);
         }
         loginBtn.disabled = false;
         loginBtn.innerHTML = 'تسجيل الدخول';
@@ -6679,7 +6799,7 @@
             return;
         }
 
-        /* الاسم والرقم الوظيفي يؤخذان من الجلسة وليس من الحقول لمنع التزوير */
+        /* الاسم والاسم المستخدم يؤخذان من الجلسة وليس من الحقول لمنع التزوير */
         const name = session.name;
         const id = session.empId;
         const vId = window.toEnglishDigits(document.getElementById("visitId").value.trim());
@@ -6803,7 +6923,7 @@
                 const canEdit = hasPerm(PERM_VISIT_EDIT);
                 let html =
                     '<div style="margin-bottom:8px;"><i class="fas fa-user" style="width:25px; text-align:center;"></i> <strong>اسم الباحث:</strong> ' + esc(matchedVisit.empName) + '</div>' +
-                    '<div style="margin-bottom:8px;"><i class="fas fa-id-badge" style="width:25px; text-align:center;"></i> <strong>الرقم الوظيفي:</strong> ' + esc(matchedVisit.empId) + '</div>' +
+                    '<div style="margin-bottom:8px;"><i class="fas fa-id-badge" style="width:25px; text-align:center;"></i> <strong>الاسم المستخدم:</strong> ' + esc(matchedVisit.empId) + '</div>' +
                     '<div style="margin-bottom:8px;"><i class="fas fa-hashtag" style="width:25px; text-align:center;"></i> <strong>رقم الزيارة:</strong> ' + esc(matchedVisit.visitId) + '</div>' +
                     '<div style="margin-bottom:15px;"><i class="fas fa-clock" style="width:25px; text-align:center;"></i> <strong>تاريخ التوثيق:</strong> ' + esc(window.formatDateTimeToEnglish(matchedVisit.regDate)) + '</div>';
 
@@ -6836,7 +6956,7 @@
                     setTimeout(function() { window.initializeDatePickers(); }, 100);
                 }
             } else {
-                const labels = ["اسم الباحث", "الرقم الوظيفي", "رقم الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق"];
+                const labels = ["اسم الباحث", "الاسم المستخدم", "رقم الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق"];
                 const icons = ["fa-user", "fa-id-badge", "fa-hashtag", "fa-calendar-alt", "fa-clock"];
                 const values = [matchedVisit.empName, matchedVisit.empId, matchedVisit.visitId, matchedVisit.execDate, window.formatDateTimeToEnglish(matchedVisit.regDate)];
                 for (let i = 0; i < labels.length; i++) {
@@ -6994,8 +7114,8 @@
         const empHeaderDiv = document.getElementById("employeeHeader");
         if (p.empId) {
             empHeaderDiv.textContent = fetchedVisits.length > 0
-                ? ("الباحث: " + fetchedVisits[0].empName + " | الرقم الوظيفي: " + p.empId)
-                : ("الرقم الوظيفي: " + p.empId + " (لا توجد بيانات مسجلة لهذا الرقم)");
+                ? ("الباحث: " + fetchedVisits[0].empName + " | الاسم المستخدم: " + p.empId)
+                : ("الاسم المستخدم: " + p.empId + " (لا توجد بيانات مسجلة لهذا الرقم)");
             empHeaderDiv.style.display = "block";
         } else {
             empHeaderDiv.style.display = "none";
@@ -7005,7 +7125,7 @@
             const thead = document.getElementById("tableHead");
             thead.innerHTML = "";
             const trHead = document.createElement("tr");
-            ["م", "اسم الباحث", "الرقم الوظيفي", "رقم الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق"].forEach(function(h) {
+            ["م", "اسم الباحث", "الاسم المستخدم", "رقم الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق"].forEach(function(h) {
                 const th = document.createElement("th");
                 th.textContent = h;
                 trHead.appendChild(th);
@@ -7526,12 +7646,12 @@
        الزيارات الموثقة لا تحذف ابدا:
        -----------------------------
        هي سجل عمل الجمعية وليست بيانات شخصية للباحث، ويبقى معها اسمه
-       ورقمه الوظيفي كما هما داخل كل زيارة، حتى تظل احصاءات الجمعية
+       واسمه المستخدم كما هما داخل كل زيارة، حتى تظل احصاءات الجمعية
        وسجلاتها التاريخية صحيحة وكاملة بعد حذف الحساب.
        لا يوجد في النظام اي مسار يحذف الزيارات عند حذف الباحث.
 
        العملية غير قابلة للتراجع، لذلك تعرض لوحة تحذير تبين عدد
-       السجلات التي ستمسح، وتطلب من المدير كتابة الرقم الوظيفي
+       السجلات التي ستمسح، وتطلب من المدير كتابة الاسم المستخدم
        للباحث بيده كتأكيد نهائي قبل التنفيذ.
        ================================================================== */
 
@@ -7576,7 +7696,7 @@
 
             /* الزيارات تعرض للعلم فقط، ولا تحذف باي حال */
             const vLabel = document.getElementById("deleteResVisitsCount");
-            if (vLabel) vLabel.textContent = counts.visits + " زيارة موثقة باسمه ورقمه الوظيفي — محفوظة ولن تحذف";
+            if (vLabel) vLabel.textContent = counts.visits + " زيارة موثقة باسمه واسمه المستخدم — محفوظة ولن تحذف";
         } catch (e) {
             stats.innerHTML = "<div class='delete-stat-row'>تعذر حصر السجلات، وسيجري الحذف على كل حال عند التأكيد.</div>";
         }
@@ -7612,9 +7732,9 @@
 
         hideMsg("deleteResError");
 
-        /* التأكيد النهائي: كتابة الرقم الوظيفي بخط اليد */
+        /* التأكيد النهائي: كتابة الاسم المستخدم بخط اليد */
         if (typed !== String(r.empId).trim().toUpperCase()) {
-            showMsg("deleteResError", "<i class='fas fa-times-circle'></i> الرقم الوظيفي الذي كتبته لا يطابق رقم الباحث. لم يتم حذف اي شيء.");
+            showMsg("deleteResError", "<i class='fas fa-times-circle'></i> الاسم المستخدم الذي كتبته لا يطابق رقم الباحث. لم يتم حذف اي شيء.");
             return;
         }
 
@@ -7646,7 +7766,7 @@
             for (const d of notifSnap.docs) { await deleteDoc(doc(db, "notifications", d.id)); removed.notifications++; }
 
             /* ملاحظة: الزيارات الموثقة لا تحذف ولا تمس اطلاقا،
-               ويبقى فيها اسم الباحث ورقمه الوظيفي كما سجلا،
+               ويبقى فيها اسم الباحث واسمه المستخدم كما سجلا،
                لان الاصل حفظها كسجل عمل دائم للجمعية */
 
             /* 5) حساب الباحث نفسه */
@@ -7716,7 +7836,7 @@
             passInput.placeholder = "يجب ان تتكون من 6 خانات، ارقام وحروف، وحرف انجليزي كبير";
             passInput.value = "";
 
-            /* رقم وظيفي مقترح تلقائيا بصيغة OSB#### وقابل للتعديل */
+            /* اسم مستخدم مقترح تلقائيا بصيغة OSB#### وقابل للتعديل */
             document.getElementById("newResId").value = suggestResearcherId();
             const rHint = document.getElementById("resIdHint");
             if (rHint) rHint.style.display = "block";
@@ -7774,7 +7894,7 @@
         hideMsg("addResSuccess");
 
         if (!name || !id) {
-            showMsg("addResError", "<i class='fas fa-exclamation-circle'></i> الرجاء تعبئة الاسم والرقم الوظيفي.");
+            showMsg("addResError", "<i class='fas fa-exclamation-circle'></i> الرجاء تعبئة الاسم والاسم المستخدم.");
             return;
         }
 
@@ -7802,7 +7922,7 @@
 
             if (isDuplicate) {
                 document.getElementById("addResLoading").style.display = "none";
-                showMsg("addResError", "<i class='fas fa-times-circle'></i> هذا الرقم الوظيفي مسجل مسبقا لباحث اخر!");
+                showMsg("addResError", "<i class='fas fa-times-circle'></i> هذا الاسم المستخدم مسجل مسبقا لباحث اخر!");
                 return;
             }
 
@@ -7863,13 +7983,19 @@
         const btnAddMan = document.getElementById("btnAddNewManager");
         if (btnAddMan) btnAddMan.style.display = hasFullAccess ? "block" : "none";
 
+        /* اداة التصفير: للمبرمج وحده لا للمدير العام */
+        const btnReset = document.getElementById("btnResetSystem");
+        if (btnReset) btnReset.style.display = isMaster() ? "block" : "none";
+        const resetPanelEl = document.getElementById("resetPanel");
+        if (resetPanelEl && !isMaster()) resetPanelEl.style.display = "none";
+
         const rLoading = document.getElementById("manListLoading");
         const tbody = document.getElementById("managersTableBody");
         const thead = document.querySelector("#managersTable thead tr");
 
         thead.innerHTML = "";
         const headers = hasFullAccess
-            ? ["م", "اسم المدير", "الرقم الوظيفي", "كلمة المرور", "المسمى", "الصلاحيات", "الاجراء"]
+            ? ["م", "اسم المدير", "الاسم المستخدم", "كلمة المرور", "المسمى", "الصلاحيات", "الاجراء"]
             : ["م", "اسم المدير", "المسمى", "الصلاحيات"];
         headers.forEach(function(h) {
             const th = document.createElement("th");
@@ -7997,6 +8123,33 @@
                     btnEdit.onclick = function() { window.editManager(m.id); };
                     divActions.appendChild(btnEdit);
 
+                    /* ------------------------------------------------------------
+                       زر واتساب لتسليم بيانات الدخول، للمبرمج وحده
+                       ------------------------------------------------------------
+                       يفتح محادثة مع المدير برسالة مجهزة تحوي اسمه واسمه
+                       المستخدم، وخانة كلمة المرور متروكة فارغة عمدا ليكتبها
+                       المبرمج بيده عند الارسال. فلا تخزن كلمة مرور نصا في
+                       النظام ولا تظهر في اي شاشة، اتساقا مع سياسة التشفير.
+                       ------------------------------------------------------------ */
+                    if (isMaster()) {
+                        const btnWa = document.createElement("button");
+                        btnWa.type = "button";
+                        btnWa.className = "btn-icon-watermark icon-whatsapp btn-table btn-whatsapp-row";
+                        btnWa.textContent = "واتساب";
+
+                        if (validSaudiPhone(m.phone)) {
+                            btnWa.title = "فتح محادثة واتساب مع " + m.empName;
+                            btnWa.onclick = function() { window.sendManagerCredentials(m.id); };
+                        } else {
+                            /* بلا جوال مسجل لا يمكن فتح محادثة */
+                            btnWa.disabled = true;
+                            btnWa.style.opacity = "0.5";
+                            btnWa.style.cursor = "not-allowed";
+                            btnWa.title = "لا يوجد رقم جوال مسجل لهذا المدير";
+                        }
+                        divActions.appendChild(btnWa);
+                    }
+
                     /* لا يمكن للمدير حذف حسابه الذي يستخدمه حاليا */
                     if (m.id !== session.id) {
                         const btnDelete = document.createElement("button");
@@ -8040,7 +8193,7 @@
     };
 
     /* ------------------------------------------------------------------
-       مولد الارقام الوظيفية العشوائية
+       مولد اسماء المستخدمين العشوائية
        ------------------------------------------------------------------
        ينتج اربعة ارقام وفق قاعدتين:
          1) لا تبدأ بصفر
@@ -8078,7 +8231,7 @@
     }
 
     /* ------------------------------------------------------------------
-       اقتراح الرقم الوظيفي للمدير الجديد
+       اقتراح الاسم المستخدم للمدير الجديد
        ------------------------------------------------------------------
        الصيغة OSM#### باربعة ارقام عشوائية، والرقم مقترح فقط وقابل
        للتعديل، والقرار النهائي للمدير العام او المبرمج.
@@ -8091,11 +8244,189 @@
         return generateUniqueId(ID_PREFIX_MANAGER, used);
     }
 
-    /* اقتراح الرقم الوظيفي للباحث الجديد بصيغة OSB#### */
+    /* اقتراح الاسم المستخدم للباحث الجديد بصيغة OSB#### */
     function suggestResearcherId() {
         const used = researchersList.map(function(r) { return r.empId; });
         return generateUniqueId(ID_PREFIX_RESEARCHER, used);
     }
+
+    /* ------------------------------------------------------------------
+       ارسال بيانات الدخول لمدير عبر الواتساب (المبرمج وحده)
+       ------------------------------------------------------------------
+       خانة كلمة المرور تترك فارغة في الرسالة عمدا: النظام لا يحتفظ
+       بكلمات المرور نصا بل مشفرة لا تسترجع، فيكتبها المبرمج بيده
+       عند الارسال. وهذا اسلم من تخزينها لمجرد اظهارها هنا.
+       ------------------------------------------------------------------ */
+    window.sendManagerCredentials = function(docId) {
+        if (!isMaster()) { denyAccess(); return; }
+
+        const m = managersList.find(function(x) { return x.id === docId; });
+        if (!m) { toast("لم يعد هذا المدير موجودا في القائمة.", "error"); return; }
+
+        if (!validSaudiPhone(m.phone)) {
+            toast("لا يوجد رقم جوال مسجل لهذا المدير، فلا يمكن فتح محادثة.", "warn");
+            return;
+        }
+
+        const lines = [
+            "الاسم: " + (m.empName || ""),
+            "",
+            "الاسم المستخدم: " + (m.empId || ""),
+            "",
+            "كلمة المرور: "
+        ];
+
+        /* رقم الواتساب بلا علامة الزائد */
+        const wa = String(m.phone).replace(/^\+/, "");
+        window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
+
+        logAudit("فتح محادثة تسليم بيانات دخول", (m.empName || "") + " (" + m.empId + ")");
+    };
+
+    /* ==================================================================
+       تصفير بيانات النظام (المبرمج وحده)
+       ==================================================================
+       اداة تشغيلية للانتقال من مرحلة التجربة الى الاطلاق الرسمي.
+
+       تمسح كل المجموعات التشغيلية وتبقي مجموعة المدراء وحدها، فلا
+       يضطر المبرمج لحذف اربع عشرة مجموعة يدويا من لوحة Firebase
+       وهو اجراء طويل ومعرض للخطأ.
+
+       الحمايات: للمبرمج وحده، وتحصر ما سيمسح بارقام حقيقية قبل
+       التنفيذ، وتشترط كتابة كلمة تأكيد بخط اليد.
+       ================================================================== */
+
+    /* كل المجموعات التشغيلية. مجموعة managers غائبة عمدا فهي المستثناة */
+    const RESET_COLLECTIONS = [
+        { name: "visits",            label: "زيارة موثقة" },
+        { name: "researchers",       label: "حساب باحث" },
+        { name: "leaves",            label: "طلب اجازة" },
+        { name: "leave_files",       label: "مرفق عذر طبي" },
+        { name: "leave_file_chunks", label: "جزء مرفق" },
+        { name: "notices",           label: "تنبيه او انذار" },
+        { name: "notice_templates",  label: "صيغة جاهزة" },
+        { name: "daily_reports",     label: "تقرير يومي" },
+        { name: "visit_reports",     label: "بلاغ زيارة" },
+        { name: "leave_reports",     label: "بلاغ اجازة" },
+        { name: "report_reports",    label: "بلاغ تقرير" },
+        { name: "password_requests", label: "طلب استعادة كلمة مرور" },
+        { name: "notifications",     label: "اشعار" },
+        { name: "audit_log",         label: "سجل تدقيق" }
+    ];
+
+    window.openResetPanel = async function() {
+        if (!isMaster()) { denyAccess(); return; }
+
+        const panel = document.getElementById("resetPanel");
+        const stats = document.getElementById("resetStats");
+        document.getElementById("resetConfirmInput").value = "";
+        hideMsg("resetError");
+        hideMsg("resetSuccess");
+        document.getElementById("resetProgress").style.display = "none";
+
+        panel.style.display = "block";
+        window.scrollTo({ top: Math.max(0, panel.offsetTop - 20), behavior: "smooth" });
+
+        stats.innerHTML = '<div class="loading-inline"><i class="fas fa-spinner fa-spin"></i> جاري حصر السجلات...</div>';
+
+        try {
+            const counts = await Promise.all(RESET_COLLECTIONS.map(function(c) {
+                return getDocs(collection(db, c.name))
+                    .then(function(s) { return { label: c.label, n: s.size }; })
+                    .catch(function() { return { label: c.label, n: 0 }; });
+            }));
+
+            stats.innerHTML = "";
+            let total = 0;
+            counts.forEach(function(c) {
+                total += c.n;
+                if (c.n === 0) return;                 /* لا نزحم القائمة بالفارغ */
+                const div = document.createElement("div");
+                div.className = "delete-stat-row";
+                div.textContent = "• " + c.n + " " + c.label;
+                stats.appendChild(div);
+            });
+
+            if (total === 0) {
+                stats.innerHTML = '<div class="delete-stat-row">لا توجد سجلات، قاعدة البيانات نظيفة اصلا.</div>';
+            } else {
+                const sum = document.createElement("div");
+                sum.className = "delete-stat-row";
+                sum.style.cssText = "margin-top:8px;font-weight:900;";
+                sum.textContent = "الاجمالي: " + total + " سجل";
+                stats.appendChild(sum);
+            }
+        } catch (e) {
+            stats.innerHTML = '<div class="delete-stat-row">تعذر حصر السجلات، وسيجري المسح على كل حال عند التأكيد.</div>';
+        }
+    };
+
+    window.closeResetPanel = function() {
+        document.getElementById("resetPanel").style.display = "none";
+    };
+
+    window.confirmResetSystem = async function() {
+        if (!isMaster()) { denyAccess(); return; }
+        if (!requireOnline("resetError")) return;
+
+        const typed = document.getElementById("resetConfirmInput").value.trim();
+        const btn = document.getElementById("btnConfirmReset");
+        const progress = document.getElementById("resetProgress");
+
+        hideMsg("resetError");
+        hideMsg("resetSuccess");
+
+        if (typed !== "تصفير") {
+            showMsg("resetError", "<i class='fas fa-times-circle'></i> كلمة التأكيد غير مطابقة. لم يحذف اي شيء.");
+            return;
+        }
+
+        btn.disabled = true;
+        progress.style.display = "block";
+
+        let deleted = 0;
+        try {
+            for (let i = 0; i < RESET_COLLECTIONS.length; i++) {
+                const c = RESET_COLLECTIONS[i];
+                progress.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري مسح ' + c.name +
+                                     ' (' + (i + 1) + ' من ' + RESET_COLLECTIONS.length + ')...';
+
+                /* المسح على دفعات: المجموعة قد تحوي اكثر مما يجلب مرة واحدة */
+                let guard = 0;
+                while (guard < 50) {
+                    guard++;
+                    const snap = await getDocs(query(collection(db, c.name), limit(300)));
+                    if (snap.empty) break;
+
+                    const jobs = [];
+                    snap.forEach(function(d) { jobs.push(deleteDoc(doc(db, c.name, d.id))); });
+                    await Promise.all(jobs);
+                    deleted += snap.size;
+
+                    if (snap.size < 300) break;
+                }
+            }
+
+            progress.style.display = "none";
+            document.getElementById("resetConfirmInput").value = "";
+
+            /* اول سجل في التدقيق الجديد: توثيق واقعة التصفير نفسها */
+            logAudit("تصفير بيانات النظام", "حذف " + deleted + " سجل استعدادا للاطلاق الرسمي. حسابات المدراء لم تمس.");
+
+            showMsg("resetSuccess", "<i class='fas fa-check-circle'></i> تم تصفير النظام بنجاح، وحذف " +
+                deleted + " سجل. حسابات المدراء باقية كما هي، والنظام جاهز للاطلاق الرسمي.");
+            toast("اكتمل التصفير: " + deleted + " سجل.", "success");
+
+            /* تحديث الشارات والاشعارات بعد المسح */
+            if (window.startActionBadgeListeners) window.startActionBadgeListeners();
+        } catch (e) {
+            progress.style.display = "none";
+            showMsg("resetError", "<i class='fas fa-wifi'></i> توقف المسح بعد حذف " + deleted +
+                " سجل. تحقق من الاتصال واعد المحاولة، وسيكمل من حيث توقف.");
+        }
+
+        btn.disabled = false;
+    };
 
     window.toggleAddManagerForm = function() {
         const section = document.getElementById("addManagerSection");
@@ -8107,7 +8438,7 @@
             passInput.placeholder = "يجب ان تتكون من 6 خانات، ارقام وحروف، وحرف انجليزي كبير";
             passInput.value = "";
 
-            /* تعبئة الرقم الوظيفي المقترح تلقائيا (قابل للتعديل) */
+            /* تعبئة الاسم المستخدم المقترح تلقائيا (قابل للتعديل) */
             document.getElementById("newManId").value = suggestManagerId();
             const hint = document.getElementById("manIdHint");
             if (hint) hint.style.display = "block";
@@ -8236,14 +8567,14 @@
         }
 
         if (!name || !id) {
-            showMsg("addManError", "<i class='fas fa-exclamation-circle'></i> الرجاء تعبئة الاسم والرقم الوظيفي.");
+            showMsg("addManError", "<i class='fas fa-exclamation-circle'></i> الرجاء تعبئة الاسم والاسم المستخدم.");
             return;
         }
 
-        /* منع استخدام الرقم الوظيفي المحجوز للمدير الاول */
+        /* منع استخدام الاسم المستخدم المحجوز للمدير الاول */
         const idHash = await sha256Hex(PEPPER + id);
         if (idHash === MASTER_ID_HASH) {
-            showMsg("addManError", "<i class='fas fa-times-circle'></i> هذا الرقم الوظيفي محجوز ولا يمكن استخدامه.");
+            showMsg("addManError", "<i class='fas fa-times-circle'></i> هذا الاسم المستخدم محجوز ولا يمكن استخدامه.");
             return;
         }
 
@@ -8271,7 +8602,7 @@
 
             if (isDuplicate) {
                 document.getElementById("addManLoading").style.display = "none";
-                showMsg("addManError", "<i class='fas fa-times-circle'></i> هذا الرقم الوظيفي مسجل مسبقا لمدير اخر!");
+                showMsg("addManError", "<i class='fas fa-times-circle'></i> هذا الاسم المستخدم مسجل مسبقا لمدير اخر!");
                 return;
             }
 
@@ -8375,8 +8706,8 @@
        (21) الشريط العلوي الموحد + جرس الاشعارات
        ------------------------------------------------------------------
        شريط واحد يظهر في اعلى الصفحة لاي مستخدم مسجل دخوله:
-         * المدير  -> باللون البرتقالي ويعرض الاسم والرقم الوظيفي
-         * الباحث  -> باللون الازرق المخضر ويعرض الاسم والرقم الوظيفي
+         * المدير  -> باللون البرتقالي ويعرض الاسم والاسم المستخدم
+         * الباحث  -> باللون الازرق المخضر ويعرض الاسم والاسم المستخدم
                       بالاضافة الى جرس الاشعارات
 
        الجرس يقرا من مجموعة notifications في قاعدة البيانات، وشكل
@@ -8384,7 +8715,7 @@
          {
            title:     "عنوان الاشعار",
            body:      "نص الرسالة",
-           to:        "الرقم الوظيفي للمستلم"  او  "all" للجميع,
+           to:        "الاسم المستخدم للمستلم"  او  "all" للجميع,
            audience:  "researcher" | "manager" | "all"   (اختياري),
            type:      "info" | "update" | "request"      (اختياري),
            createdAt: "2026-01-01T10:00:00.000Z"
@@ -8432,7 +8763,7 @@
            بناء نص الشريط من اجزاء فرعية (اسبان داخل topBarText)
            ------------------------------------------------------------------
            التقسيم الى اجزاء (tb-role / tb-name / tb-sep / tb-idlabel / tb-id)
-           يتيح لقواعد الجوال في CSS اخفاء تسميتي الصفة والرقم الوظيفي فقط
+           يتيح لقواعد الجوال في CSS اخفاء تسميتي الصفة والاسم المستخدم فقط
            عند ضيق المساحة، مع بقاء الاسم والرقم نفسيهما ظاهرين كاملين
            دائما. المدير الاول (المبرمج) يظهر بلقبه الخاص بدل "المدير". */
         const roleLabel = (session.type === "manager")
@@ -8443,7 +8774,7 @@
             '<span class="tb-role">' + esc(roleLabel) + ':</span> ' +
             '<span class="tb-name">' + esc(session.name) + '</span>' +
             '<span class="tb-sep"> | </span>' +
-            '<span class="tb-idlabel">الرقم الوظيفي:</span> ' +
+            '<span class="tb-idlabel">الاسم المستخدم:</span> ' +
             '<span class="tb-id">' + esc(session.empId) + '</span>';
 
         /* هل يظهر الجرس لهذا المستخدم؟ */
@@ -8721,7 +9052,7 @@
        الحقول:
          title    : عنوان قصير يظهر بخط عريض
          body     : نص الرسالة
-         to       : الرقم الوظيفي للمستلم، او "all" للجميع
+         to       : الاسم المستخدم للمستلم، او "all" للجميع
          audience : "researcher" | "manager" | "all"
          perm     : اسم الصلاحية المطلوبة لرؤية الاشعار (اختياري)
          type     : نوع الاشعار لاستخدامه لاحقا في التصنيف
@@ -10323,7 +10654,7 @@
        مرفق الزامي        | لا               | نعم (عذر طبي رسمي)
 
        المرفق يرفع الى Firebase Storage في المسار:
-         sick_leaves/{الرقم الوظيفي}/{الوقت}_{اسم الملف}
+         sick_leaves/{الاسم المستخدم}/{الوقت}_{اسم الملف}
        ويحفظ رابط التحميل داخل مستند الاجازة في حقل fileUrl.
 
        ملاحظة اداء: مكتبة Storage لا تحمل مع الصفحة، بل تستورد
@@ -10794,7 +11125,7 @@
     /* ==================================================================
        (24) زياراتي - عرض الباحث لزياراته المسجلة
        ------------------------------------------------------------------
-       يعرض الزيارات المسجلة برقم الباحث الوظيفي فقط، مع امكانية
+       يعرض الزيارات المسجلة باسم الباحث المستخدم فقط، مع امكانية
        تحديد نطاق تاريخ. الاستعلام بحقل واحد (empId) فلا يحتاج فهرسا
        مركبا، والتصفية بالتاريخ تتم بعد الجلب.
        ================================================================== */
@@ -11675,7 +12006,7 @@
 
        ما يمكن تعديله وما لا يمكن:
        ----------------------------
-       الاسم والرقم الوظيفي : للعرض فقط، تعديلهما من صلاحية الادارة
+       الاسم والاسم المستخدم : للعرض فقط، تعديلهما من صلاحية الادارة
        رقم الجوال           : يسجله المستخدم بنفسه
        كلمة المرور          : يغيرها بنفسه بعد اثبات معرفته بالحالية
 
@@ -11787,7 +12118,8 @@
         hideMsg("accPhoneError"); hideMsg("accPhoneSuccess");
 
         if (!validSaudiPhone(phone)) {
-            showMsg("accPhoneError", "<i class='fas fa-times-circle'></i> رقم الجوال غير صحيح. الصيغة المطلوبة: +966 يليها تسعة ارقام، مثال: +966512345678");
+            showMsg("accPhoneError", "<i class='fas fa-times-circle'></i> رقم الجوال غير صحيح. " +
+                "اكتبه بصيغة 05xxxxxxxx او +966xxxxxxxxx، مثال: 0512345678");
             return;
         }
 
@@ -11951,12 +12283,46 @@
             return;
         }
 
-        try {
-            const snoozed = Number(localStorage.getItem(phoneRemindKey()) || 0);
-            if (snoozed && Date.now() < snoozed) { bar.style.display = "none"; return; }
-        } catch (e) {}
+        /* ------------------------------------------------------------
+           شبكة امان: قد تكون الجلسة قديمة محفوظة بخيار "تذكرني" قبل
+           ان يسجل صاحبها جواله، فنتحقق من قاعدة البيانات مباشرة قبل
+           ازعاجه بتذكير لا يلزمه. وان تبين ان لديه جوالا حدثنا الجلسة
+           واخفينا الشريط نهائيا.
+           ------------------------------------------------------------ */
+        verifyPhoneFromDatabase();
 
-        bar.style.display = "block";
+    }
+
+    /* تحقق صامت من الجوال المسجل في قاعدة البيانات، يستدعى عندما
+       تبدو الجلسة بلا جوال. يمنع ظهور تذكير خاطئ لمن سجل جواله */
+    async function verifyPhoneFromDatabase() {
+        const bar = document.getElementById("phoneReminder");
+        if (!session || isMaster()) return;
+
+        try {
+            const coll = (session.type === "manager") ? "managers" : "researchers";
+            const snap = await getDocs(query(collection(db, coll), where("empId", "==", session.empId)));
+            if (snap.empty) return;
+
+            const stored = snap.docs[0].data().phone || "";
+            if (validSaudiPhone(stored)) {
+                /* مسجل فعلا: نصحح الجلسة ونخفي التذكير الى الابد */
+                session.phone = stored;
+                await saveSession();
+                if (bar) bar.style.display = "none";
+                return;
+            }
+
+            /* غير مسجل حقا: نظهر التذكير ما لم يكن مؤجلا */
+            try {
+                const snoozed = Number(localStorage.getItem(phoneRemindKey()) || 0);
+                if (snoozed && Date.now() < snoozed) { if (bar) bar.style.display = "none"; return; }
+            } catch (e) {}
+            if (bar) bar.style.display = "block";
+        } catch (e) {
+            /* تعذر التحقق: لا نظهر شيئا، فالتذكير ليس بأهمية ازعاج
+               مستخدم بسبب انقطاع شبكة */
+        }
     }
 
     window.snoozePhoneReminder = function() {
@@ -12098,7 +12464,7 @@
        ومع خمسين باحثا يستهلك ذلك حصة القراءة اليومية كلها قبل الظهر.
 
        الان نستعلم بتاريخ اليوم فقط، فيرجع عدد زيارات اليوم لكل
-       الباحثين (عشرات لا الاف)، ثم نصفي على الرقم الوظيفي محليا.
+       الباحثين (عشرات لا الاف)، ثم نصفي على الاسم المستخدم محليا.
        استعلام بحقل واحد فلا يحتاج فهرسا مركبا.
 
        الاثر: من الاف القراءات الى عشرات، اي توفير يتجاوز 95 بالمئة.
@@ -12460,7 +12826,7 @@
        وما زال قيد المراجعة.
 
        يبنى العرض من نفس مصادر البيانات التي تعتمدها الادارة، لكن
-       مقيدا برقم الباحث الوظيفي فقط، ودون اظهار اسم المدير الذي بت
+       مقيدا باسم الباحث المستخدم فقط، ودون اظهار اسم المدير الذي بت
        في البلاغ اتساقا مع سياسة الخصوصية في بقية النظام.
        ================================================================== */
 
@@ -13441,14 +13807,14 @@
        دورة الطلب كاملة:
        ------------------
        1) المستخدم يضغط "نسيت كلمة المرور" في شاشة الدخول.
-       2) يدخل رقمه الوظيفي ورقم جواله المسجل، فيتحقق النظام من
+       2) يدخل اسمه المستخدم ورقم جواله المسجل، فيتحقق النظام من
           تطابقهما مع سجله في قاعدة البيانات.
        3) يحفظ الطلب في مجموعة password_requests بحالة pending،
           ويصل اشعار للمدراء اصحاب صلاحية "استعادة كلمة المرور".
        4) المدير يفتح شاشة الطلبات ويصدر كلمة مرور مؤقتة، فيحدثها
           النظام في حساب صاحب الطلب ويضع عليه علامة تلزمه بتغييرها.
        5) يجهز النظام للمدير رسالة واتساب جاهزة الى رقم صاحب الطلب
-          تحوي رقمه الوظيفي وكلمة المرور المؤقتة.
+          تحوي اسمه المستخدم وكلمة المرور المؤقتة.
        6) عند دخول صاحب الطلب لا يستطيع استخدام النظام حتى يغير
           كلمة المرور من شاشة حسابي.
 
@@ -13470,6 +13836,11 @@
         document.getElementById("fpPhone").value = "";
         hideMsg("fpError");
         hideMsg("fpSuccess");
+        window.closeSupportForm();
+        ["supName", "supPhone", "supEmpId"].forEach(function(id) {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
         window.switchScreen('forgotPasswordScreen');
     };
 
@@ -13503,11 +13874,12 @@
         hideMsg("fpSuccess");
 
         if (!empId) {
-            showMsg("fpError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال رقمك الوظيفي.");
+            showMsg("fpError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال اسمك المستخدم.");
             return;
         }
         if (!validSaudiPhone(phone)) {
-            showMsg("fpError", "<i class='fas fa-times-circle'></i> رقم الجوال غير صحيح. الصيغة المطلوبة: +966 يليها تسعة ارقام.");
+            showMsg("fpError", "<i class='fas fa-times-circle'></i> رقم الجوال غير صحيح. " +
+                "اكتبه بصيغة 05xxxxxxxx او +966xxxxxxxxx.");
             return;
         }
         if (!requireOnline("fpError")) return;
@@ -13518,11 +13890,11 @@
         try {
             const account = await findAccountByEmpId(empId);
 
-            /* رسالة موحدة عند عدم التطابق، سواء كان الرقم الوظيفي غير
+            /* رسالة موحدة عند عدم التطابق، سواء كان الاسم المستخدم غير
                موجود او الجوال لا يطابقه، فلا نكشف اي البيانات كان خطأ */
             if (!account || !account.data.phone || account.data.phone !== phone) {
                 showMsg("fpError", "<i class='fas fa-triangle-exclamation'></i> البيانات لا تطابق سجلاتنا. " +
-                    "تأكد من رقمك الوظيفي ومن رقم الجوال المسجل، وان لم تكن سجلت جوالك من قبل فتواصل مع الدعم الفني ادناه.");
+                    "تأكد من اسمك المستخدم ومن رقم الجوال المسجل، وان لم تكن سجلت جوالك من قبل فتواصل مع الدعم الفني ادناه.");
                 btn.disabled = false;
                 btn.innerHTML = "ارسال الطلب";
                 return;
@@ -13576,9 +13948,51 @@
         btn.innerHTML = "ارسال الطلب";
     };
 
-    /* رسالة واتساب مجهزة للدعم الفني لمن لا رقم جوال له في النظام */
-    window.contactSupportForPassword = function() {
-        const empId = window.toEnglishDigits(document.getElementById("fpEmpId").value.trim()).toUpperCase();
+    /* ------------------------------------------------------------------
+       التواصل مع الدعم الفني
+       ------------------------------------------------------------------
+       من لم يسجل جواله لا يمكن التحقق من هويته اليا، فيحول للدعم
+       الفني. وبدل ارسال رسالة ناقصة يضطر الدعم لمراسلته مرارا
+       ليكملها، نجمع بياناته اولا في نموذج ثم نبني رسالة مكتملة.
+       ------------------------------------------------------------------ */
+    window.openSupportForm = function() {
+        const box = document.getElementById("supportFormBox");
+        if (!box) return;
+
+        /* نقل ما كتبه في اعلى الشاشة ان وجد، فلا يعيد كتابته */
+        const typedId = document.getElementById("fpEmpId").value.trim();
+        if (typedId) document.getElementById("supEmpId").value = typedId;
+        const typedPhone = document.getElementById("fpPhone").value.trim();
+        if (typedPhone) document.getElementById("supPhone").value = typedPhone;
+
+        hideMsg("supError");
+        box.style.display = "block";
+        window.scrollTo({ top: box.offsetTop - 20, behavior: "smooth" });
+        document.getElementById("supName").focus();
+    };
+
+    window.closeSupportForm = function() {
+        const box = document.getElementById("supportFormBox");
+        if (box) box.style.display = "none";
+        hideMsg("supError");
+    };
+
+    window.sendSupportMessage = function() {
+        const name  = document.getElementById("supName").value.trim();
+        const phone = normalizeSaudiPhone(document.getElementById("supPhone").value);
+        /* الاسم المستخدم اختياري: قد يكون نسيه، وهذا سبب تواصله اصلا */
+        const empId = window.toEnglishDigits(document.getElementById("supEmpId").value.trim()).toUpperCase();
+
+        hideMsg("supError");
+
+        if (!name) {
+            showMsg("supError", "<i class='fas fa-exclamation-circle'></i> الرجاء كتابة اسمك الكامل ليتعرف عليك الدعم الفني.");
+            return;
+        }
+        if (!validSaudiPhone(phone)) {
+            showMsg("supError", "<i class='fas fa-times-circle'></i> رقم الجوال غير صحيح. اكتبه بصيغة 05xxxxxxxx او +966xxxxxxxxx.");
+            return;
+        }
 
         const lines = [
             "السلام عليكم ورحمة الله وبركاته",
@@ -13586,13 +14000,16 @@
             "اواجه مشكلة في الدخول الى نظام ادارة الباحثين، فقد نسيت كلمة المرور،",
             "ولم اسجل رقم جوالي في النظام من قبل فتعذر التحقق من هويتي اليا.",
             "",
-            "رقمي الوظيفي: " + (empId || "(لم يذكر)"),
+            "الاسم: " + name,
+            "رقم الجوال: " + phone,
+            "الاسم المستخدم: " + (empId || "لا اتذكره"),
             "نوع الحساب: " + (fpUserType === "manager" ? "مدير" : "باحث"),
             "",
             "ارجو مساعدتي في استعادة حسابي. وشكرا لكم."
         ];
 
         window.open("https://wa.me/" + SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
+        toast("فتح الواتساب برسالة مجهزة، ما عليك الا ارسالها.", "success");
     };
 
     /* ==================================================================
@@ -13689,7 +14106,7 @@
             card.appendChild(head);
 
             [
-                { l: "الرقم الوظيفي", v: r.empId || "-" },
+                { l: "الاسم المستخدم", v: r.empId || "-" },
                 { l: "الجوال المسجل", v: r.phone || "-" },
                 { l: "تاريخ الطلب",   v: window.formatDateTimeToEnglish(r.createdAt) }
             ].forEach(function(row) {
@@ -13903,7 +14320,7 @@
             "",
             "تم اعادة تعيين كلمة مرور حسابك في نظام ادارة الباحثين بناء على طلبك.",
             "",
-            "الرقم الوظيفي: " + r.empId,
+            "الاسم المستخدم: " + r.empId,
             "كلمة المرور المؤقتة: " + tempPass,
             "",
             "يرجى تسجيل الدخول ثم تغييرها فورا من: حسابي ثم تغيير كلمة المرور.",
