@@ -5265,6 +5265,124 @@
        السري الذي يبقى في لوحة Firebase وحدها ولا يوضع في الكود ابدا.
        ================================================================== */
 
+    /* ==================================================================
+       حاجز النسخ غير الرسمية
+       ==================================================================
+
+       الغرض: منع تشغيل النظام من نسخة منقولة، سواء فتحت من قرص الجهاز
+       مباشرة او رفعت على نطاق اخر. يعرض حاجزا يملأ الشاشة لا يمكن
+       اغلاقه ولا تجاوزه من الواجهة.
+
+       كيف يقاوم الازالة؟
+       -------------------
+       لا يعتمد على عنصر في صفحة HTML يمكن حذفه، بل يبنى بالكامل من
+       الجافاسكربت عند الحاجة، ويحرس نفسه بثلاث طبقات مستقلة:
+         1) فحص فوري عند تحميل الصفحة
+         2) مراقب تغييرات (MutationObserver) يعيد بناءه ان حذف من الصفحة
+         3) فحص دوري متكرر يعيده ان عطلت الطبقتان السابقتان
+
+       حدود هذا الحاجز (مهم جدا):
+       ---------------------------
+       هو رادع لا حماية. من يعدل الكود يستطيع تعطيله، لان اي شرط يكتب
+       في المتصفح يمكن حذفه من المتصفح. الحماية الحقيقية التي تمنع
+       الوصول للبيانات فعليا هي App Check المفعل على الخادم، وتقييد
+       مفتاح واجهة البرمجة بنطاق الموقع من لوحة Google Cloud.
+
+       عند تغيير نطاق الموقع:
+       -----------------------
+       اضف النطاق الجديد الى OFFICIAL_HOSTS ادناه قبل النقل، والا حجب
+       النظام نفسه على النطاق الجديد.
+       ================================================================== */
+
+    const OFFICIAL_HOSTS = ["osaryateam.github.io"];
+
+    /* هل نحن على النطاق الرسمي؟ */
+    function isOfficialOrigin() {
+        /* الملفات المفتوحة من القرص بروتوكولها file: ولا نطاق لها */
+        if (location.protocol !== "https:" && location.protocol !== "http:") return false;
+        return OFFICIAL_HOSTS.indexOf(location.hostname) !== -1;
+    }
+
+    const BLOCK_ID = "unofficialCopyGuard";
+
+    /* بناء الحاجز من الجافاسكربت لا من HTML، فلا يمكن حذفه من الصفحة */
+    function buildBlockScreen() {
+        if (document.getElementById(BLOCK_ID)) return;
+
+        const wrap = document.createElement("div");
+        wrap.id = BLOCK_ID;
+        wrap.setAttribute("role", "alertdialog");
+        wrap.setAttribute("aria-modal", "true");
+        wrap.style.cssText = [
+            "position:fixed", "inset:0", "z-index:2147483647",
+            "display:flex", "flex-direction:column",
+            "align-items:center", "justify-content:center",
+            "gap:22px", "padding:30px 24px", "text-align:center",
+            "background:linear-gradient(160deg,#2b1512,#4a1f1a 55%,#2b1512)",
+            "color:#fff", "font-family:'Tajawal',Tahoma,sans-serif",
+            "direction:rtl", "overflow:auto"
+        ].join(";");
+
+        const icon = document.createElement("div");
+        icon.textContent = "⛔";
+        icon.style.cssText = "font-size:64px;line-height:1;";
+
+        const title = document.createElement("div");
+        title.textContent = "نسخة غير رسمية";
+        title.style.cssText = "font-size:28px;font-weight:900;";
+
+        const text = document.createElement("div");
+        text.style.cssText = "font-size:16px;line-height:2.1;max-width:520px;font-weight:600;opacity:0.95;";
+        text.textContent = "هذه نسخة منقولة من النظام ولا يمكن استخدامها. " +
+            "النظام لا يعمل الا من موقعه الرسمي، ولن تتمكن هذه النسخة من الوصول الى اي بيانات.";
+
+        const box = document.createElement("div");
+        box.style.cssText = "background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);" +
+            "border-radius:14px;padding:16px 20px;font-size:15px;font-weight:800;max-width:520px;line-height:2;";
+        box.textContent = "للدخول الى النظام استخدم رابطه الرسمي المعتمد من ادارة فريق الباحث الاجتماعي.";
+
+        const note = document.createElement("div");
+        note.style.cssText = "font-size:13px;opacity:0.7;line-height:1.9;max-width:480px;";
+        note.textContent = "اذا وصلتك هذه النسخة من شخص اخر فلا تستخدمها، وابلغ الادارة.";
+
+        wrap.appendChild(icon);
+        wrap.appendChild(title);
+        wrap.appendChild(text);
+        wrap.appendChild(box);
+        wrap.appendChild(note);
+
+        (document.body || document.documentElement).appendChild(wrap);
+
+        /* منع التمرير خلف الحاجز */
+        try {
+            document.documentElement.style.overflow = "hidden";
+            if (document.body) document.body.style.overflow = "hidden";
+        } catch (e) {}
+    }
+
+    /* الطبقة الاولى: فحص فوري */
+    function enforceOfficialOrigin() {
+        if (isOfficialOrigin()) return;
+        buildBlockScreen();
+    }
+
+    if (!isOfficialOrigin()) {
+        /* نبني فور جاهزية الصفحة، وايضا الان ان كانت جاهزة */
+        if (document.body) buildBlockScreen();
+        document.addEventListener("DOMContentLoaded", buildBlockScreen);
+
+        /* الطبقة الثانية: يعاد البناء ان حذف الحاجز من الصفحة */
+        try {
+            const guardObserver = new MutationObserver(function() {
+                if (!document.getElementById(BLOCK_ID)) buildBlockScreen();
+            });
+            guardObserver.observe(document.documentElement, { childList: true, subtree: true });
+        } catch (e) {}
+
+        /* الطبقة الثالثة: فحص دوري احتياطي */
+        setInterval(enforceOfficialOrigin, 1500);
+    }
+
     const RECAPTCHA_SITE_KEY = "6LeLnGctAAAAAJuqzdqHkux_Fnz0KgmsR8516iRH";
 
     /* اثناء التطوير المحلي (فتح الملف من الجهاز مباشرة او localhost)
@@ -6209,6 +6327,19 @@
 
         /* حالة الاتصال عند اول تحميل */
         updateOfflineBar();
+
+        /* ------------------------------------------------------------
+           تنبيه فوري عند فتح الملف من القرص مباشرة
+           ------------------------------------------------------------
+           في هذه الحالة لن يعمل النظام: لا قاعدة بيانات ولا تحديد موقع
+           ولا تثبيت تطبيق، لان المتصفح يمنع كل ذلك خارج النطاقات
+           الحقيقية. التنبيه المبكر يوفر على المستخدم حيرة طويلة.
+           ------------------------------------------------------------ */
+        if (location.protocol === "file:") {
+            setTimeout(function() {
+                toast("انت تفتح الملف من جهازك مباشرة. لن يتصل النظام بقاعدة البيانات في هذه الحالة، افتحه من رابطه على الانترنت.", "warn");
+            }, 1200);
+        }
     });
 
     /* اعدادات التقويم مكتوبة مرة واحدة ويعاد استخدامها لكل حقل،
@@ -7438,6 +7569,23 @@
        (15) الاستعلام عن زيارات (فلترة من طرف الخادم + ترقيم صفحات)
        ================================================================== */
 
+    /* ------------------------------------------------------------------
+       رسالة انقطاع الاتصال بالخادم
+       ------------------------------------------------------------------
+       تفرق بين حالتين يخلط بينهما المستخدم:
+         * تشغيل الملف من القرص مباشرة: لا يمكن الاتصال اصلا
+         * انقطاع الشبكة: الاتصال ممكن لكنه متعذر الان
+       ------------------------------------------------------------------ */
+    function offlineSourceMessage() {
+        if (location.protocol === "file:") {
+            return "<i class='fas fa-plug-circle-xmark'></i> <strong>لا يمكن الوصول الى قاعدة البيانات</strong>" +
+                   "<br>انت تفتح الملف مباشرة من جهازك، والمتصفح لا يسمح بالاتصال بقاعدة البيانات في هذه الحالة." +
+                   "<br>افتح النظام من رابطه على الانترنت ليعمل بشكل صحيح.";
+        }
+        return "<i class='fas fa-plug-circle-xmark'></i> <strong>تعذر الوصول الى الخادم</strong>" +
+               "<br>ما يعرض الان قد يكون ناقصا او قديما. تحقق من اتصالك بالانترنت واعد المحاولة.";
+    }
+
     function isIndexError(err) {
         const m = (err && (err.message || "")) + "";
         return (err && err.code === "failed-precondition") || m.indexOf("index") !== -1;
@@ -7494,6 +7642,28 @@
                 cons.push(limit(PAGE_SIZE));
 
                 const snap = await getDocs(query.apply(null, [collection(db, "visits")].concat(cons)));
+
+                /* ------------------------------------------------------------
+                   تمييز النتيجة الفارغة عن انقطاع الاتصال
+                   ------------------------------------------------------------
+                   مكتبة Firestore مصممة للعمل دون انترنت: عند تعذر الوصول
+                   للخادم ترجع ما في ذاكرتها المحلية بدل ان تفشل. ولو كانت
+                   الذاكرة فارغة رجعت صفر نتائج "بنجاح"، فيظهر للمستخدم
+                   "لا توجد بيانات" وهو في الحقيقة معزول عن الخادم تماما.
+
+                   هذا ما يحدث عند فتح الملف مباشرة من القرص (file://) لان
+                   المتصفح لا يعتبره نطاقا فيمنع الاتصال من اساسه.
+
+                   الخاصية fromCache تكشف ذلك: مصدر النتيجة الذاكرة لا الخادم.
+                   ------------------------------------------------------------ */
+                if (snap.metadata && snap.metadata.fromCache && snap.empty) {
+                    cLoading.style.display = "none";
+                    btn.disabled = false;
+                    if (btnMore) { btnMore.disabled = false; btnMore.innerHTML = 'عرض المزيد من السجلات'; }
+                    showMsg("managerControlError", offlineSourceMessage());
+                    return;
+                }
+
                 snap.forEach(function(d) { pageVisits.push(Object.assign({ id: d.id }, d.data())); });
                 lastResultsDoc = snap.docs.length ? snap.docs[snap.docs.length - 1] : lastResultsDoc;
                 resultsHasMore = snap.docs.length === PAGE_SIZE;
@@ -7687,6 +7857,15 @@
             if (!isFirstPage && lastEditDoc) cons.push(startAfter(lastEditDoc));
             cons.push(limit(PAGE_SIZE));
             const snap = await getDocs(query.apply(null, [collection(db, "visits")].concat(cons)));
+
+            /* نفس كشف الذاكرة المحلية المشروح في شاشة الاستعلام */
+            if (snap.metadata && snap.metadata.fromCache && snap.empty) {
+                cLoading.style.display = "none";
+                if (btnMore) { btnMore.disabled = false; btnMore.innerHTML = 'عرض المزيد من السجلات'; }
+                showMsg("managerControlError", offlineSourceMessage());
+                return;
+            }
+
             snap.forEach(function(d) { pageVisits.push(Object.assign({ id: d.id }, d.data())); });
             lastEditDoc = snap.docs.length ? snap.docs[snap.docs.length - 1] : lastEditDoc;
             editHasMore = snap.docs.length === PAGE_SIZE;
