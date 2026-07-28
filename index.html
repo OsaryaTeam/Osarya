@@ -638,29 +638,34 @@
             }
 
             /* ------------------------------------------------------------
-               توسيط النص مع بقاء الرمز
+               الرمز علامة مائية خلف النص
                ------------------------------------------------------------
-               المشكلة: حين كان الرمز عنصرا عاديا في الصف كان يحتل مساحة
-               الى جانب النص، فيزيح النص عن منتصف الزر بمقدار عرض الرمز،
-               ويبدو مائلا الى اليسار مهما وضعنا justify-content: center.
+               الفكرة نفسها المعتمدة في نسخة الحاسب: الرمز طبقة خلفية
+               باهتة، والنص فوقه بوضوح كامل، فلا يزاحم احدهما الاخر.
 
-               الحل: اخراج الرمز من تدفق العناصر بـ position: absolute،
-               فلا يحسب في قياس المساحة اطلاقا، ثم حجز مساحة له بحشو
-               متماثل على الجانبين (56 بكسل يمينا ويسارا). وبتساوي
-               الحشوين يصبح منتصف مساحة النص هو منتصف الزر بالضبط.
+               كيف تحقق ذلك:
+                 1) الرمز خارج تدفق العناصر (absolute) فلا يدخل في حساب
+                    التوسيط اطلاقا، وبذلك يقع النص في منتصف الزر بالضبط.
+                 2) يوضع في اقصى اليسار وبشفافية منخفضة، فيقرأ كزخرفة
+                    لا كعنصر يزاحم الكلام.
+                 3) z-index يجعله خلف النص، فلو تقاطعا في الاسماء الطويلة
+                    بقي النص هو الظاهر والمقروء.
 
-               وابقينا الرمز بلا حركة ولا ظلال، فلا تكلفة على اداء الجوال.
+               وبلا حركة ولا انتقالات، حفاظا على خفة الموقع في الجوال.
                ------------------------------------------------------------ */
             .manager-dashboard-grid button {
                 position: relative;
+                /* ينشئ سياق طبقات مستقلا، فتبقى العلامة ذات z-index
+                   السالب داخل الزر فوق خلفيته لا خلفها فتختفي */
+                isolation: isolate;
+                overflow: hidden;          /* يمنع خروج العلامة عن حدود الزر */
                 min-height: 66px;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
                 justify-content: center;
                 gap: 0;
-                /* حشو متماثل: يحجز مكان الرمز ويبقي النص موسطا فعليا */
-                padding: 15px 56px;
+                padding: 15px 20px;        /* حشو متماثل: توسيط دقيق للنص */
                 font-size: 16.5px;
                 text-align: center;
                 line-height: 1.6;
@@ -668,27 +673,41 @@
             }
 
             .manager-dashboard-grid button::before {
-                /* خارج التدفق: لا يزاحم النص ولا يدخل في حساب التوسيط */
                 position: absolute !important;
-                right: 18px;
+                left: 16px;                    /* بعيدا عن مركز النص */
                 top: 50%;
-                transform: translateY(-50%) !important;
+                transform: translateY(-50%) rotate(-15deg) !important;
                 margin: 0 !important;
                 width: auto;
-                font-size: 24px !important;
-                opacity: 0.95 !important;
-                /* بلا حركة: نحافظ على خفة الموقع في الجوال */
-                animation: none !important;
+                font-size: 44px !important;    /* كبير كعلامة مائية */
+
+                /* ------------------------------------------------------
+                   ترتيب الطبقات: نفس مبدأ نسخة الحاسب بالضبط
+                   ------------------------------------------------------
+                   z-index سالب يجعل العلامة تطبع بعد خلفية الزر مباشرة
+                   وقبل نصه، فتظهر خلف الكلام لا فوقه.
+
+                   ملاحظة دقيقة: النص داخل الزر عقدة نصية لا عنصرا، فلا
+                   يمكن رفعه بـ z-index. ولذلك الحل الصحيح هو انزال
+                   العلامة تحته لا رفعه فوقها.
+
+                   والشفافية تكتب في اللون لا في opacity، لان opacity
+                   تنشئ سياق طبقات جديدا يبطل مفعول z-index السالب.
+                   ------------------------------------------------------ */
+                color: rgba(255, 255, 255, 0.17) !important;
+                opacity: 1 !important;
+                z-index: -1;
+
+                animation: none !important;    /* بلا حركة: خفة الجوال */
                 transition: none !important;
                 pointer-events: none;
             }
 
-            /* الازرار الممتدة بعرض الصف: نفس المبدأ بحشو اوسع قليلا */
             .manager-dashboard-grid .btn-logout-full {
                 min-height: 60px;
                 margin-top: 8px;
                 font-size: 17px;
-                padding: 15px 60px;
+                padding: 15px 24px;
             }
         }
 
@@ -1631,9 +1650,10 @@
             .container { padding: 18px 12px; }
             .header h1 { font-size: 19px; }
             /* القائمة الراسية مطبقة اصلا من نقطة 768، نكتفي بتصغير طفيف */
-            /* نصغر الحشو والرمز معا فيبقى التوسيط مضبوطا */
-            .manager-dashboard-grid button { font-size: 15.5px; padding: 14px 48px; min-height: 62px; }
-            .manager-dashboard-grid .btn-logout-full { padding: 14px 50px; }
+            /* الشاشات الضيقة: نصغر النص والعلامة معا */
+            .manager-dashboard-grid button { font-size: 15.5px; padding: 14px 18px; min-height: 62px; }
+            .manager-dashboard-grid button::before { font-size: 40px !important; left: 10px; }
+            .manager-dashboard-grid .btn-logout-full { padding: 14px 20px; }
             .manager-dashboard-grid button::before { font-size: 22px !important; width: 26px; }
         }
 
