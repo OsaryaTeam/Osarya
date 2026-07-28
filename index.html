@@ -594,29 +594,80 @@
         }
 
         /* ------------------------------------------------------------------
-           بوابة الباحث: سبعة ازرار
+           بوابة الباحث على الحاسب: سبعة ازرار
            ------------------------------------------------------------------
            سبعة لا تقسم على اربعة، فيبقى فراغ في اخر صف لو تركت الشبكة
            كما هي. الحل قسمة العرض على اثني عشر عمودا:
              الصف الاول : اربعة ازرار، كل زر ثلاثة اعمدة  (4 × 3 = 12)
              الصف الثاني: ثلاثة ازرار، كل زر اربعة اعمدة  (3 × 4 = 12)
-           فيمتلئ الصفان تماما ويبدو التوزيع مقصودا لا ناقصا، مع بقاء
-           زر الخروج بعرض كامل كما هو.
+           فيمتلئ الصفان تماما ويبدو التوزيع مقصودا لا ناقصا.
            ------------------------------------------------------------------ */
         .researcher-dashboard-grid { grid-template-columns: repeat(12, 1fr); }
         .researcher-dashboard-grid > button:nth-child(-n+4) { grid-column: span 3; }
         .researcher-dashboard-grid > button:nth-child(n+5):nth-child(-n+7) { grid-column: span 4; }
 
+        /* ==================================================================
+           البوابتان على الجوال: قائمة راسية بصف افقي لكل خدمة
+           ==================================================================
+           لماذا تركنا شبكة المربعات على الجوال؟
+           ------------------------------------
+           1) عدد الازرار مختلف بين البوابتين (سبعة وثمانية)، والسبعة
+              لا تقسم على عمودين فيبقى زر يتيم في اخر صف يبدو ناقصا،
+              وهو ما لوحظ فعلا في نسخة الجوال.
+           2) اسماء الخدمات عربية طويلة مثل "الاستعلام عن زيارة والتعديل
+              على بياناتها" و"الإبلاغ عن مشاكل تقنية". في مربع عرضه نحو
+              150 بكسل ينكسر النص الى ثلاثة اسطر مكتظة تصعب قراءتها.
+           3) مساحة اللمس في القائمة الراسية اوسع واقرب لابهام المستخدم،
+              وهذا مهم لباحث يعمل في الميدان بيد واحدة.
+
+           الحل: صف افقي لكل خدمة، الايقونة يمينا والنص بجوارها بمساحة
+           كاملة. لا زر يتيم مهما تغير العدد، والنص واضح بسطر واحد غالبا.
+           ================================================================== */
         @media (max-width: 768px) {
             .manager-dashboard-grid {
-                grid-template-columns: repeat(2, 1fr);
+                display: flex;
+                flex-direction: column;
+                gap: 11px;
             }
-            /* على الجوال: عمودان، والزر السابع يمتد بعرض الصف كاملا
-               فلا يبقى فراغ الى جانبه */
-            .researcher-dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+
+            /* الغاء قواعد الشبكة الخاصة بالحاسب */
             .researcher-dashboard-grid > button:nth-child(-n+4),
-            .researcher-dashboard-grid > button:nth-child(n+5):nth-child(-n+7) { grid-column: span 1; }
-            .researcher-dashboard-grid > button:nth-child(7) { grid-column: 1 / -1; min-height: 90px; }
+            .researcher-dashboard-grid > button:nth-child(n+5):nth-child(-n+7) {
+                grid-column: auto;
+            }
+
+            .manager-dashboard-grid button {
+                min-height: 66px;
+                flex-direction: row;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 14px;
+                padding: 15px 18px;
+                font-size: 16.5px;
+                text-align: right;
+                border-radius: 14px;
+            }
+
+            /* الايقونة تصبح الى جانب النص لا فوقه */
+            .manager-dashboard-grid button::before {
+                margin-bottom: 0 !important;
+                font-size: 24px !important;
+                width: 30px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            /* زر الخروج يبقى مميزا: موسط وبفاصل يعلوه */
+            .manager-dashboard-grid .btn-logout-full {
+                justify-content: center;
+                min-height: 60px;
+                margin-top: 8px;
+                font-size: 17px;
+            }
+            .manager-dashboard-grid .btn-logout-full::before {
+                margin-left: 10px !important;
+                width: auto;
+            }
         }
 
         .error-message, .success-message, .loading-message, .employee-info, .result-box {
@@ -999,13 +1050,28 @@
         /* ---------------- Print Settings ---------------- */
         @media print {
             body { background: #fff !important; margin: 0; padding: 0; color: #000 !important; }
-            .theme-toggle-btn, .bg-shapes, .btn-group, .footer-section, .screen h2, #mainScreen, #researcherPortal, #researcherScreen, #researcherQueryScreen, #researcherLoginScreen, #managerScreen, #managerPortal, #managerControlScreen, #managerQueryScreen, #editVisitsScreen, #researchersListScreen, #adminPermissionsScreen, .employee-info, .sorting-controls, .btn-back-style, .btn-return-style, .manager-banner, .top-bar, .toast-container { display: none !important; }
+            /* ------------------------------------------------------------
+               اخفاء عناصر الواجهة عند الطباعة
+               ------------------------------------------------------------
+               كان الاخفاء يعدد الشاشات باسمائها، فكلما اضيفت شاشة جديدة
+               نسي ادراجها وطبعت معها عناصر لا تلزم. صار الاخفاء بالقاعدة:
+               تخفى كل الشاشات ثم تظهر الشاشة النشطة وحدها، فيصح الامر
+               مع اي شاشة تضاف مستقبلا بلا تعديل.
+               ------------------------------------------------------------ */
+            .screen { display: none !important; }
+            .screen.active-screen { display: block !important; opacity: 1 !important; transform: none !important; }
+
+            .theme-toggle-btn, .bg-shapes, .btn-group, .footer-section, .screen h2,
+            .employee-info, .sorting-controls, .btn-back-style, .btn-return-style,
+            .manager-banner, .top-bar, .toast-container, .install-btn, .install-modal,
+            .offline-screen, .phone-reminder, .must-change-bar, .readonly-badge,
+            .rule-note, .danger-panel, .field-hint, .records-info, .more-wrap,
+            .add-form-section, .remember-row { display: none !important; }
             .header { display: block !important; margin-bottom: 20px; }
             .header img { max-width: 200px; filter: none !important; }
             .header h1 { font-size: 20px; color: #000 !important; }
             .header h3 { font-size: 14px; color: #000 !important; }
             .container { box-shadow: none !important; border: none !important; background: transparent !important; padding: 0 !important; max-width: 100% !important; margin: 0 !important; backdrop-filter: none !important; }
-            #resultsScreen { display: block !important; opacity: 1 !important; transform: none !important; }
             #printableTableArea { display: block !important; width: 100%; }
             table { border-collapse: collapse !important; width: 100% !important; border: 1px solid #000 !important; }
             th, td { border: 1px solid #000 !important; padding: 10px !important; color: #000 !important; text-align: center; font-size: 12px; background: #fff !important; border-radius: 0 !important; }
@@ -1063,6 +1129,13 @@
 
 
         /* ---------------- (جديد) رسائل التنبيه المنبثقة ---------------- */
+        /* ------------------------------------------------------------------
+           موضع الرسائل المنبثقة
+           ------------------------------------------------------------------
+           كانت تشترك مع زر تثبيت التطبيق في نفس الزاوية والاحداثيات،
+           فتغطيه كلما ظهرت رسالة. الحل رفعها فوقه عند ظهوره فقط، عبر
+           الكلاس has-install-btn الذي يضاف على body من الجافاسكربت.
+           ------------------------------------------------------------------ */
         .toast-container {
             position: fixed;
             bottom: 25px;
@@ -1095,6 +1168,9 @@
         .toast-warn    { border-right-color: #de8c43; color: #a5601f; }
         .toast-info    { border-right-color: #4a8794; }
         .toast-hide { animation: toastOut 0.35s ease forwards; }
+
+        /* ترفع الرسائل فوق زر التثبيت حين يكون ظاهرا */
+        body.has-install-btn .toast-container { bottom: 92px; }
         body.dark-mode .toast { background: rgba(26,47,52,0.96); color: #e2ecee; }
         body.dark-mode .toast-success { color: #75d1a1; }
         body.dark-mode .toast-error { color: #ff9d9d; }
@@ -1520,6 +1596,7 @@
             .theme-toggle-btn { bottom: 15px; left: 15px; width: 46px; height: 46px; font-size: 18px; }
 
             .toast-container { bottom: 15px; right: 15px; left: 15px; }
+            body.has-install-btn .toast-container { bottom: 78px; }
             .toast { font-size: 14px; padding: 12px 15px; }
 
             .footer-cols { grid-template-columns: 1fr; gap: 22px; text-align: center; }
@@ -1531,10 +1608,9 @@
         @media (max-width: 380px) {
             .container { padding: 18px 12px; }
             .header h1 { font-size: 19px; }
-            .manager-dashboard-grid { grid-template-columns: 1fr; }
-            /* شاشات ضيقة جدا: عمود واحد للجميع */
-            .researcher-dashboard-grid { grid-template-columns: 1fr; }
-            .researcher-dashboard-grid > button:nth-child(-n+7) { grid-column: 1 / -1; }
+            /* القائمة الراسية مطبقة اصلا من نقطة 768، نكتفي بتصغير طفيف */
+            .manager-dashboard-grid button { font-size: 15.5px; padding: 14px 15px; min-height: 62px; }
+            .manager-dashboard-grid button::before { font-size: 22px !important; width: 26px; }
         }
 
         /* ==================================================================
@@ -14977,11 +15053,16 @@
 
     function showInstallButton() {
         const btn = document.getElementById("installAppBtn");
-        if (btn && !isRunningStandalone()) btn.style.display = "flex";
+        if (btn && !isRunningStandalone()) {
+            btn.style.display = "flex";
+            /* يرفع الرسائل المنبثقة فوق الزر فلا يغطيها ولا تغطيه */
+            document.body.classList.add("has-install-btn");
+        }
     }
     function hideInstallButton() {
         const btn = document.getElementById("installAppBtn");
         if (btn) btn.style.display = "none";
+        document.body.classList.remove("has-install-btn");
     }
 
     /* الضغط على زر التثبيت */
