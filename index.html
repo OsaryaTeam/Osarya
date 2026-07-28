@@ -2443,31 +2443,6 @@
         body.dark-mode .must-change-banner { color: #f0b473; background: rgba(222,140,67,0.2); }
         .must-change-banner i { margin-left: 7px; }
 
-        /* ---------------- صفوف اختيار ما يصفر ---------------- */
-        .reset-tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-
-        .reset-row {
-            display: flex; align-items: flex-start; gap: 11px;
-            padding: 11px 13px; margin-bottom: 8px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.65);
-            border: 1px solid rgba(74,135,148,0.2);
-            cursor: pointer; user-select: none;
-        }
-        body.dark-mode .reset-row { background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.08); }
-        .reset-row-danger { border-color: rgba(192,57,43,0.5); background: rgba(192,57,43,0.07); }
-        body.dark-mode .reset-row-danger { background: rgba(192,57,43,0.14); }
-
-        .reset-check { width: 19px; height: 19px; margin: 2px 0 0 0; flex-shrink: 0; accent-color: #c0392b; cursor: pointer; }
-        .reset-check:disabled { cursor: not-allowed; opacity: 0.45; }
-
-        .reset-row-text { flex: 1; min-width: 0; }
-        .reset-row-title { display: block; font-weight: 800; font-size: 14.5px; }
-        .reset-row-count { display: block; font-size: 12.5px; font-weight: 700; color: #6c757d; margin-top: 2px; }
-        body.dark-mode .reset-row-count { color: #9aabae; }
-        .reset-row-warn { display: block; font-size: 12px; font-weight: 700; color: #c0392b; margin-top: 5px; line-height: 1.7; }
-        body.dark-mode .reset-row-warn { color: #ff9d9d; }
-
         /* زر واتساب داخل جدول المدراء (يظهر للمبرمج وحده) */
         .btn-whatsapp-row {
             background: linear-gradient(135deg, #25D366, #1da851) !important;
@@ -3613,13 +3588,11 @@
         </div>
         <h2>الادارة العامة والصلاحيات</h2>
 
-        <!-- ==========================================================
-             تصفير بيانات النظام: للمبرمج وحده
-             ----------------------------------------------------------
-             اداة تشغيلية لمرة واحدة عند الانتقال من التجربة الى
-             الاطلاق الرسمي. يخفى الزر عن الجميع الا المبرمج.
-             ========================================================== -->
-        <button id="btnResetSystem" class="btn-danger btn-icon-watermark icon-times" style="display:none;" onclick="openResetPanel()">تصفير بيانات النظام (اطلاق رسمي)</button>
+        <!-- ملاحظة امنية: كان هنا زر "تصفير بيانات النظام".
+             ازيل عمدا لان كود الصفحة مقروء لاي زائر، فوجود اداة
+             تمسح قاعدة البيانات داخله يمكن من ينسخ الصفحة من تشغيلها
+             على البيانات الحقيقية. التصفير يجري من لوحة Firebase
+             حيث الوصول محمي بحساب جوجل. -->
 
         <button id="btnAddNewManager" class="btn-manager btn-icon-watermark icon-user-plus" onclick="toggleAddManagerForm()">اضافة مدير جديد</button>
 
@@ -3655,7 +3628,7 @@
                     </div>
                 </div>
                 <div class="input-group full-width" style="margin-bottom: 15px;">
-                    <label for="newManRole">منصب المدير:</label>
+                    <label for="newManRole">الصفة:</label>
                     <select id="newManRole" class="status-select" onchange="togglePermissionsDiv()">
                         <option value="custom">عضو في ادارة فريق الباحث الاجتماعي</option>
                         <option value="general">المدير العام</option>
@@ -3682,43 +3655,6 @@
             <div class="btn-group">
                 <button id="btnSaveManager" class="btn-manager btn-icon-watermark icon-save" onclick="saveManager()">حفظ المدير</button>
                 <button class="btn-neutral btn-icon-watermark icon-times" onclick="toggleAddManagerForm()">الغاء</button>
-            </div>
-        </div>
-
-        <!-- ==========================================================
-             لوحة تصفير بيانات النظام
-             ========================================================== -->
-        <div id="resetPanel" class="danger-panel" style="display:none;">
-            <div class="danger-title">
-                <i class="fas fa-triangle-exclamation"></i>
-                تصفير بيانات النظام قبل الاطلاق الرسمي
-            </div>
-
-            <p class="danger-text">
-                حدد بالضبط ما تريد مسحه. لن يمس شيء لم تحدده،
-                <strong>وما يمسح لا يمكن استرجاعه اطلاقا</strong>.
-            </p>
-
-            <div class="danger-box">
-                <div class="danger-box-title">اختر ما تريد تصفيره:</div>
-                <div id="resetStats"></div>
-            </div>
-
-            <div class="input-group" style="margin-top:15px;">
-                <label for="resetConfirmInput">للتأكيد النهائي اكتب هذه العبارة بالضبط: <strong>تصفير</strong></label>
-                <div class="input-with-icon">
-                    <input type="text" id="resetConfirmInput" placeholder="اكتب: تصفير">
-                    <i class="fas fa-keyboard right-icon"></i>
-                </div>
-            </div>
-
-            <div id="resetError" class="error-message"></div>
-            <div id="resetSuccess" class="success-message"></div>
-            <div id="resetProgress" class="loading-message" style="display:none;"></div>
-
-            <div class="btn-group">
-                <button id="btnConfirmReset" class="btn-danger btn-icon-watermark icon-times" onclick="confirmResetSystem()">تنفيذ التصفير النهائي</button>
-                <button class="btn-neutral btn-icon-watermark icon-check" onclick="closeResetPanel()">الغاء والعودة</button>
             </div>
         </div>
 
@@ -5554,7 +5490,10 @@
              وتوسم في السجل، فقد تكون من شبكة لا من قمر صناعي. */
     const GEO_REQUIRED       = true;
     const GEO_TIMEOUT_MS     = 15000;
-    const GEO_MAX_ACCURACY_M = 200;
+    /* الدقة المطلوبة بالامتار. القراءة الاولى من الجهاز غالبا ضعيفة
+       (مئات الامتار من الشبكة)، ثم تتحسن تدريجيا مع التقاط الاقمار.
+       لذلك نراقب الموقع ونجمع القراءات حتى تصل الى هذه الدقة. */
+    const GEO_MAX_ACCURACY_M = 15;
 
     /* IDLE_PING_MS: كل كم ملي ثانية يسمح بتصفير مؤقت الخمول.
        بدون هذا الحد كانت حركة الماوس تعيد ضبط المؤقت مئات المرات في الثانية */
@@ -5839,7 +5778,21 @@
          denied   : رفض المستخدم الاذن
          unavailable / timeout / unsupported : تعذر لسبب تقني
        ================================================================== */
-    function captureLocation() {
+    /* ------------------------------------------------------------------
+       التقاط الموقع بدقة مطلوبة
+       ------------------------------------------------------------------
+       لا تكتفي بقراءة واحدة: اول قراءة يعطيها الجهاز غالبا من ابراج
+       الشبكة بدقة مئات الامتار، ثم تتحسن خلال ثوان مع التقاط الاقمار
+       الصناعية. لذلك نستخدم watchPosition لمراقبة الموقع باستمرار،
+       ونقبل اول قراءة تبلغ الدقة المطلوبة (GEO_MAX_ACCURACY_M).
+
+       ان انتهت المهلة دون بلوغها، نرجع افضل قراءة وصلت مع وسم
+       accuracyPoor، فتقرر دالة التوثيق قبولها او رفضها.
+
+       onProgress اختيارية: تستدعى مع كل قراءة لعرض التحسن للمستخدم
+       بدل تركه امام شاشة صامتة.
+       ------------------------------------------------------------------ */
+    function captureLocation(onProgress) {
         return new Promise(function(resolve) {
             if (!navigator.geolocation) {
                 resolve({ status: "unsupported" });
@@ -5847,26 +5800,55 @@
             }
 
             let settled = false;
+            let best = null;
+            let watchId = null;
+            let timer = null;
+
+            const cleanup = function() {
+                if (watchId !== null) {
+                    try { navigator.geolocation.clearWatch(watchId); } catch (e) {}
+                    watchId = null;
+                }
+                if (timer) { clearTimeout(timer); timer = null; }
+            };
+
             const finish = function(result) {
                 if (settled) return;
                 settled = true;
+                cleanup();
                 resolve(result);
             };
 
-            navigator.geolocation.getCurrentPosition(
+            const makeResult = function(c, poor) {
+                return {
+                    status: "ok",
+                    lat: Number(c.latitude.toFixed(6)),
+                    lng: Number(c.longitude.toFixed(6)),
+                    accuracy: Math.round(c.accuracy || 0),
+                    accuracyPoor: !!poor,
+                    at: new Date().toISOString()
+                };
+            };
+
+            watchId = navigator.geolocation.watchPosition(
                 function(pos) {
                     const c = pos.coords;
-                    finish({
-                        status: "ok",
-                        lat: Number(c.latitude.toFixed(6)),
-                        lng: Number(c.longitude.toFixed(6)),
-                        accuracy: Math.round(c.accuracy || 0),
-                        at: new Date().toISOString()
-                    });
+                    const acc = c.accuracy || 99999;
+
+                    /* نحتفظ بافضل قراءة وصلت حتى الان */
+                    if (!best || acc < best.accuracy) {
+                        best = { latitude: c.latitude, longitude: c.longitude, accuracy: acc };
+                    }
+                    if (onProgress) onProgress(Math.round(acc));
+
+                    /* بلغنا الدقة المطلوبة: نقبل فورا */
+                    if (acc <= GEO_MAX_ACCURACY_M) finish(makeResult(c, false));
                 },
                 function(err) {
                     /* 1 = رفض الاذن | 2 = تعذر التحديد | 3 = انتهت المهلة */
                     const map = { 1: "denied", 2: "unavailable", 3: "timeout" };
+                    /* لو وصلتنا قراءة قبل الخطأ نرجعها بدل الفشل الكامل */
+                    if (best) { finish(makeResult(best, best.accuracy > GEO_MAX_ACCURACY_M)); return; }
                     finish({ status: map[err && err.code] || "unavailable" });
                 },
                 {
@@ -5876,8 +5858,11 @@
                 }
             );
 
-            /* حزام امان: بعض المتصفحات لا تحترم مهلة الخيارات */
-            setTimeout(function() { finish({ status: "timeout" }); }, GEO_TIMEOUT_MS + 2000);
+            /* انتهت المهلة: نرجع افضل ما وصل، موسوما ان كان دون المطلوب */
+            timer = setTimeout(function() {
+                if (best) finish(makeResult(best, best.accuracy > GEO_MAX_ACCURACY_M));
+                else finish({ status: "timeout" });
+            }, GEO_TIMEOUT_MS);
         });
     }
 
@@ -5893,7 +5878,7 @@
         if (!loc || !loc.status) return '<span style="color:#8a9a9d;">لم يسجل</span>';
 
         if (loc.status === "ok") {
-            const weak = (loc.accuracy || 0) > GEO_MAX_ACCURACY_M;
+            const weak = loc.accuracyPoor || (loc.accuracy || 0) > GEO_MAX_ACCURACY_M;
             return '<a href="' + esc(locationMapsUrl(loc)) + '" target="_blank" rel="noopener" class="file-link">' +
                    '<i class="fas fa-map-location-dot"></i> فتح الموقع على الخريطة</a>' +
                    '<span style="font-size:12px;color:#8a9a9d;margin-right:8px;">دقة نحو ' + esc(loc.accuracy) + ' متر' +
@@ -7211,8 +7196,23 @@
 
             /* التقاط الموقع قبل الحفظ مباشرة، ليكون اقرب ما يمكن
                للحظة التوثيق الفعلية */
-            rLoading.innerHTML = '<i class="fas fa-location-crosshairs"></i> جاري تحديد موقعك لتوثيقه مع الزيارة...';
-            const loc = await captureLocation();
+            rLoading.innerHTML = '<i class="fas fa-location-crosshairs"></i> جاري تحديد موقعك بدقة...';
+            const loc = await captureLocation(function(acc) {
+                /* عرض تحسن الدقة لحظيا بدل شاشة صامتة */
+                rLoading.innerHTML = '<i class="fas fa-location-crosshairs"></i> جاري تحديد موقعك بدقة... ' +
+                    'الدقة الحالية نحو ' + acc + ' متر (المطلوب ' + GEO_MAX_ACCURACY_M + ' متر او اقل)';
+            });
+
+            /* الدقة الضعيفة ترفض كالموقع المفقود: توثيق بدقة 300 متر
+               لا يثبت تواجدا في موقع بعينه، فيفرغ الميزة من مقصدها */
+            if (GEO_REQUIRED && loc.status === "ok" && loc.accuracyPoor) {
+                rLoading.style.display = "none";
+                btn.disabled = false;
+                showMsg("researcherError", "<i class='fas fa-location-crosshairs'></i> <strong>دقة الموقع غير كافية</strong>" +
+                    "<br>افضل دقة وصلت هي " + loc.accuracy + " متر، والمطلوب " + GEO_MAX_ACCURACY_M + " متر او اقل." +
+                    "<br>اخرج الى مكان مكشوف بعيدا عن الجدران، وتأكد من تفعيل نظام تحديد المواقع (GPS)، ثم اعد المحاولة.");
+                return;
+            }
 
             /* ان كان الموقع الزاميا ولم يتوفر، نوقف التوثيق ونوضح السبب */
             if (GEO_REQUIRED && loc.status !== "ok") {
@@ -8471,11 +8471,7 @@
         const btnAddMan = document.getElementById("btnAddNewManager");
         if (btnAddMan) btnAddMan.style.display = hasFullAccess ? "block" : "none";
 
-        /* اداة التصفير: للمبرمج وحده لا للمدير العام */
-        const btnReset = document.getElementById("btnResetSystem");
-        if (btnReset) btnReset.style.display = isMaster() ? "block" : "none";
-        const resetPanelEl = document.getElementById("resetPanel");
-        if (resetPanelEl && !isMaster()) resetPanelEl.style.display = "none";
+
 
         const rLoading = document.getElementById("manListLoading");
         const tbody = document.getElementById("managersTableBody");
@@ -8802,216 +8798,17 @@
         logAudit("فتح محادثة بيانات حساب", (r.empName || "") + " (" + r.empId + ")");
     };
 
-    /* ==================================================================
-       تصفير بيانات النظام (المبرمج وحده)
-       ==================================================================
-       اداة تشغيلية للانتقال من مرحلة التجربة الى الاطلاق الرسمي.
-
-       تمسح كل المجموعات التشغيلية وتبقي مجموعة المدراء وحدها، فلا
-       يضطر المبرمج لحذف اربع عشرة مجموعة يدويا من لوحة Firebase
-       وهو اجراء طويل ومعرض للخطأ.
-
-       الحمايات: للمبرمج وحده، وتحصر ما سيمسح بارقام حقيقية قبل
-       التنفيذ، وتشترط كتابة كلمة تأكيد بخط اليد.
-       ================================================================== */
-
     /* ------------------------------------------------------------------
-       المجموعات القابلة للتصفير
+       ملاحظة امنية: حذفت من هنا منظومة "تصفير بيانات النظام"
        ------------------------------------------------------------------
-       كلها بلا استثناء بما فيها حسابات المدراء. لكل مجموعة مربع
-       اختيار مستقل، فيحدد المبرمج بالضبط ما يريد مسحه.
+       كانت تمسح مجموعات قاعدة البيانات من داخل الواجهة. وبما ان كود
+       الصفحة مقروء ومنسوخ لاي زائر، فان بقاءها يعني ان من ينسخ الصفحة
+       ويشغلها على جهازه يستطيع مسح البيانات الحقيقية، لان الاتصال
+       بقاعدة البيانات مضمن في الكود نفسه.
 
-       danger: true تعني ان المجموعة حساسة، فتلون بالاحمر وتحتاج
-       انتباها خاصا. حسابات المدراء منها لان مسحها يقطع دخول الجميع
-       عدا المبرمج، فحسابه في الكود لا في قاعدة البيانات.
+       البديل الامن: التصفير من لوحة Firebase مباشرة، فالوصول اليها
+       محمي بحساب جوجل ولا يمكن انتحاله بنسخ الصفحة.
        ------------------------------------------------------------------ */
-    const RESET_COLLECTIONS = [
-        { name: "visits",            label: "الزيارات الموثقة",            unit: "زيارة" },
-        { name: "leaves",            label: "طلبات الاجازات",              unit: "طلب" },
-        { name: "leave_files",       label: "مرفقات الاعذار الطبية",       unit: "مرفق" },
-        { name: "leave_file_chunks", label: "اجزاء المرفقات",              unit: "جزء" },
-        { name: "daily_reports",     label: "التقارير اليومية",            unit: "تقرير" },
-        { name: "notices",           label: "التنبيهات والانذارات",        unit: "سجل" },
-        { name: "notice_templates",  label: "صيغ التنبيهات الجاهزة",       unit: "صيغة" },
-        { name: "visit_reports",     label: "بلاغات الزيارات",             unit: "بلاغ" },
-        { name: "leave_reports",     label: "بلاغات الاجازات",             unit: "بلاغ" },
-        { name: "report_reports",    label: "بلاغات التقارير",             unit: "بلاغ" },
-        { name: "password_requests", label: "طلبات استعادة كلمة المرور",   unit: "طلب" },
-        { name: "notifications",     label: "الاشعارات",                   unit: "اشعار" },
-        { name: "audit_log",         label: "سجل التدقيق",                 unit: "سجل", danger: true },
-        { name: "researchers",       label: "حسابات الباحثين",             unit: "حساب", danger: true },
-        { name: "managers",          label: "حسابات المدراء",              unit: "حساب", danger: true }
-    ];
-
-    window.openResetPanel = async function() {
-        if (!isMaster()) { denyAccess(); return; }
-
-        const panel = document.getElementById("resetPanel");
-        const stats = document.getElementById("resetStats");
-        document.getElementById("resetConfirmInput").value = "";
-        hideMsg("resetError");
-        hideMsg("resetSuccess");
-        document.getElementById("resetProgress").style.display = "none";
-
-        panel.style.display = "block";
-        window.scrollTo({ top: Math.max(0, panel.offsetTop - 20), behavior: "smooth" });
-
-        stats.innerHTML = '<div class="loading-inline"><i class="fas fa-spinner fa-spin"></i> جاري حصر السجلات...</div>';
-
-        try {
-            const counts = await Promise.all(RESET_COLLECTIONS.map(function(c) {
-                return getDocs(collection(db, c.name))
-                    .then(function(s) { return Object.assign({}, c, { n: s.size }); })
-                    .catch(function() { return Object.assign({}, c, { n: 0 }); });
-            }));
-
-            stats.innerHTML = "";
-
-            /* صف اختيار لكل مجموعة، غير محدد افتراضيا فلا يمسح شيء
-               الا ما يختاره المبرمج صراحة */
-            counts.forEach(function(c) {
-                const row = document.createElement("label");
-                row.className = "reset-row" + (c.danger ? " reset-row-danger" : "");
-                row.setAttribute("for", "reset_" + c.name);
-
-                const cb = document.createElement("input");
-                cb.type = "checkbox";
-                cb.id = "reset_" + c.name;
-                cb.value = c.name;
-                cb.className = "reset-check";
-                cb.disabled = (c.n === 0);
-                row.appendChild(cb);
-
-                const txt = document.createElement("span");
-                txt.className = "reset-row-text";
-
-                const t = document.createElement("span");
-                t.className = "reset-row-title";
-                t.textContent = c.label + (c.danger ? "  ⚠" : "");
-                txt.appendChild(t);
-
-                const n = document.createElement("span");
-                n.className = "reset-row-count";
-                n.textContent = (c.n === 0) ? "لا توجد سجلات" : (c.n + " " + c.unit);
-                txt.appendChild(n);
-
-                if (c.name === "managers") {
-                    const w = document.createElement("span");
-                    w.className = "reset-row-warn";
-                    w.textContent = "مسحها يمنع دخول كل المدراء. حسابك انت محفوظ في الكود ولن يتأثر.";
-                    txt.appendChild(w);
-                }
-
-                row.appendChild(txt);
-                stats.appendChild(row);
-            });
-
-            /* اداتا تحديد سريع */
-            const tools = document.createElement("div");
-            tools.className = "reset-tools";
-            const bAll = document.createElement("button");
-            bAll.type = "button";
-            bAll.className = "notif-mini-btn";
-            bAll.textContent = "تحديد الكل";
-            bAll.onclick = function() { toggleAllResetChecks(true); };
-            const bNone = document.createElement("button");
-            bNone.type = "button";
-            bNone.className = "notif-mini-btn";
-            bNone.textContent = "الغاء التحديد";
-            bNone.onclick = function() { toggleAllResetChecks(false); };
-            tools.appendChild(bAll);
-            tools.appendChild(bNone);
-            stats.insertBefore(tools, stats.firstChild);
-        } catch (e) {
-            stats.innerHTML = '<div class="delete-stat-row">تعذر حصر السجلات. تحقق من الاتصال واعد فتح اللوحة.</div>';
-        }
-    };
-
-    function toggleAllResetChecks(on) {
-        document.querySelectorAll(".reset-check").forEach(function(cb) {
-            if (!cb.disabled) cb.checked = on;
-        });
-    }
-
-    window.closeResetPanel = function() {
-        document.getElementById("resetPanel").style.display = "none";
-    };
-
-    window.confirmResetSystem = async function() {
-        if (!isMaster()) { denyAccess(); return; }
-        if (!requireOnline("resetError")) return;
-
-        const typed = document.getElementById("resetConfirmInput").value.trim();
-        const btn = document.getElementById("btnConfirmReset");
-        const progress = document.getElementById("resetProgress");
-
-        hideMsg("resetError");
-        hideMsg("resetSuccess");
-
-        /* المجموعات المختارة فقط */
-        const chosen = [];
-        document.querySelectorAll(".reset-check:checked").forEach(function(cb) {
-            const c = RESET_COLLECTIONS.find(function(x) { return x.name === cb.value; });
-            if (c) chosen.push(c);
-        });
-
-        if (chosen.length === 0) {
-            showMsg("resetError", "<i class='fas fa-exclamation-circle'></i> لم تحدد اي شيء لمسحه. اختر ما تريد تصفيره اولا.");
-            return;
-        }
-
-        if (typed !== "تصفير") {
-            showMsg("resetError", "<i class='fas fa-times-circle'></i> كلمة التأكيد غير مطابقة. لم يحذف اي شيء.");
-            return;
-        }
-
-        btn.disabled = true;
-        progress.style.display = "block";
-
-        let deleted = 0;
-        try {
-            for (let i = 0; i < chosen.length; i++) {
-                const c = chosen[i];
-                progress.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري مسح ' + c.label +
-                                     ' (' + (i + 1) + ' من ' + chosen.length + ')...';
-
-                /* المسح على دفعات: المجموعة قد تحوي اكثر مما يجلب مرة واحدة */
-                let guard = 0;
-                while (guard < 50) {
-                    guard++;
-                    const snap = await getDocs(query(collection(db, c.name), limit(300)));
-                    if (snap.empty) break;
-
-                    const jobs = [];
-                    snap.forEach(function(d) { jobs.push(deleteDoc(doc(db, c.name, d.id))); });
-                    await Promise.all(jobs);
-                    deleted += snap.size;
-
-                    if (snap.size < 300) break;
-                }
-            }
-
-            progress.style.display = "none";
-            document.getElementById("resetConfirmInput").value = "";
-
-            /* توثيق واقعة التصفير نفسها بما شملته بالضبط */
-            const names = chosen.map(function(c) { return c.label; }).join("، ");
-            logAudit("تصفير بيانات النظام", "حذف " + deleted + " سجل من: " + names);
-
-            showMsg("resetSuccess", "<i class='fas fa-check-circle'></i> تم التصفير بنجاح، وحذف " +
-                deleted + " سجل من: " + esc(names) + ".");
-            toast("اكتمل التصفير: " + deleted + " سجل.", "success");
-
-            /* تحديث الشارات والاشعارات بعد المسح */
-            if (window.startActionBadgeListeners) window.startActionBadgeListeners();
-        } catch (e) {
-            progress.style.display = "none";
-            showMsg("resetError", "<i class='fas fa-wifi'></i> توقف المسح بعد حذف " + deleted +
-                " سجل. تحقق من الاتصال واعد المحاولة، وسيكمل من حيث توقف.");
-        }
-
-        btn.disabled = false;
-    };
 
     window.toggleAddManagerForm = function() {
         const section = document.getElementById("addManagerSection");
