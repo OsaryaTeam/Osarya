@@ -2443,6 +2443,31 @@
         body.dark-mode .must-change-banner { color: #f0b473; background: rgba(222,140,67,0.2); }
         .must-change-banner i { margin-left: 7px; }
 
+        /* ---------------- صفوف اختيار ما يصفر ---------------- */
+        .reset-tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+
+        .reset-row {
+            display: flex; align-items: flex-start; gap: 11px;
+            padding: 11px 13px; margin-bottom: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(74,135,148,0.2);
+            cursor: pointer; user-select: none;
+        }
+        body.dark-mode .reset-row { background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.08); }
+        .reset-row-danger { border-color: rgba(192,57,43,0.5); background: rgba(192,57,43,0.07); }
+        body.dark-mode .reset-row-danger { background: rgba(192,57,43,0.14); }
+
+        .reset-check { width: 19px; height: 19px; margin: 2px 0 0 0; flex-shrink: 0; accent-color: #c0392b; cursor: pointer; }
+        .reset-check:disabled { cursor: not-allowed; opacity: 0.45; }
+
+        .reset-row-text { flex: 1; min-width: 0; }
+        .reset-row-title { display: block; font-weight: 800; font-size: 14.5px; }
+        .reset-row-count { display: block; font-size: 12.5px; font-weight: 700; color: #6c757d; margin-top: 2px; }
+        body.dark-mode .reset-row-count { color: #9aabae; }
+        .reset-row-warn { display: block; font-size: 12px; font-weight: 700; color: #c0392b; margin-top: 5px; line-height: 1.7; }
+        body.dark-mode .reset-row-warn { color: #ff9d9d; }
+
         /* زر واتساب داخل جدول المدراء (يظهر للمبرمج وحده) */
         .btn-whatsapp-row {
             background: linear-gradient(135deg, #25D366, #1da851) !important;
@@ -3588,7 +3613,15 @@
         </div>
         <h2>الادارة العامة والصلاحيات</h2>
 
-        <!-- ملاحظة امنية: كان هنا زر "تصفير بيانات النظام".
+        <!-- ==========================================================
+             تصفير بيانات النظام: للمبرمج وحده
+             ----------------------------------------------------------
+             اداة تشغيلية للانتقال من مرحلة التجربة الى الاطلاق الرسمي،
+             وللصيانة الدورية عند الحاجة. تخفى عن الجميع الا المبرمج.
+             ========================================================== -->
+        <button id="btnResetSystem" class="btn-danger btn-icon-watermark icon-times" style="display:none;" onclick="openResetPanel()">تصفير بيانات النظام</button>
+
+        <!-- ملاحظة سابقة: كان هنا زر "تصفير بيانات النظام".
              ازيل عمدا لان كود الصفحة مقروء لاي زائر، فوجود اداة
              تمسح قاعدة البيانات داخله يمكن من ينسخ الصفحة من تشغيلها
              على البيانات الحقيقية. التصفير يجري من لوحة Firebase
@@ -3655,6 +3688,53 @@
             <div class="btn-group">
                 <button id="btnSaveManager" class="btn-manager btn-icon-watermark icon-save" onclick="saveManager()">حفظ المدير</button>
                 <button class="btn-neutral btn-icon-watermark icon-times" onclick="toggleAddManagerForm()">الغاء</button>
+            </div>
+        </div>
+
+        <!-- ==========================================================
+             لوحة تصفير بيانات النظام
+             ========================================================== -->
+        <div id="resetPanel" class="danger-panel" style="display:none;">
+            <div class="danger-title">
+                <i class="fas fa-triangle-exclamation"></i>
+                تصفير بيانات النظام
+            </div>
+
+            <p class="danger-text">
+                حدد بالضبط ما تريد مسحه. لن يمس شيء لم تحدده،
+                <strong>وما يمسح لا يمكن استرجاعه اطلاقا</strong>.
+            </p>
+
+            <div class="danger-box">
+                <div class="danger-box-title">اختر ما تريد تصفيره:</div>
+                <div id="resetStats"></div>
+            </div>
+
+            <div class="safe-box">
+                <div class="safe-box-title"><i class="fas fa-shield-halved"></i> محمي دائما:</div>
+                <div class="safe-box-row">حسابك انت (المبرمج) — لا يحذف مهما اخترت</div>
+                <div class="safe-box-note">
+                    حتى لو حددت "حسابات المدراء" فسيمسح كل المدراء عداك، حتى لا تفقد
+                    الوصول الى النظام نهائيا. حسابك محفوظ في قاعدة البيانات ولم يعد في الكود،
+                    فحذفه يعني ضياع النظام بلا رجعة.
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-top:15px;">
+                <label for="resetConfirmInput">للتأكيد النهائي اكتب هذه العبارة بالضبط: <strong>تصفير</strong></label>
+                <div class="input-with-icon">
+                    <input type="text" id="resetConfirmInput" placeholder="اكتب: تصفير">
+                    <i class="fas fa-keyboard right-icon"></i>
+                </div>
+            </div>
+
+            <div id="resetError" class="error-message"></div>
+            <div id="resetSuccess" class="success-message"></div>
+            <div id="resetProgress" class="loading-message" style="display:none;"></div>
+
+            <div class="btn-group">
+                <button id="btnConfirmReset" class="btn-danger btn-icon-watermark icon-times" onclick="confirmResetSystem()">تنفيذ التصفير النهائي</button>
+                <button class="btn-neutral btn-icon-watermark icon-check" onclick="closeResetPanel()">الغاء والعودة</button>
             </div>
         </div>
 
@@ -8650,6 +8730,12 @@
         const btnAddMan = document.getElementById("btnAddNewManager");
         if (btnAddMan) btnAddMan.style.display = hasFullAccess ? "block" : "none";
 
+        /* اداة التصفير: للمبرمج وحده لا للمدير العام */
+        const btnReset = document.getElementById("btnResetSystem");
+        if (btnReset) btnReset.style.display = isMaster() ? "block" : "none";
+        const resetPanelEl = document.getElementById("resetPanel");
+        if (resetPanelEl && !isMaster()) resetPanelEl.style.display = "none";
+
 
 
         const rLoading = document.getElementById("manListLoading");
@@ -8977,17 +9063,229 @@
         logAudit("فتح محادثة بيانات حساب", (r.empName || "") + " (" + r.empId + ")");
     };
 
-    /* ------------------------------------------------------------------
-       ملاحظة امنية: حذفت من هنا منظومة "تصفير بيانات النظام"
-       ------------------------------------------------------------------
-       كانت تمسح مجموعات قاعدة البيانات من داخل الواجهة. وبما ان كود
-       الصفحة مقروء ومنسوخ لاي زائر، فان بقاءها يعني ان من ينسخ الصفحة
-       ويشغلها على جهازه يستطيع مسح البيانات الحقيقية، لان الاتصال
-       بقاعدة البيانات مضمن في الكود نفسه.
+    /* ==================================================================
+       تصفير بيانات النظام (المبرمج وحده)
+       ==================================================================
+       اداة تشغيلية للانتقال من التجربة الى الاطلاق الرسمي، ولاعادة
+       الضبط عند الحاجة. تغني عن حذف خمس عشرة مجموعة يدويا من لوحة
+       Firebase، وهو اجراء طويل ومعرض للخطأ.
 
-       البديل الامن: التصفير من لوحة Firebase مباشرة، فالوصول اليها
-       محمي بحساب جوجل ولا يمكن انتحاله بنسخ الصفحة.
-       ------------------------------------------------------------------ */
+       الحمايات:
+         * لا تظهر الا للمبرمج
+         * تحصر ما سيمسح بارقام حقيقية قبل التنفيذ
+         * لا شيء محدد افتراضيا، فلا يمسح الا ما يختار صراحة
+         * تشترط كتابة كلمة تأكيد بخط اليد
+         * حساب المبرمج نفسه لا يحذف مهما اختار
+
+       ملاحظة على حماية حساب المبرمج:
+       -------------------------------
+       بعد نقل حسابه من الكود الى قاعدة البيانات، صار حذف مجموعة
+       المدراء يعني حذف حسابه هو ايضا، وبذلك يفقد الوصول للنظام نهائيا
+       بلا طريقة استرجاع. لذلك يستثنى مستنده صراحة عند المسح.
+       ================================================================== */
+
+    const RESET_COLLECTIONS = [
+        { name: "visits",            label: "الزيارات الموثقة",            unit: "زيارة" },
+        { name: "leaves",            label: "طلبات الاجازات",              unit: "طلب" },
+        { name: "leave_files",       label: "مرفقات الاعذار الطبية",       unit: "مرفق" },
+        { name: "leave_file_chunks", label: "اجزاء المرفقات",              unit: "جزء" },
+        { name: "daily_reports",     label: "التقارير اليومية",            unit: "تقرير" },
+        { name: "notices",           label: "التنبيهات والانذارات",        unit: "سجل" },
+        { name: "notice_templates",  label: "صيغ التنبيهات الجاهزة",       unit: "صيغة" },
+        { name: "visit_reports",     label: "بلاغات الزيارات",             unit: "بلاغ" },
+        { name: "leave_reports",     label: "بلاغات الاجازات",             unit: "بلاغ" },
+        { name: "report_reports",    label: "بلاغات التقارير",             unit: "بلاغ" },
+        { name: "password_requests", label: "طلبات استعادة كلمة المرور",   unit: "طلب" },
+        { name: "notifications",     label: "الاشعارات",                   unit: "اشعار" },
+        { name: "audit_log",         label: "سجل التدقيق",                 unit: "سجل", danger: true },
+        { name: "researchers",       label: "حسابات الباحثين",             unit: "حساب", danger: true },
+        { name: "managers",          label: "حسابات المدراء",              unit: "حساب", danger: true }
+    ];
+
+    window.openResetPanel = async function() {
+        if (!isMaster()) { denyAccess(); return; }
+
+        const panel = document.getElementById("resetPanel");
+        const stats = document.getElementById("resetStats");
+        document.getElementById("resetConfirmInput").value = "";
+        hideMsg("resetError");
+        hideMsg("resetSuccess");
+        document.getElementById("resetProgress").style.display = "none";
+
+        panel.style.display = "block";
+        window.scrollTo({ top: Math.max(0, panel.offsetTop - 20), behavior: "smooth" });
+
+        stats.innerHTML = '<div class="loading-inline"><i class="fas fa-spinner fa-spin"></i> جاري حصر السجلات...</div>';
+
+        try {
+            const counts = await Promise.all(RESET_COLLECTIONS.map(function(c) {
+                return getDocs(collection(db, c.name))
+                    .then(function(s) { return Object.assign({}, c, { n: s.size }); })
+                    .catch(function() { return Object.assign({}, c, { n: 0 }); });
+            }));
+
+            stats.innerHTML = "";
+
+            /* غير محدد افتراضيا: لا يمسح الا ما يختاره المبرمج صراحة */
+            counts.forEach(function(c) {
+                const row = document.createElement("label");
+                row.className = "reset-row" + (c.danger ? " reset-row-danger" : "");
+                row.setAttribute("for", "reset_" + c.name);
+
+                const cb = document.createElement("input");
+                cb.type = "checkbox";
+                cb.id = "reset_" + c.name;
+                cb.value = c.name;
+                cb.className = "reset-check";
+                cb.disabled = (c.n === 0);
+                row.appendChild(cb);
+
+                const txt = document.createElement("span");
+                txt.className = "reset-row-text";
+
+                const t = document.createElement("span");
+                t.className = "reset-row-title";
+                t.textContent = c.label + (c.danger ? "  ⚠" : "");
+                txt.appendChild(t);
+
+                const n = document.createElement("span");
+                n.className = "reset-row-count";
+                n.textContent = (c.n === 0) ? "لا توجد سجلات" : (c.n + " " + c.unit);
+                txt.appendChild(n);
+
+                if (c.name === "managers") {
+                    const w = document.createElement("span");
+                    w.className = "reset-row-warn";
+                    w.textContent = "يمسح كل المدراء عدا حسابك انت، فيفقدون الدخول حتى تعيد انشاءهم.";
+                    txt.appendChild(w);
+                } else if (c.name === "audit_log") {
+                    const w = document.createElement("span");
+                    w.className = "reset-row-warn";
+                    w.textContent = "سجل التدقيق هو الشاهد الوحيد على ما جرى في النظام. لا تمسحه الا عن قصد.";
+                    txt.appendChild(w);
+                }
+
+                row.appendChild(txt);
+                stats.appendChild(row);
+            });
+
+            const tools = document.createElement("div");
+            tools.className = "reset-tools";
+            const bAll = document.createElement("button");
+            bAll.type = "button";
+            bAll.className = "notif-mini-btn";
+            bAll.textContent = "تحديد الكل";
+            bAll.onclick = function() { toggleAllResetChecks(true); };
+            const bNone = document.createElement("button");
+            bNone.type = "button";
+            bNone.className = "notif-mini-btn";
+            bNone.textContent = "الغاء التحديد";
+            bNone.onclick = function() { toggleAllResetChecks(false); };
+            tools.appendChild(bAll);
+            tools.appendChild(bNone);
+            stats.insertBefore(tools, stats.firstChild);
+        } catch (e) {
+            stats.innerHTML = '<div class="delete-stat-row">تعذر حصر السجلات. تحقق من الاتصال واعد فتح اللوحة.</div>';
+        }
+    };
+
+    function toggleAllResetChecks(on) {
+        document.querySelectorAll(".reset-check").forEach(function(cb) {
+            if (!cb.disabled) cb.checked = on;
+        });
+    }
+
+    window.closeResetPanel = function() {
+        document.getElementById("resetPanel").style.display = "none";
+    };
+
+    window.confirmResetSystem = async function() {
+        if (!isMaster()) { denyAccess(); return; }
+        if (!requireOnline("resetError")) return;
+
+        const typed = document.getElementById("resetConfirmInput").value.trim();
+        const btn = document.getElementById("btnConfirmReset");
+        const progress = document.getElementById("resetProgress");
+
+        hideMsg("resetError");
+        hideMsg("resetSuccess");
+
+        const chosen = [];
+        document.querySelectorAll(".reset-check:checked").forEach(function(cb) {
+            const c = RESET_COLLECTIONS.find(function(x) { return x.name === cb.value; });
+            if (c) chosen.push(c);
+        });
+
+        if (chosen.length === 0) {
+            showMsg("resetError", "<i class='fas fa-exclamation-circle'></i> لم تحدد اي شيء لمسحه. اختر ما تريد تصفيره اولا.");
+            return;
+        }
+        if (typed !== "تصفير") {
+            showMsg("resetError", "<i class='fas fa-times-circle'></i> كلمة التأكيد غير مطابقة. لم يحذف اي شيء.");
+            return;
+        }
+
+        btn.disabled = true;
+        progress.style.display = "block";
+
+        let deleted = 0;
+        let keptSelf = false;
+
+        try {
+            for (let i = 0; i < chosen.length; i++) {
+                const c = chosen[i];
+                progress.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري مسح ' + c.label +
+                                     ' (' + (i + 1) + ' من ' + chosen.length + ')...';
+
+                /* المسح على دفعات: المجموعة قد تحوي اكثر مما يجلب مرة واحدة */
+                let guard = 0;
+                while (guard < 50) {
+                    guard++;
+                    const snap = await getDocs(query(collection(db, c.name), limit(300)));
+                    if (snap.empty) break;
+
+                    const jobs = [];
+                    let skipped = 0;
+                    snap.forEach(function(d) {
+                        /* حماية قاطعة: حساب المبرمج لا يحذف باي حال، فحذفه
+                           يعني فقدان اخر مفتاح للنظام بلا استرجاع */
+                        if (c.name === "managers" && (d.id === session.id || d.data().isMaster === true)) {
+                            skipped++;
+                            keptSelf = true;
+                            return;
+                        }
+                        jobs.push(deleteDoc(doc(db, c.name, d.id)));
+                    });
+
+                    await Promise.all(jobs);
+                    deleted += jobs.length;
+
+                    /* لو لم يبق في الدفعة الا المستثنى نتوقف، والا دارت الحلقة بلا نهاية */
+                    if (jobs.length === 0) break;
+                    if (snap.size < 300) break;
+                }
+            }
+
+            progress.style.display = "none";
+            document.getElementById("resetConfirmInput").value = "";
+
+            const names = chosen.map(function(c) { return c.label; }).join("، ");
+            logAudit("تصفير بيانات النظام", "حذف " + deleted + " سجل من: " + names);
+
+            showMsg("resetSuccess", "<i class='fas fa-check-circle'></i> تم التصفير بنجاح، وحذف " +
+                deleted + " سجل من: " + esc(names) + "." +
+                (keptSelf ? "<br>حسابك انت لم يحذف كما هو مقرر." : ""));
+            toast("اكتمل التصفير: " + deleted + " سجل.", "success");
+
+            if (window.startActionBadgeListeners) window.startActionBadgeListeners();
+        } catch (e) {
+            progress.style.display = "none";
+            showMsg("resetError", "<i class='fas fa-wifi'></i> توقف المسح بعد حذف " + deleted +
+                " سجل. تحقق من الاتصال واعد المحاولة، وسيكمل من حيث توقف.");
+        }
+
+        btn.disabled = false;
+    };
 
     window.toggleAddManagerForm = function() {
         const section = document.getElementById("addManagerSection");
