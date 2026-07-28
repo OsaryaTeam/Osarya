@@ -593,10 +593,30 @@
             font-size: 24px !important;
         }
 
+        /* ------------------------------------------------------------------
+           بوابة الباحث: سبعة ازرار
+           ------------------------------------------------------------------
+           سبعة لا تقسم على اربعة، فيبقى فراغ في اخر صف لو تركت الشبكة
+           كما هي. الحل قسمة العرض على اثني عشر عمودا:
+             الصف الاول : اربعة ازرار، كل زر ثلاثة اعمدة  (4 × 3 = 12)
+             الصف الثاني: ثلاثة ازرار، كل زر اربعة اعمدة  (3 × 4 = 12)
+           فيمتلئ الصفان تماما ويبدو التوزيع مقصودا لا ناقصا، مع بقاء
+           زر الخروج بعرض كامل كما هو.
+           ------------------------------------------------------------------ */
+        .researcher-dashboard-grid { grid-template-columns: repeat(12, 1fr); }
+        .researcher-dashboard-grid > button:nth-child(-n+4) { grid-column: span 3; }
+        .researcher-dashboard-grid > button:nth-child(n+5):nth-child(-n+7) { grid-column: span 4; }
+
         @media (max-width: 768px) {
             .manager-dashboard-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            /* على الجوال: عمودان، والزر السابع يمتد بعرض الصف كاملا
+               فلا يبقى فراغ الى جانبه */
+            .researcher-dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+            .researcher-dashboard-grid > button:nth-child(-n+4),
+            .researcher-dashboard-grid > button:nth-child(n+5):nth-child(-n+7) { grid-column: span 1; }
+            .researcher-dashboard-grid > button:nth-child(7) { grid-column: 1 / -1; min-height: 90px; }
         }
 
         .error-message, .success-message, .loading-message, .employee-info, .result-box {
@@ -796,7 +816,7 @@
             border-color: rgba(222, 140, 67, 0.2);
         }
         
-        /* ---------------- قائمة منسدلة لحالة الباحث/المسمى ---------------- */
+        /* ---------------- قائمة منسدلة لحالة الباحث/الصفة ---------------- */
         .status-select {
             padding: 8px 12px;
             border-radius: 8px;
@@ -1512,6 +1532,9 @@
             .container { padding: 18px 12px; }
             .header h1 { font-size: 19px; }
             .manager-dashboard-grid { grid-template-columns: 1fr; }
+            /* شاشات ضيقة جدا: عمود واحد للجميع */
+            .researcher-dashboard-grid { grid-template-columns: 1fr; }
+            .researcher-dashboard-grid > button:nth-child(-n+7) { grid-column: 1 / -1; }
         }
 
         /* ==================================================================
@@ -2344,6 +2367,31 @@
         body.dark-mode .must-change-banner { color: #f0b473; background: rgba(222,140,67,0.2); }
         .must-change-banner i { margin-left: 7px; }
 
+        /* ---------------- صفوف اختيار ما يصفر ---------------- */
+        .reset-tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+
+        .reset-row {
+            display: flex; align-items: flex-start; gap: 11px;
+            padding: 11px 13px; margin-bottom: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(74,135,148,0.2);
+            cursor: pointer; user-select: none;
+        }
+        body.dark-mode .reset-row { background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.08); }
+        .reset-row-danger { border-color: rgba(192,57,43,0.5); background: rgba(192,57,43,0.07); }
+        body.dark-mode .reset-row-danger { background: rgba(192,57,43,0.14); }
+
+        .reset-check { width: 19px; height: 19px; margin: 2px 0 0 0; flex-shrink: 0; accent-color: #c0392b; cursor: pointer; }
+        .reset-check:disabled { cursor: not-allowed; opacity: 0.45; }
+
+        .reset-row-text { flex: 1; min-width: 0; }
+        .reset-row-title { display: block; font-weight: 800; font-size: 14.5px; }
+        .reset-row-count { display: block; font-size: 12.5px; font-weight: 700; color: #6c757d; margin-top: 2px; }
+        body.dark-mode .reset-row-count { color: #9aabae; }
+        .reset-row-warn { display: block; font-size: 12px; font-weight: 700; color: #c0392b; margin-top: 5px; line-height: 1.7; }
+        body.dark-mode .reset-row-warn { color: #ff9d9d; }
+
         /* زر واتساب داخل جدول المدراء (يظهر للمبرمج وحده) */
         .btn-whatsapp-row {
             background: linear-gradient(135deg, #25D366, #1da851) !important;
@@ -2461,34 +2509,78 @@
            هذا الشريط يخبر المستخدم بالحال فورا، مع منع مسبق لعمليات
            الحفظ الحرجة (انظر requireOnline في الجافاسكربت).
            ================================================================== */
-        .offline-bar {
+        /* ------------------------------------------------------------------
+           شاشة انقطاع الاتصال الكاملة
+           ------------------------------------------------------------------
+           تغطي الواجهة كلها وتمنع الوصول لاي شاشة او زر، فلا مخرج منها
+           الا زر اعادة المحاولة. السبب ان النظام يعتمد كليا على قاعدة
+           بيانات سحابية، فبلا اتصال لا شيء يعمل، والسماح بالتنقل بين
+           شاشات فارغة يوهم المستخدم ان النظام معطل لا الشبكة.
+           ------------------------------------------------------------------ */
+        .offline-screen {
             position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 12500;
+            inset: 0;
+            z-index: 14000;
             display: none;
-            padding: 12px 16px;
-            padding-bottom: max(12px, env(safe-area-inset-bottom));
-            background: linear-gradient(135deg, #c0392b, #96281b);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 22px;
+            padding: 30px 24px;
+            text-align: center;
+            background: linear-gradient(160deg, #2b1512, #4a1f1a 55%, #2b1512);
             color: #fff;
             font-family: 'Tajawal', sans-serif;
-            font-weight: 800;
-            font-size: 14px;
-            text-align: center;
-            line-height: 1.7;
-            box-shadow: 0 -4px 18px rgba(0,0,0,0.28);
-            animation: offlineIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: offlineIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .offline-bar i { margin-left: 7px; }
-        @keyframes offlineIn { 0% { opacity: 0; transform: translateY(100%); } 100% { opacity: 1; transform: translateY(0); } }
+        .offline-screen.is-visible { display: flex; }
 
-        /* عند ظهور الشريط نرفع زر الوضع الليلي وزر التثبيت فوقه */
-        body.is-offline .theme-toggle-btn { bottom: 76px; }
-        body.is-offline .install-btn { bottom: 76px; }
-        body.is-offline .toast-container { bottom: 82px; }
+        .offline-icon {
+            width: 110px; height: 110px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            border: 3px solid rgba(255,255,255,0.22);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 50px;
+            animation: offlinePulse 2.4s ease-in-out infinite;
+        }
+        @keyframes offlinePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.12); }
+            50%      { box-shadow: 0 0 0 20px rgba(255,255,255,0); }
+        }
 
-        @media print { .offline-bar { display: none !important; } }
+        .offline-title { font-size: 26px; font-weight: 900; }
+        .offline-text {
+            font-size: 15.5px; line-height: 2; font-weight: 600;
+            max-width: 460px; opacity: 0.92;
+        }
+
+        .offline-retry {
+            width: auto; margin: 0; padding: 16px 40px;
+            font-size: 18px; font-weight: 800; border-radius: 50px;
+            background: #fff; color: #96281b;
+            border: none; cursor: pointer; box-shadow: 0 10px 28px rgba(0,0,0,0.3);
+            font-family: 'Tajawal', sans-serif;
+        }
+        .offline-retry::after { display: none; }
+        .offline-retry:hover { transform: translateY(-2px); background: #fff; }
+        .offline-retry:disabled { opacity: 0.7; cursor: wait; }
+
+        .offline-hint { font-size: 13px; opacity: 0.65; line-height: 1.9; max-width: 420px; }
+
+        @keyframes offlineIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+        /* منع تمرير الصفحة خلف الشاشة */
+        body.is-offline { overflow: hidden; }
+
+        @media (max-width: 768px) {
+            .offline-icon { width: 92px; height: 92px; font-size: 42px; }
+            .offline-title { font-size: 22px; }
+            .offline-text { font-size: 14.5px; }
+            .offline-retry { width: 100%; max-width: 320px; }
+        }
+
+        @media print { .offline-screen { display: none !important; } }
 
         /* ==================================================================
            (جديد) شريط التذكير بتسجيل رقم الجوال
@@ -3053,9 +3145,19 @@
      ضروري للباحثين في الميدان، لان عمليات الحفظ تبقى معلقة بلا
      رسالة خطأ عند انقطاع الشبكة.
      ============================================================== -->
-<div id="offlineBar" class="offline-bar" role="status" aria-live="assertive">
-    <i class="fas fa-wifi" aria-hidden="true"></i>
-    لا يوجد اتصال بالانترنت حاليا. لن تتمكن من الحفظ او التوثيق حتى يعود الاتصال.
+<div id="offlineScreen" class="offline-screen" role="alertdialog" aria-live="assertive" aria-modal="true">
+    <div class="offline-icon"><i class="fas fa-wifi" aria-hidden="true"></i></div>
+    <div class="offline-title">لا يوجد اتصال بالانترنت</div>
+    <div class="offline-text">
+        النظام يحتاج اتصالا بالانترنت ليعمل، فكل البيانات محفوظة في السحابة.
+        تحقق من تغطية الشبكة او الواي فاي ثم اضغط اعادة المحاولة.
+    </div>
+    <button type="button" id="btnRetryConnection" class="offline-retry" onclick="retryConnection()">
+        اعادة المحاولة
+    </button>
+    <div class="offline-hint">
+        لن تفقد شيئا مما ادخلته. بمجرد عودة الاتصال ستعود الى حيث كنت.
+    </div>
 </div>
 
 <!-- حاوية الرسائل المنبثقة (Toast) المستخدمة بدل نوافذ alert -->
@@ -3273,7 +3375,7 @@
     <div id="researcherPortal" class="container screen">
         <h2>بوابة الباحث</h2>
 
-        <div class="manager-dashboard-grid">
+        <div class="manager-dashboard-grid researcher-dashboard-grid">
             <button class="btn-researcher btn-icon-watermark icon-register" onclick="switchScreen('researcherScreen')">توثيق زيارة</button>
             <button class="btn-researcher btn-icon-watermark icon-search" onclick="switchScreen('researcherQueryScreen')">الاستعلام عن زيارة</button>
             <button class="btn-researcher btn-icon-watermark icon-my-visits" onclick="openMyVisits()">زياراتي</button>
@@ -3282,7 +3384,6 @@
             <button class="btn-researcher btn-icon-watermark icon-calendar-plus" onclick="openLeaveRequest()">طلب اجازة</button>
             <button class="btn-researcher btn-icon-watermark icon-bell" onclick="openMyNotices()">تنبيهاتي | إنذاراتي</button>
             <button class="btn-researcher btn-icon-watermark icon-daily-report" onclick="openDailyReportCreate('create')">انشاء تقرير يومي</button>
-            <button class="btn-researcher btn-dev btn-icon-watermark icon-user-shield" onclick="comingSoon('خدمة قادمة')">قيد التطوير</button>
 
             <button class="btn-neutral btn-icon-watermark icon-logout btn-logout-full" onclick="exitResearcherArea()">تسجيل خروج</button>
         </div>
@@ -3290,6 +3391,14 @@
 
     <div id="researcherScreen" class="container screen">
         <h2>توثيق زيارة</h2>
+
+        <!-- تنبيه مسبق: يقلل مفاجأة رفض التوثيق بسبب الموقع -->
+        <div class="rule-note">
+            <i class="fas fa-location-crosshairs"></i>
+            يسجل موقعك تلقائيا مع الزيارة لاثبات تواجدك في موقعها وقت تنفيذها.
+            <strong>تأكد من تفعيل خدمة الموقع في جهازك والسماح للموقع باستخدامها</strong>،
+            فلا يمكن توثيق اي زيارة بدون تحديد الموقع.
+        </div>
         
         <div class="form-grid">
             <div class="input-group">
@@ -3472,8 +3581,8 @@
                 <div class="input-group full-width" style="margin-bottom: 15px;">
                     <label for="newManRole">منصب المدير:</label>
                     <select id="newManRole" class="status-select" onchange="togglePermissionsDiv()">
-                        <option value="custom">مدير</option>
-                        <option value="general">مدير عام</option>
+                        <option value="custom">عضو في ادارة فريق الباحث الاجتماعي</option>
+                        <option value="general">المدير العام</option>
                     </select>
                 </div>
                 <div class="input-group full-width" id="permissionsDiv">
@@ -3510,22 +3619,13 @@
             </div>
 
             <p class="danger-text">
-                هذا الاجراء يمسح كل السجلات التشغيلية التي تراكمت اثناء التجربة،
-                <strong>ولا يمكن التراجع عنه اطلاقا</strong>.
+                حدد بالضبط ما تريد مسحه. لن يمس شيء لم تحدده،
+                <strong>وما يمسح لا يمكن استرجاعه اطلاقا</strong>.
             </p>
 
             <div class="danger-box">
-                <div class="danger-box-title">ما سيمسح بالكامل:</div>
+                <div class="danger-box-title">اختر ما تريد تصفيره:</div>
                 <div id="resetStats"></div>
-            </div>
-
-            <div class="safe-box">
-                <div class="safe-box-title"><i class="fas fa-shield-halved"></i> ما لن يمس:</div>
-                <div class="safe-box-row">حسابات المدراء وصلاحياتهم — تبقى كما هي تماما</div>
-                <div class="safe-box-note">
-                    كل ما عدا حسابات المدراء يمسح: الزيارات والاجازات والتقارير والتنبيهات
-                    والبلاغات والاشعارات وسجل التدقيق وحسابات الباحثين ان بقي منها شيء.
-                </div>
             </div>
 
             <div class="input-group" style="margin-top:15px;">
@@ -3557,7 +3657,7 @@
                         <th>اسم المدير</th>
                         <th class="full-access-col">الاسم المستخدم</th>
                         <th class="full-access-col">كلمة المرور</th>
-                        <th>المسمى</th>
+                        <th>الصفة</th>
                         <th>الصلاحيات</th>
                         <th class="full-access-col">الاجراء</th>
                     </tr>
@@ -3724,6 +3824,18 @@
                         <i class="fas fa-lightbulb"></i> رقم مقترح تلقائيا بصيغة OSB####، ويمكنك تعديله.
                     </div>
                 </div>
+                <div class="input-group">
+                    <label for="newResPhone">رقم الجوال:</label>
+                    <div class="input-with-icon">
+                        <input type="tel" id="newResPhone" inputmode="tel" dir="ltr" placeholder="0512345678  او  +966512345678">
+                        <i class="fas fa-phone right-icon"></i>
+                    </div>
+                    <div class="field-hint" style="display:block;">
+                        <i class="fas fa-lightbulb"></i>
+                        اختياري لكنه مهم: يفعل زر الواتساب ويتيح للباحث استعادة كلمة مروره بنفسه.
+                    </div>
+                </div>
+
                 <div class="input-group full-width">
                     <label for="newResPass">كلمة المرور:</label>
                     <div class="password-wrapper">
@@ -3756,6 +3868,7 @@
                         <th>م</th>
                         <th>اسم الباحث</th>
                         <th>الاسم المستخدم</th>
+                        <th>رقم الجوال</th>
                         <th>كلمة المرور</th>
                         <th>حالة الباحث</th>
                         <th>الاجراء</th>
@@ -5186,6 +5299,23 @@
 
     /* اعدادات ظهور المدير الاول في شاشة الادارة العامة */
     const SHOW_MASTER_IN_MANAGERS_LIST = false;          // false = لا يظهر اطلاقا (الوضع الحالي)
+    /* ---------------- الصفات المعتمدة في النظام ----------------
+       ثلاث صفات لا رابع لها:
+         GENERAL_MANAGER_TITLE : المدير العام
+         MEMBER_TITLE          : عضو في ادارة فريق الباحث الاجتماعي
+         RESEARCHER_TITLE      : باحث اجتماعي
+
+       وفي شاشة الادارة العامة تظهر الاوليان فقط، لان الباحثين لهم
+       شاشتهم المستقلة. تستخدم الدالة roleTitle ادناه في كل موضع
+       يعرض صفة مدير، فيكفي تغيير الثابت هنا لتتغير في النظام كله. */
+    const GENERAL_MANAGER_TITLE = "المدير العام";
+    const MEMBER_TITLE          = "عضو في ادارة فريق الباحث الاجتماعي";
+    const RESEARCHER_TITLE      = "باحث اجتماعي";
+
+    function roleTitle(role) {
+        return (role === "general") ? GENERAL_MANAGER_TITLE : MEMBER_TITLE;
+    }
+
     const MASTER_DISPLAY_NAME = "عبدالعزيز العبيدان";
     /* اللقب الذي يسبق الاسم في الشريط العلوي. للمبرمج فقط، اما بقية
        الحسابات فتظهر بلقب "المدير" */
@@ -5317,7 +5447,7 @@
        تغيرت صلاحية "الاستعلام عن زيارات" لتصبح خاصة بالزر الثاني
        تحت مسمى جديد. الخريطة ادناه تحول الصلاحية القديمة المخزنة في
        حسابات المدراء الحالية الى الجديدة تلقائيا، فلا يفقد اي مدير
-       صلاحيته بسبب تغيير المسمى. */
+       صلاحيته بسبب تغيير الصفة. */
     const PERM_VISIT_EDIT = "الاستعلام عن زيارة والتعديل على بياناتها";
     const PERM_ALIASES = {
         "الاستعلام عن زيارات": PERM_VISIT_EDIT
@@ -5337,6 +5467,18 @@
        التذكير يظهر كشريط مستقل اعلى البوابة، ولا يدخل في جرس
        الاشعارات لان الجرس مخصص لرسائل العمل فقط. */
     const PHONE_REMIND_DAYS = 3;
+
+    /* ---------------- توثيق موقع الزيارة ----------------
+       GEO_REQUIRED   : الموقع الزامي لتوثيق الزيارة (معتمد من الادارة).
+             لا تسجل اي زيارة بلا موقع، فالغرض من الميزة اثبات تواجد
+             الباحث في موقع الزيارة وقت تنفيذها، وتسجيلها بلا موقع
+             يفرغها من مقصدها. اجعلها false لو اردت السماح لاحقا.
+       GEO_TIMEOUT_MS : اقصى انتظار لتحديد الموقع قبل المتابعة بدونه.
+       GEO_MAX_ACCURACY_M : دقة اعلى من هذا الرقم بالامتار تعد ضعيفة
+             وتوسم في السجل، فقد تكون من شبكة لا من قمر صناعي. */
+    const GEO_REQUIRED       = true;
+    const GEO_TIMEOUT_MS     = 15000;
+    const GEO_MAX_ACCURACY_M = 200;
 
     /* IDLE_PING_MS: كل كم ملي ثانية يسمح بتصفير مؤقت الخمول.
        بدون هذا الحد كانت حركة الماوس تعيد ضبط المؤقت مئات المرات في الثانية */
@@ -5507,12 +5649,61 @@
         return (typeof navigator.onLine === "boolean") ? navigator.onLine : true;
     }
 
+    /* ------------------------------------------------------------------
+       اظهار واخفاء شاشة الانقطاع الكاملة
+       ------------------------------------------------------------------
+       تحجب الواجهة كلها فلا يصل المستخدم لاي قائمة او زر. وعند عودة
+       الاتصال تختفي ويعود المستخدم الى بوابته ان كان مسجل الدخول،
+       او الى القائمة الرئيسية ان لم يكن.
+       ------------------------------------------------------------------ */
     function updateOfflineBar() {
-        const bar = document.getElementById("offlineBar");
-        if (!bar) return;
+        const scr = document.getElementById("offlineScreen");
+        if (!scr) return;
         const offline = !isOnline();
-        bar.style.display = offline ? "block" : "none";
+        scr.classList.toggle("is-visible", offline);
         document.body.classList.toggle("is-offline", offline);
+
+        /* نقل التركيز الى زر اعادة المحاولة، فهو المخرج الوحيد */
+        if (offline) {
+            const btn = document.getElementById("btnRetryConnection");
+            if (btn) { try { btn.focus({ preventScroll: true }); } catch (e) {} }
+        }
+    }
+
+    /* اعادة المحاولة: نتحقق من الاتصال فعليا لا من حالة المتصفح وحدها،
+       لان الجهاز قد يكون متصلا بشبكة بلا انترنت */
+    window.retryConnection = async function() {
+        const btn = document.getElementById("btnRetryConnection");
+        if (btn) { btn.disabled = true; btn.textContent = "جاري التحقق..."; }
+
+        let ok = isOnline();
+
+        if (ok) {
+            /* تأكيد عملي: طلب خفيف جدا لملف التعريف على نفس النطاق */
+            try {
+                await fetch("manifest.json?ping=" + Date.now(), { cache: "no-store" });
+            } catch (e) {
+                ok = false;
+            }
+        }
+
+        if (btn) { btn.disabled = false; btn.textContent = "اعادة المحاولة"; }
+
+        if (!ok) {
+            toast("ما زال الاتصال منقطعا، تحقق من الشبكة وحاول مرة اخرى.", "error");
+            return;
+        }
+
+        updateOfflineBar();
+        returnToProperScreen();
+        toast("عاد الاتصال بالانترنت.", "success");
+    };
+
+    /* اعادة المستخدم الى وجهته الصحيحة بحسب حالة جلسته */
+    function returnToProperScreen() {
+        if (isManager()) window.switchScreen('managerPortal');
+        else if (isResearcher()) window.switchScreen('researcherPortal');
+        else window.switchScreen('mainScreen');
     }
 
     /* حارس يستدعى قبل عمليات الحفظ الحرجة.
@@ -5531,6 +5722,7 @@
 
     window.addEventListener("online", function() {
         updateOfflineBar();
+        returnToProperScreen();
         toast("عاد الاتصال بالانترنت.", "success");
     });
     window.addEventListener("offline", updateOfflineBar);
@@ -5553,6 +5745,104 @@
                 try { el._flatpickr.destroy(); } catch (e) {}
             }
         });
+    }
+
+    /* ==================================================================
+       توثيق موقع الزيارة
+       ==================================================================
+       يلتقط موقع الباحث لحظة توثيق الزيارة ويرفق باحداثياتها، ليثبت
+       انه كان في موقع الزيارة وقت تنفيذها.
+
+       الاذن يطلبه المتصفح من المستخدم في اول مرة فقط، ثم يتذكر
+       اختياره. ولا يمكن لاي موقع الحصول على الموقع دون موافقة صريحة،
+       وهذا قيد من المتصفح لا يمكن تجاوزه.
+
+       ترجع الدالة دائما كائنا يصف النتيجة، ولا ترمي خطأ، حتى لا يتعطل
+       توثيق الزيارة بسبب مشكلة في تحديد الموقع:
+         ok       : نجح، ومعه خط الطول والعرض والدقة
+         denied   : رفض المستخدم الاذن
+         unavailable / timeout / unsupported : تعذر لسبب تقني
+       ================================================================== */
+    function captureLocation() {
+        return new Promise(function(resolve) {
+            if (!navigator.geolocation) {
+                resolve({ status: "unsupported" });
+                return;
+            }
+
+            let settled = false;
+            const finish = function(result) {
+                if (settled) return;
+                settled = true;
+                resolve(result);
+            };
+
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    const c = pos.coords;
+                    finish({
+                        status: "ok",
+                        lat: Number(c.latitude.toFixed(6)),
+                        lng: Number(c.longitude.toFixed(6)),
+                        accuracy: Math.round(c.accuracy || 0),
+                        at: new Date().toISOString()
+                    });
+                },
+                function(err) {
+                    /* 1 = رفض الاذن | 2 = تعذر التحديد | 3 = انتهت المهلة */
+                    const map = { 1: "denied", 2: "unavailable", 3: "timeout" };
+                    finish({ status: map[err && err.code] || "unavailable" });
+                },
+                {
+                    enableHighAccuracy: true,   /* نفضل القمر الصناعي على الشبكة */
+                    timeout: GEO_TIMEOUT_MS,
+                    maximumAge: 0               /* لا نقبل موقعا مخزنا من قبل */
+                }
+            );
+
+            /* حزام امان: بعض المتصفحات لا تحترم مهلة الخيارات */
+            setTimeout(function() { finish({ status: "timeout" }); }, GEO_TIMEOUT_MS + 2000);
+        });
+    }
+
+    /* ------------------------------------------------------------------
+       عرض موقع التوثيق في شاشات الادارة
+       ------------------------------------------------------------------
+       يرجع رابط خرائط قابلا للضغط اذا سجل الموقع، والا نصا يبين سبب
+       عدم تسجيله. الزيارات القديمة السابقة لهذه الميزة ليس فيها حقل
+       موقع اصلا، فتعرض "لم يسجل" بلا خطأ.
+       ------------------------------------------------------------------ */
+    function visitLocationHtml(v) {
+        const loc = v && v.location;
+        if (!loc || !loc.status) return '<span style="color:#8a9a9d;">لم يسجل</span>';
+
+        if (loc.status === "ok") {
+            const weak = (loc.accuracy || 0) > GEO_MAX_ACCURACY_M;
+            return '<a href="' + esc(locationMapsUrl(loc)) + '" target="_blank" rel="noopener" class="file-link">' +
+                   '<i class="fas fa-map-location-dot"></i> فتح الموقع على الخريطة</a>' +
+                   '<span style="font-size:12px;color:#8a9a9d;margin-right:8px;">دقة نحو ' + esc(loc.accuracy) + ' متر' +
+                   (weak ? " — دقة ضعيفة" : "") + '</span>';
+        }
+        return '<span style="color:#a5601f;font-weight:700;">' + esc(locationStatusText(loc)) + '</span>';
+    }
+
+    /* وصف عربي لحالة الموقع، يستخدم في العرض للادارة */
+    function locationStatusText(loc) {
+        if (!loc || !loc.status) return "لم يسجل";
+        const map = {
+            ok:          "تم تحديده",
+            denied:      "رفض الباحث اذن الموقع",
+            unavailable: "تعذر تحديد الموقع",
+            timeout:     "انتهت مهلة تحديد الموقع",
+            unsupported: "الجهاز لا يدعم تحديد الموقع"
+        };
+        return map[loc.status] || "غير معروف";
+    }
+
+    /* رابط خرائط جوجل لموقع مسجل */
+    function locationMapsUrl(loc) {
+        if (!loc || loc.status !== "ok") return "";
+        return "https://www.google.com/maps?q=" + loc.lat + "," + loc.lng;
     }
 
     /* رسالة منبثقة موحدة بدلا من alert */
@@ -6413,6 +6703,10 @@
     let lastActiveScreenId = null;
 
     window.switchScreen = function(screenId) {
+        /* العودة الى البوابة تلغي الاخفاء اللحظي لتذكير الجوال */
+        if (screenId === 'managerPortal' || screenId === 'researcherPortal') {
+            phoneReminderDismissed = false;
+        }
         const need = PROTECTED_SCREENS[screenId];
         if (need === 'manager' && !isManager()) { screenId = 'managerScreen'; }
         if (need === 'researcher' && !isResearcher()) { screenId = 'researcherLoginScreen'; }
@@ -6453,6 +6747,12 @@
         /* تحديث شارات وضع العرض فقط عند كل تنقل، حتى تعكس الواجهة
            حالة الصلاحيات اللحظية في اي شاشة يفتحها المستخدم */
         if (typeof window.updateReadOnlyBadges === "function") window.updateReadOnlyBadges();
+
+        /* اعادة فحص تذكير الجوال عند العودة للبوابة */
+        if ((screenId === 'managerPortal' || screenId === 'researcherPortal') &&
+            typeof checkPhoneReminder === "function") {
+            checkPhoneReminder();
+        }
     };
 
     window.clearAllErrors = function() {
@@ -6833,9 +7133,39 @@
                 return;
             }
 
+            /* التقاط الموقع قبل الحفظ مباشرة، ليكون اقرب ما يمكن
+               للحظة التوثيق الفعلية */
+            rLoading.innerHTML = '<i class="fas fa-location-crosshairs"></i> جاري تحديد موقعك لتوثيقه مع الزيارة...';
+            const loc = await captureLocation();
+
+            /* ان كان الموقع الزاميا ولم يتوفر، نوقف التوثيق ونوضح السبب */
+            if (GEO_REQUIRED && loc.status !== "ok") {
+                rLoading.style.display = "none";
+                btn.disabled = false;
+                let how = "";
+                if (loc.status === "denied") {
+                    how = "<br>لاعادة السماح: اضغط رمز القفل بجوار عنوان الموقع في المتصفح، ثم فعل اذن الموقع، ثم حدث الصفحة.";
+                } else if (loc.status === "timeout" || loc.status === "unavailable") {
+                    how = "<br>تأكد من تفعيل خدمة الموقع (GPS) في اعدادات جهازك، والوقوف في مكان مكشوف قليلا، ثم اعد المحاولة.";
+                } else if (loc.status === "unsupported") {
+                    how = "<br>جهازك او متصفحك لا يدعم تحديد الموقع. جرب متصفح Chrome او راجع الدعم الفني.";
+                }
+                showMsg("researcherError", "<i class='fas fa-location-crosshairs'></i> <strong>تعذر توثيق الزيارة: " +
+                    locationStatusText(loc) + "</strong>" + how);
+                return;
+            }
+
+            rLoading.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاتصال بالسحابة وتوثيق البيانات...';
+
             const regDate = new Date().toISOString();
             const newRef = await addDoc(collection(db, "visits"), {
-                empName: name, empId: id, visitId: vId, execDate: eDate, regDate: regDate
+                empName: name, empId: id, visitId: vId, execDate: eDate, regDate: regDate,
+                /* موقع الباحث لحظة التوثيق */
+                location: loc,
+                locationStatus: loc.status,
+                locationLat: (loc.status === "ok") ? loc.lat : null,
+                locationLng: (loc.status === "ok") ? loc.lng : null,
+                locationAccuracy: (loc.status === "ok") ? loc.accuracy : null
             });
 
             /* معالجة التزامن: لو تم توثيق نفس الرقم من جهازين في نفس اللحظة
@@ -6859,7 +7189,18 @@
 
             rLoading.style.display = "none";
             btn.disabled = false;
-            showMsg("researcherSuccess", "<i class='fas fa-check-circle'></i> تم توثيق الزيارة في النظام بنجاح!");
+            let successMsg = "<i class='fas fa-check-circle'></i> تم توثيق الزيارة في النظام بنجاح!";
+            if (loc.status === "ok") {
+                successMsg += "<br><span style='font-size:13px;font-weight:600;'>" +
+                    "تم توثيق موقعك مع الزيارة (دقة نحو " + loc.accuracy + " متر)." +
+                    (loc.accuracy > GEO_MAX_ACCURACY_M ? " الدقة ضعيفة، ويفضل تفعيل نظام تحديد المواقع للحصول على دقة اعلى." : "") +
+                    "</span>";
+            } else {
+                successMsg += "<br><span style='font-size:13px;font-weight:600;'>" +
+                    "ملاحظة: لم يسجل موقعك (" + locationStatusText(loc) + ")، وسجلت الزيارة بدونه." +
+                    "</span>";
+            }
+            showMsg("researcherSuccess", successMsg);
 
             document.getElementById("visitId").value = '';
             const datePickerInstance = document.getElementById("execDate")._flatpickr;
@@ -6925,7 +7266,10 @@
                     '<div style="margin-bottom:8px;"><i class="fas fa-user" style="width:25px; text-align:center;"></i> <strong>اسم الباحث:</strong> ' + esc(matchedVisit.empName) + '</div>' +
                     '<div style="margin-bottom:8px;"><i class="fas fa-id-badge" style="width:25px; text-align:center;"></i> <strong>الاسم المستخدم:</strong> ' + esc(matchedVisit.empId) + '</div>' +
                     '<div style="margin-bottom:8px;"><i class="fas fa-hashtag" style="width:25px; text-align:center;"></i> <strong>رقم الزيارة:</strong> ' + esc(matchedVisit.visitId) + '</div>' +
-                    '<div style="margin-bottom:15px;"><i class="fas fa-clock" style="width:25px; text-align:center;"></i> <strong>تاريخ التوثيق:</strong> ' + esc(window.formatDateTimeToEnglish(matchedVisit.regDate)) + '</div>';
+                    '<div style="margin-bottom:8px;"><i class="fas fa-clock" style="width:25px; text-align:center;"></i> <strong>تاريخ التوثيق:</strong> ' + esc(window.formatDateTimeToEnglish(matchedVisit.regDate)) + '</div>' +
+                    /* موقع الباحث لحظة التوثيق: دليل تواجده في موقع الزيارة */
+                    '<div style="margin-bottom:15px;"><i class="fas fa-location-dot" style="width:25px; text-align:center;"></i> <strong>موقع التوثيق:</strong> ' +
+                        visitLocationHtml(matchedVisit) + '</div>';
 
                 if (canEdit) {
                     html +=
@@ -7125,7 +7469,7 @@
             const thead = document.getElementById("tableHead");
             thead.innerHTML = "";
             const trHead = document.createElement("tr");
-            ["م", "اسم الباحث", "الاسم المستخدم", "رقم الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق"].forEach(function(h) {
+            ["م", "اسم الباحث", "الاسم المستخدم", "رقم الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق", "موقع التوثيق"].forEach(function(h) {
                 const th = document.createElement("th");
                 th.textContent = h;
                 trHead.appendChild(th);
@@ -7198,6 +7542,24 @@
                 if (i === 0) { td.style.fontWeight = "900"; td.style.backgroundColor = "rgba(222, 140, 67, 0.1)"; }
                 trRow.appendChild(td);
             });
+
+            /* عمود موقع التوثيق: رابط خريطة او سبب عدم التسجيل */
+            const tdLoc = document.createElement("td");
+            if (v.location && v.location.status === "ok") {
+                const a = document.createElement("a");
+                a.href = locationMapsUrl(v.location);
+                a.target = "_blank";
+                a.rel = "noopener";
+                a.className = "file-link";
+                a.innerHTML = '<i class="fas fa-map-location-dot"></i> <span>الخريطة</span>';
+                tdLoc.appendChild(a);
+            } else {
+                tdLoc.textContent = locationStatusText(v.location);
+                tdLoc.style.color = "#8a9a9d";
+                tdLoc.style.fontSize = "12.5px";
+            }
+            trRow.appendChild(tdLoc);
+
             frag.appendChild(trRow);
         });
         tbody.appendChild(frag);
@@ -7559,6 +7921,19 @@
             const tdId = document.createElement("td");
             tdId.textContent = r.empId;
 
+            /* رقم الجوال: يوضح من يمكن مراسلته ومن ينقصه الرقم */
+            const tdPhone = document.createElement("td");
+            if (validSaudiPhone(r.phone)) {
+                tdPhone.textContent = r.phone;
+                tdPhone.style.direction = "ltr";
+                tdPhone.style.unicodeBidi = "embed";
+            } else {
+                tdPhone.textContent = "غير مسجل";
+                tdPhone.style.color = "#a5601f";
+                tdPhone.style.fontSize = "12.5px";
+                tdPhone.style.fontWeight = "700";
+            }
+
             /* كلمة المرور لم تعد تعرض اطلاقا - مشفرة ولا يمكن استرجاعها */
             const tdPass = document.createElement("td");
             const passMask = document.createElement("span");
@@ -7599,6 +7974,22 @@
             divActions.style.gap = "8px";
 
             if (hasPerm('قائمة الباحثين')) {
+                /* زر واتساب لتسليم بيانات الحساب */
+                const btnWa = document.createElement("button");
+                btnWa.type = "button";
+                btnWa.className = "btn-icon-watermark icon-whatsapp btn-table btn-whatsapp-row";
+                btnWa.textContent = "واتساب";
+                if (validSaudiPhone(r.phone)) {
+                    btnWa.title = "فتح محادثة واتساب مع " + r.empName;
+                    btnWa.onclick = function() { window.sendResearcherCard(r.id); };
+                } else {
+                    btnWa.disabled = true;
+                    btnWa.style.opacity = "0.5";
+                    btnWa.style.cursor = "not-allowed";
+                    btnWa.title = "لا يوجد رقم جوال مسجل لهذا الباحث";
+                }
+                divActions.appendChild(btnWa);
+
                 const btnEdit = document.createElement("button");
                 btnEdit.type = "button";
                 btnEdit.textContent = 'تعديل';
@@ -7624,6 +8015,7 @@
             tr.appendChild(tdM);
             tr.appendChild(tdName);
             tr.appendChild(tdId);
+            tr.appendChild(tdPhone);
             tr.appendChild(tdPass);
             tr.appendChild(tdStatus);
             tr.appendChild(tdAction);
@@ -7836,6 +8228,8 @@
             passInput.placeholder = "يجب ان تتكون من 6 خانات، ارقام وحروف، وحرف انجليزي كبير";
             passInput.value = "";
 
+            document.getElementById("newResPhone").value = "";
+
             /* اسم مستخدم مقترح تلقائيا بصيغة OSB#### وقابل للتعديل */
             document.getElementById("newResId").value = suggestResearcherId();
             const rHint = document.getElementById("resIdHint");
@@ -7848,6 +8242,7 @@
             section.style.display = "none";
             document.getElementById("newResName").value = "";
             document.getElementById("newResId").value = "";
+            document.getElementById("newResPhone").value = "";
             const rHint0 = document.getElementById("resIdHint");
             if (rHint0) rHint0.style.display = "none";
             passInput.value = "";
@@ -7867,6 +8262,7 @@
         document.getElementById("addResearcherSection").style.display = "block";
         document.getElementById("newResName").value = researcher.empName;
         document.getElementById("newResId").value = researcher.empId;
+        document.getElementById("newResPhone").value = researcher.phone || "";
         const rHintE = document.getElementById("resIdHint");
         if (rHintE) rHintE.style.display = "none";
 
@@ -7890,8 +8286,19 @@
         const rawPass = document.getElementById("newResPass").value;
         const pass = window.toEnglishDigits(rawPass);
 
+        /* رقم الجوال اختياري، لكن ان كتب فلا بد ان يكون صحيحا.
+           يوحد الى الصيغة الدولية قبل الحفظ كبقية ارقام النظام */
+        const rawPhone = document.getElementById("newResPhone").value.trim();
+        const phone = rawPhone ? normalizeSaudiPhone(rawPhone) : "";
+
         hideMsg("addResError");
         hideMsg("addResSuccess");
+
+        if (rawPhone && !validSaudiPhone(phone)) {
+            showMsg("addResError", "<i class='fas fa-times-circle'></i> رقم الجوال غير صحيح. " +
+                "اكتبه بصيغة 05xxxxxxxx او +966xxxxxxxxx، او اتركه فارغا.");
+            return;
+        }
 
         if (!name || !id) {
             showMsg("addResError", "<i class='fas fa-exclamation-circle'></i> الرجاء تعبئة الاسم والاسم المستخدم.");
@@ -7928,6 +8335,9 @@
 
             if (editingResearcherId) {
                 const payload = { empName: name, empId: id };
+                /* الجوال يحدث فقط ان كتب شيئا، فلا يمسح رقما مسجلا
+                   لمجرد ترك الحقل فارغا اثناء تعديل بيانات اخرى */
+                if (rawPhone) payload.phone = phone;
                 if (!keepOldPass) payload.password = await hashPassword(pass);
                 await updateDoc(doc(db, "researchers", editingResearcherId), payload);
                 logAudit("تعديل بيانات باحث", name + " (" + id + ")" + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
@@ -7936,6 +8346,7 @@
             } else {
                 await addDoc(collection(db, "researchers"), {
                     empName: name, empId: id, password: await hashPassword(pass),
+                    phone: phone,
                     status: 'active', createdAt: new Date().toISOString()
                 });
                 logAudit("اضافة باحث", name + " (" + id + ")");
@@ -7946,6 +8357,7 @@
             document.getElementById("addResLoading").style.display = "none";
             document.getElementById("newResName").value = "";
             document.getElementById("newResId").value = "";
+            document.getElementById("newResPhone").value = "";
             document.getElementById("newResPass").value = "";
             document.getElementById("newResPass").type = "password";
             document.getElementById("toggleResPassIcon").className = "fas fa-eye";
@@ -7995,8 +8407,8 @@
 
         thead.innerHTML = "";
         const headers = hasFullAccess
-            ? ["م", "اسم المدير", "الاسم المستخدم", "كلمة المرور", "المسمى", "الصلاحيات", "الاجراء"]
-            : ["م", "اسم المدير", "المسمى", "الصلاحيات"];
+            ? ["م", "اسم المدير", "الاسم المستخدم", "كلمة المرور", "الصفة", "الصلاحيات", "الاجراء"]
+            : ["م", "اسم المدير", "الصفة", "الصلاحيات"];
         headers.forEach(function(h) {
             const th = document.createElement("th");
             th.textContent = h;
@@ -8076,7 +8488,7 @@
                 tdName.textContent = m.empName;
 
                 const tdRole = document.createElement("td");
-                tdRole.textContent = m.role === 'general' ? 'مدير عام' : 'مدير';
+                tdRole.textContent = roleTitle(m.role);
 
                 const tdPerms = document.createElement("td");
                 if (m.role === 'general') {
@@ -8131,7 +8543,8 @@
                        المبرمج بيده عند الارسال. فلا تخزن كلمة مرور نصا في
                        النظام ولا تظهر في اي شاشة، اتساقا مع سياسة التشفير.
                        ------------------------------------------------------------ */
-                    if (isMaster()) {
+                    /* متاح للمبرمج وللمدير العام (hasFullAccess تشملهما) */
+                    if (hasFullAccess) {
                         const btnWa = document.createElement("button");
                         btnWa.type = "button";
                         btnWa.className = "btn-icon-watermark icon-whatsapp btn-table btn-whatsapp-row";
@@ -8258,7 +8671,8 @@
        عند الارسال. وهذا اسلم من تخزينها لمجرد اظهارها هنا.
        ------------------------------------------------------------------ */
     window.sendManagerCredentials = function(docId) {
-        if (!isMaster()) { denyAccess(); return; }
+        /* المبرمج والمدير العام فقط */
+        if (!isMaster() && !(isManager() && session.role === "general")) { denyAccess(); return; }
 
         const m = managersList.find(function(x) { return x.id === docId; });
         if (!m) { toast("لم يعد هذا المدير موجودا في القائمة.", "error"); return; }
@@ -8268,19 +8682,48 @@
             return;
         }
 
+        openWhatsAppCard(m.phone, m.empName, m.empId, roleTitle(m.role));
+        logAudit("فتح محادثة بيانات حساب", (m.empName || "") + " (" + m.empId + ")");
+    };
+
+    /* ------------------------------------------------------------------
+       بطاقة بيانات الحساب عبر الواتساب
+       ------------------------------------------------------------------
+       رسالة موحدة تستخدم للمدراء والباحثين معا. لا تذكر كلمة المرور
+       اطلاقا لا نصا ولا خانة فارغة، لان النظام لا يحتفظ بها اصلا الا
+       مشفرة، ولان ارسالها في رسالة نصية ممارسة غير امنة.
+       ------------------------------------------------------------------ */
+    function openWhatsAppCard(phone, name, username, title) {
         const lines = [
-            "الاسم: " + (m.empName || ""),
+            "الاسم: " + (name || ""),
             "",
-            "الاسم المستخدم: " + (m.empId || ""),
+            "الاسم المستخدم: " + (username || ""),
             "",
-            "كلمة المرور: "
+            "الصفة: " + (title || "")
         ];
-
-        /* رقم الواتساب بلا علامة الزائد */
-        const wa = String(m.phone).replace(/^\+/, "");
+        const wa = String(phone).replace(/^\+/, "");
         window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
+    }
 
-        logAudit("فتح محادثة تسليم بيانات دخول", (m.empName || "") + " (" + m.empId + ")");
+    /* ------------------------------------------------------------------
+       زر واتساب في قائمة الباحثين
+       ------------------------------------------------------------------
+       متاح لكل مدير يملك صلاحية "قائمة الباحثين"، بخلاف زر المدراء
+       المقصور على المبرمج والمدير العام.
+       ------------------------------------------------------------------ */
+    window.sendResearcherCard = function(docId) {
+        if (!hasPerm("قائمة الباحثين")) { denyAccess(); return; }
+
+        const r = researchersList.find(function(x) { return x.id === docId; });
+        if (!r) { toast("لم يعد هذا الباحث موجودا في القائمة.", "error"); return; }
+
+        if (!validSaudiPhone(r.phone)) {
+            toast("لا يوجد رقم جوال مسجل لهذا الباحث، فلا يمكن فتح محادثة.", "warn");
+            return;
+        }
+
+        openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE);
+        logAudit("فتح محادثة بيانات حساب", (r.empName || "") + " (" + r.empId + ")");
     };
 
     /* ==================================================================
@@ -8296,22 +8739,32 @@
        التنفيذ، وتشترط كتابة كلمة تأكيد بخط اليد.
        ================================================================== */
 
-    /* كل المجموعات التشغيلية. مجموعة managers غائبة عمدا فهي المستثناة */
+    /* ------------------------------------------------------------------
+       المجموعات القابلة للتصفير
+       ------------------------------------------------------------------
+       كلها بلا استثناء بما فيها حسابات المدراء. لكل مجموعة مربع
+       اختيار مستقل، فيحدد المبرمج بالضبط ما يريد مسحه.
+
+       danger: true تعني ان المجموعة حساسة، فتلون بالاحمر وتحتاج
+       انتباها خاصا. حسابات المدراء منها لان مسحها يقطع دخول الجميع
+       عدا المبرمج، فحسابه في الكود لا في قاعدة البيانات.
+       ------------------------------------------------------------------ */
     const RESET_COLLECTIONS = [
-        { name: "visits",            label: "زيارة موثقة" },
-        { name: "researchers",       label: "حساب باحث" },
-        { name: "leaves",            label: "طلب اجازة" },
-        { name: "leave_files",       label: "مرفق عذر طبي" },
-        { name: "leave_file_chunks", label: "جزء مرفق" },
-        { name: "notices",           label: "تنبيه او انذار" },
-        { name: "notice_templates",  label: "صيغة جاهزة" },
-        { name: "daily_reports",     label: "تقرير يومي" },
-        { name: "visit_reports",     label: "بلاغ زيارة" },
-        { name: "leave_reports",     label: "بلاغ اجازة" },
-        { name: "report_reports",    label: "بلاغ تقرير" },
-        { name: "password_requests", label: "طلب استعادة كلمة مرور" },
-        { name: "notifications",     label: "اشعار" },
-        { name: "audit_log",         label: "سجل تدقيق" }
+        { name: "visits",            label: "الزيارات الموثقة",            unit: "زيارة" },
+        { name: "leaves",            label: "طلبات الاجازات",              unit: "طلب" },
+        { name: "leave_files",       label: "مرفقات الاعذار الطبية",       unit: "مرفق" },
+        { name: "leave_file_chunks", label: "اجزاء المرفقات",              unit: "جزء" },
+        { name: "daily_reports",     label: "التقارير اليومية",            unit: "تقرير" },
+        { name: "notices",           label: "التنبيهات والانذارات",        unit: "سجل" },
+        { name: "notice_templates",  label: "صيغ التنبيهات الجاهزة",       unit: "صيغة" },
+        { name: "visit_reports",     label: "بلاغات الزيارات",             unit: "بلاغ" },
+        { name: "leave_reports",     label: "بلاغات الاجازات",             unit: "بلاغ" },
+        { name: "report_reports",    label: "بلاغات التقارير",             unit: "بلاغ" },
+        { name: "password_requests", label: "طلبات استعادة كلمة المرور",   unit: "طلب" },
+        { name: "notifications",     label: "الاشعارات",                   unit: "اشعار" },
+        { name: "audit_log",         label: "سجل التدقيق",                 unit: "سجل", danger: true },
+        { name: "researchers",       label: "حسابات الباحثين",             unit: "حساب", danger: true },
+        { name: "managers",          label: "حسابات المدراء",              unit: "حساب", danger: true }
     ];
 
     window.openResetPanel = async function() {
@@ -8332,34 +8785,77 @@
         try {
             const counts = await Promise.all(RESET_COLLECTIONS.map(function(c) {
                 return getDocs(collection(db, c.name))
-                    .then(function(s) { return { label: c.label, n: s.size }; })
-                    .catch(function() { return { label: c.label, n: 0 }; });
+                    .then(function(s) { return Object.assign({}, c, { n: s.size }); })
+                    .catch(function() { return Object.assign({}, c, { n: 0 }); });
             }));
 
             stats.innerHTML = "";
-            let total = 0;
+
+            /* صف اختيار لكل مجموعة، غير محدد افتراضيا فلا يمسح شيء
+               الا ما يختاره المبرمج صراحة */
             counts.forEach(function(c) {
-                total += c.n;
-                if (c.n === 0) return;                 /* لا نزحم القائمة بالفارغ */
-                const div = document.createElement("div");
-                div.className = "delete-stat-row";
-                div.textContent = "• " + c.n + " " + c.label;
-                stats.appendChild(div);
+                const row = document.createElement("label");
+                row.className = "reset-row" + (c.danger ? " reset-row-danger" : "");
+                row.setAttribute("for", "reset_" + c.name);
+
+                const cb = document.createElement("input");
+                cb.type = "checkbox";
+                cb.id = "reset_" + c.name;
+                cb.value = c.name;
+                cb.className = "reset-check";
+                cb.disabled = (c.n === 0);
+                row.appendChild(cb);
+
+                const txt = document.createElement("span");
+                txt.className = "reset-row-text";
+
+                const t = document.createElement("span");
+                t.className = "reset-row-title";
+                t.textContent = c.label + (c.danger ? "  ⚠" : "");
+                txt.appendChild(t);
+
+                const n = document.createElement("span");
+                n.className = "reset-row-count";
+                n.textContent = (c.n === 0) ? "لا توجد سجلات" : (c.n + " " + c.unit);
+                txt.appendChild(n);
+
+                if (c.name === "managers") {
+                    const w = document.createElement("span");
+                    w.className = "reset-row-warn";
+                    w.textContent = "مسحها يمنع دخول كل المدراء. حسابك انت محفوظ في الكود ولن يتأثر.";
+                    txt.appendChild(w);
+                }
+
+                row.appendChild(txt);
+                stats.appendChild(row);
             });
 
-            if (total === 0) {
-                stats.innerHTML = '<div class="delete-stat-row">لا توجد سجلات، قاعدة البيانات نظيفة اصلا.</div>';
-            } else {
-                const sum = document.createElement("div");
-                sum.className = "delete-stat-row";
-                sum.style.cssText = "margin-top:8px;font-weight:900;";
-                sum.textContent = "الاجمالي: " + total + " سجل";
-                stats.appendChild(sum);
-            }
+            /* اداتا تحديد سريع */
+            const tools = document.createElement("div");
+            tools.className = "reset-tools";
+            const bAll = document.createElement("button");
+            bAll.type = "button";
+            bAll.className = "notif-mini-btn";
+            bAll.textContent = "تحديد الكل";
+            bAll.onclick = function() { toggleAllResetChecks(true); };
+            const bNone = document.createElement("button");
+            bNone.type = "button";
+            bNone.className = "notif-mini-btn";
+            bNone.textContent = "الغاء التحديد";
+            bNone.onclick = function() { toggleAllResetChecks(false); };
+            tools.appendChild(bAll);
+            tools.appendChild(bNone);
+            stats.insertBefore(tools, stats.firstChild);
         } catch (e) {
-            stats.innerHTML = '<div class="delete-stat-row">تعذر حصر السجلات، وسيجري المسح على كل حال عند التأكيد.</div>';
+            stats.innerHTML = '<div class="delete-stat-row">تعذر حصر السجلات. تحقق من الاتصال واعد فتح اللوحة.</div>';
         }
     };
+
+    function toggleAllResetChecks(on) {
+        document.querySelectorAll(".reset-check").forEach(function(cb) {
+            if (!cb.disabled) cb.checked = on;
+        });
+    }
 
     window.closeResetPanel = function() {
         document.getElementById("resetPanel").style.display = "none";
@@ -8376,6 +8872,18 @@
         hideMsg("resetError");
         hideMsg("resetSuccess");
 
+        /* المجموعات المختارة فقط */
+        const chosen = [];
+        document.querySelectorAll(".reset-check:checked").forEach(function(cb) {
+            const c = RESET_COLLECTIONS.find(function(x) { return x.name === cb.value; });
+            if (c) chosen.push(c);
+        });
+
+        if (chosen.length === 0) {
+            showMsg("resetError", "<i class='fas fa-exclamation-circle'></i> لم تحدد اي شيء لمسحه. اختر ما تريد تصفيره اولا.");
+            return;
+        }
+
         if (typed !== "تصفير") {
             showMsg("resetError", "<i class='fas fa-times-circle'></i> كلمة التأكيد غير مطابقة. لم يحذف اي شيء.");
             return;
@@ -8386,10 +8894,10 @@
 
         let deleted = 0;
         try {
-            for (let i = 0; i < RESET_COLLECTIONS.length; i++) {
-                const c = RESET_COLLECTIONS[i];
-                progress.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري مسح ' + c.name +
-                                     ' (' + (i + 1) + ' من ' + RESET_COLLECTIONS.length + ')...';
+            for (let i = 0; i < chosen.length; i++) {
+                const c = chosen[i];
+                progress.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري مسح ' + c.label +
+                                     ' (' + (i + 1) + ' من ' + chosen.length + ')...';
 
                 /* المسح على دفعات: المجموعة قد تحوي اكثر مما يجلب مرة واحدة */
                 let guard = 0;
@@ -8410,11 +8918,12 @@
             progress.style.display = "none";
             document.getElementById("resetConfirmInput").value = "";
 
-            /* اول سجل في التدقيق الجديد: توثيق واقعة التصفير نفسها */
-            logAudit("تصفير بيانات النظام", "حذف " + deleted + " سجل استعدادا للاطلاق الرسمي. حسابات المدراء لم تمس.");
+            /* توثيق واقعة التصفير نفسها بما شملته بالضبط */
+            const names = chosen.map(function(c) { return c.label; }).join("، ");
+            logAudit("تصفير بيانات النظام", "حذف " + deleted + " سجل من: " + names);
 
-            showMsg("resetSuccess", "<i class='fas fa-check-circle'></i> تم تصفير النظام بنجاح، وحذف " +
-                deleted + " سجل. حسابات المدراء باقية كما هي، والنظام جاهز للاطلاق الرسمي.");
+            showMsg("resetSuccess", "<i class='fas fa-check-circle'></i> تم التصفير بنجاح، وحذف " +
+                deleted + " سجل من: " + esc(names) + ".");
             toast("اكتمل التصفير: " + deleted + " سجل.", "success");
 
             /* تحديث الشارات والاشعارات بعد المسح */
@@ -8610,7 +9119,7 @@
                 const payload = { empName: name, empId: id, role: role, permissions: selectedPerms };
                 if (!keepOldPass) payload.password = await hashPassword(pass);
                 await updateDoc(doc(db, "managers", editingManagerId), payload);
-                logAudit("تعديل بيانات مدير", name + " (" + id + ") | المسمى: " + (role === 'general' ? 'مدير عام' : 'مدير') + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
+                logAudit("تعديل بيانات مدير", name + " (" + id + ") | الصفة: " + roleTitle(role) + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
                 showMsg("addManSuccess", "<i class='fas fa-check-circle'></i> تم تحديث بيانات المدير بنجاح!" +
                     (keepOldPass ? "" : "<br><span class='pass-once'>كلمة المرور الجديدة: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>"));
             } else {
@@ -8618,7 +9127,7 @@
                     empName: name, empId: id, password: await hashPassword(pass),
                     role: role, permissions: selectedPerms, createdAt: new Date().toISOString()
                 });
-                logAudit("اضافة مدير", name + " (" + id + ") | المسمى: " + (role === 'general' ? 'مدير عام' : 'مدير'));
+                logAudit("اضافة مدير", name + " (" + id + ") | الصفة: " + roleTitle(role));
                 showMsg("addManSuccess", "<i class='fas fa-check-circle'></i> تمت اضافة المدير الى قائمة النظام بنجاح!" +
                     "<br><span class='pass-once'>كلمة المرور: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>");
             }
@@ -12068,9 +12577,9 @@
     };
 
     function accountRoleLabel() {
-        if (session.type === "researcher") return "باحث";
+        if (session.type === "researcher") return RESEARCHER_TITLE;
         if (isMaster()) return MASTER_ROLE_LABEL;
-        return (session.role === "general") ? "مدير عام" : "مدير";
+        return roleTitle(session.role);
     }
 
     /* العودة من شاشة الحساب الى بوابة المستخدم */
@@ -12238,6 +12747,9 @@
        يمكن تأجيله ويعود بعد عدد الايام المحدد في PHONE_REMIND_DAYS.
        ================================================================== */
 
+    /* اخفاء لحظي فقط: يعاد ضبطه عند كل عودة الى البوابة */
+    let phoneReminderDismissed = false;
+
     function phoneRemindKey() {
         return "phoneRemind_" + (session ? (session.type + "_" + session.empId) : "guest");
     }
@@ -12313,11 +12825,8 @@
                 return;
             }
 
-            /* غير مسجل حقا: نظهر التذكير ما لم يكن مؤجلا */
-            try {
-                const snoozed = Number(localStorage.getItem(phoneRemindKey()) || 0);
-                if (snoozed && Date.now() < snoozed) { if (bar) bar.style.display = "none"; return; }
-            } catch (e) {}
+            /* غير مسجل حقا: نظهر التذكير ما لم يكن اخفي لحظيا */
+            if (phoneReminderDismissed) { if (bar) bar.style.display = "none"; return; }
             if (bar) bar.style.display = "block";
         } catch (e) {
             /* تعذر التحقق: لا نظهر شيئا، فالتذكير ليس بأهمية ازعاج
@@ -12325,11 +12834,19 @@
         }
     }
 
+    /* ------------------------------------------------------------------
+       اخفاء تذكير تسجيل الجوال
+       ------------------------------------------------------------------
+       تصحيح سلوك: كان الاخفاء يحفظ في تخزين الجهاز لعدة ايام، فلا يعود
+       التذكير حتى بعد تسجيل الخروج والدخول. والمقصود منه انه تأجيل
+       لحظي لا اسكات طويل، فصار يحفظ في متغير في الذاكرة فقط:
+       يختفي الشريط الان، ويعود عند اي انتقال ورجوع الى البوابة،
+       ويزول المتغير تماما عند تحديث الصفحة او الخروج.
+       ------------------------------------------------------------------ */
     window.snoozePhoneReminder = function() {
-        try {
-            localStorage.setItem(phoneRemindKey(), String(Date.now() + PHONE_REMIND_DAYS * 24 * 60 * 60 * 1000));
-        } catch (e) {}
+        phoneReminderDismissed = true;
         hidePhoneReminder();
+        toast("سيعاود التذكير الظهور حتى تسجل رقم جوالك.", "info");
     };
 
     function hidePhoneReminder() {
