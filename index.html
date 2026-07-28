@@ -6528,8 +6528,9 @@
     window.syncPermissions = async function(force) {
         if (!session) return false;
 
-        /* المبرمج صلاحياته ثابتة في الكود ولا تقرأ من قاعدة البيانات */
-        if (isMaster()) return true;
+        /* بعد ترحيل حساب المبرمج الى قاعدة البيانات صار يزامن كبقية
+           الحسابات. نستثني الجلسات القديمة فقط (معرفها __master__) */
+        if (session.id === "__master__") return true;
 
         const now = Date.now();
         if (!force && (now - lastPermSync) < PERM_SYNC_THROTTLE_MS) return true;
@@ -7160,30 +7161,70 @@
 
         try {
             /* التحقق من المدير الاول عبر البصمات المشفرة */
+            /* ==============================================================
+               حساب المبرمج: ترحيل من الكود الى قاعدة البيانات
+               ==============================================================
+               كان هذا الحساب الوحيد المخزن داخل الكود، وهذه كانت اخطر
+               نقطة في النظام: من ينسخ الصفحة يستطيع استبدال بصمة كلمة
+               المرور ببصمة يعرفها، فيدخل بصلاحيات كاملة.
+
+               الحل نقله الى مجموعة managers كبقية الحسابات، مع علامة
+               isMaster التي تخفيه من شاشة الادارة العامة وتمنحه صفته.
+
+               الترحيل يجري تلقائيا مرة واحدة:
+                 * ان وجد الحساب في قاعدة البيانات، فالتحقق منها وحدها
+                   ولا اثر للبصمات المكتوبة في الكود.
+                 * وان لم يوجد بعد، تستخدم البصمات مرة اخيرة لانشائه،
+                   ثم تصبح بلا فائدة ويمكن حذفها من الكود نهائيا.
+               ============================================================== */
             const idHash = await sha256Hex(PEPPER + mId);
-            if (idHash === MASTER_ID_HASH) {
-                const passHash = await sha256Hex(PEPPER + pass);
-                if (passHash === MASTER_PASS_HASH) {
+            const looksLikeMaster = (idHash === MASTER_ID_HASH);
+
+            if (looksLikeMaster) {
+                /* هل رحل الحساب الى قاعدة البيانات من قبل؟ */
+                const masterSnap = await getDocs(query(collection(db, "managers"), where("empId", "==", mId)));
+
+                if (masterSnap.empty) {
+                    /* لم يرحل بعد: نتحقق بالبصمة المكتوبة في الكود لمرة
+                       اخيرة، ثم ننشئ الحساب في قاعدة البيانات */
+                    const passHash = await sha256Hex(PEPPER + pass);
+                    if (passHash !== MASTER_PASS_HASH) throw new Error("invalid");
+
+                    const newMasterRef = await addDoc(collection(db, "managers"), {
+                        empName: MASTER_DISPLAY_NAME,
+                        empId: mId,
+                        password: await hashPassword(pass),
+                        role: "general",
+                        permissions: [],
+                        isMaster: true,          /* يخفيه من شاشة الادارة العامة */
+                        phone: "",
+                        createdAt: new Date().toISOString()
+                    });
+
                     lockClear("man", mId);
                     session = {
                         type: "manager",
-                        id: "__master__",
+                        id: newMasterRef.id,
                         name: MASTER_DISPLAY_NAME,
                         empId: mId,
                         role: "general",
-                        permissions: ["الكل"],
+                        permissions: [],
                         isMaster: true,
-                        remember: !!(document.getElementById("rememberManager") || {}).checked
+                        phone: "",
+                        remember: !!(document.getElementById("rememberManager") || {}).checked,
+                        mustChangePassword: false
                     };
                     await saveSession();
                     resetIdleTimer();
-                    logAudit("تسجيل دخول", "دخول المدير الاول");
+                    logAudit("ترحيل حساب المبرمج", "نقل الحساب من الكود الى قاعدة البيانات");
                     window.goToManagerPortal();
+                    toast("تم نقل حسابك الى قاعدة البيانات بنجاح. لم يعد الكود يحوي اي بيانات دخول.", "success");
                     loginBtn.disabled = false;
                     loginBtn.innerHTML = 'تسجيل الدخول';
                     return;
                 }
-                throw new Error("invalid");
+                /* رحل من قبل: يكمل عبر المسار العادي ادناه فيتحقق من
+                   قاعدة البيانات، ولا تستخدم بصمة الكود اطلاقا */
             }
 
             const q = query(collection(db, "managers"), where("empId", "==", mId));
@@ -7209,7 +7250,8 @@
                 empId: managerData.empId,
                 role: managerData.role || "custom",
                 permissions: Array.isArray(managerData.permissions) ? managerData.permissions : [],
-                isMaster: false,
+                /* صفة المبرمج تؤخذ من قاعدة البيانات لا من الكود */
+                isMaster: managerData.isMaster === true,
                 remember: !!(document.getElementById("rememberManager") || {}).checked,
                 /* الجوال المسجل: يقرأ هنا لنفس سبب الباحث اعلاه */
                 phone: managerData.phone || "",
@@ -8633,11 +8675,26 @@
        ================================================================== */
 
     /* استبعاد المدير الاول نهائيا من قائمة المدراء */
+    /* ------------------------------------------------------------------
+       استبعاد حساب المبرمج من شاشة الادارة العامة
+       ------------------------------------------------------------------
+       يعتمد على العلامة isMaster المخزنة في قاعدة البيانات، لا على
+       مطابقة بصمة مكتوبة في الكود، حتى يبقى الاخفاء صحيحا بعد ازالة
+       البصمات نهائيا من الملف.
+
+       ابقيت فحص البصمة كطبقة احتياطية تعمل فقط ما دامت البصمة موجودة،
+       فتغطي الحالة النادرة لحساب رحل بلا علامة.
+       ------------------------------------------------------------------ */
     async function stripMaster(list) {
         const out = [];
         for (let i = 0; i < list.length; i++) {
-            const h = await sha256Hex(PEPPER + String(list[i].empId || ""));
-            if (h !== MASTER_ID_HASH) out.push(list[i]);
+            if (list[i].isMaster === true) continue;
+
+            if (typeof MASTER_ID_HASH === "string" && MASTER_ID_HASH) {
+                const h = await sha256Hex(PEPPER + String(list[i].empId || ""));
+                if (h === MASTER_ID_HASH) continue;
+            }
+            out.push(list[i]);
         }
         return out;
     }
@@ -9060,6 +9117,15 @@
 
     window.showManConfirmationRow = function(idx, docId) {
         if (!isManager() || !(isMaster() || session.role === "general")) { denyAccess(); return; }
+
+        /* صمام امان: حساب المبرمج لا يحذف باي حال. هو مخفي من الشاشة
+           اصلا، لكن نمنع الحذف هنا ايضا تحسبا لاي مسار غير متوقع،
+           لان حذفه يعني فقدان اخر مفتاح للنظام */
+        const target = managersList.find(function(x) { return x.id === docId; });
+        if (target && target.isMaster === true) {
+            toast("لا يمكن حذف هذا الحساب.", "error");
+            return;
+        }
         const container = document.getElementById("man_actions_" + idx);
         if (!container) return;
         container.innerHTML = "";
@@ -12658,7 +12724,8 @@
     function myCollection() { return (session.type === "manager") ? "managers" : "researchers"; }
 
     /* معرف مستند الحساب الحالي.
-       ملاحظة: حساب المبرمج غير مخزن في قاعدة البيانات اصلا */
+       بعد ترحيل حساب المبرمج صار له مستند حقيقي كبقية الحسابات،
+       فيعمل تغيير كلمة المرور وتسجيل الجوال له ايضا */
     async function myDocId() {
         if (session.type === "manager") return session.id;
         const snap = await getDocs(query(collection(db, "researchers"), where("empId", "==", session.empId)));
@@ -12667,10 +12734,7 @@
 
     window.saveMyPhone = async function() {
         if (!session) return;
-        if (isMaster()) {
-            showMsg("accPhoneError", "<i class='fas fa-info-circle'></i> حساب المبرمج غير مخزن في قاعدة البيانات ولا يقبل تعديل بياناته من هنا.");
-            return;
-        }
+
 
         const btn = document.getElementById("btnSavePhone");
         const raw = document.getElementById("accPhone").value;
@@ -12711,10 +12775,7 @@
 
     window.changeMyPassword = async function() {
         if (!session) return;
-        if (isMaster()) {
-            showMsg("accPassError", "<i class='fas fa-info-circle'></i> كلمة مرور حساب المبرمج تغير من داخل الكود عبر الاداة المخصصة لذلك.");
-            return;
-        }
+
 
         const cur  = document.getElementById("accCurrentPass").value;
         const np1  = window.toEnglishDigits(document.getElementById("accNewPass").value);
@@ -12841,8 +12902,8 @@
         const bar = document.getElementById("phoneReminder");
         if (!bar || !session) return;
 
-        /* حساب المبرمج غير مخزن في قاعدة البيانات فلا يذكر */
-        if (isMaster() || validSaudiPhone(session.phone)) {
+        /* الجلسات القديمة للمبرمج قبل الترحيل لا حساب لها في قاعدة البيانات */
+        if (session.id === "__master__" || validSaudiPhone(session.phone)) {
             bar.style.display = "none";
             return;
         }
@@ -12861,7 +12922,7 @@
        تبدو الجلسة بلا جوال. يمنع ظهور تذكير خاطئ لمن سجل جواله */
     async function verifyPhoneFromDatabase() {
         const bar = document.getElementById("phoneReminder");
-        if (!session || isMaster()) return;
+        if (!session || session.id === "__master__") return;
 
         try {
             const coll = (session.type === "manager") ? "managers" : "researchers";
