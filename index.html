@@ -637,37 +637,58 @@
                 grid-column: auto;
             }
 
+            /* ------------------------------------------------------------
+               توسيط النص مع بقاء الرمز
+               ------------------------------------------------------------
+               المشكلة: حين كان الرمز عنصرا عاديا في الصف كان يحتل مساحة
+               الى جانب النص، فيزيح النص عن منتصف الزر بمقدار عرض الرمز،
+               ويبدو مائلا الى اليسار مهما وضعنا justify-content: center.
+
+               الحل: اخراج الرمز من تدفق العناصر بـ position: absolute،
+               فلا يحسب في قياس المساحة اطلاقا، ثم حجز مساحة له بحشو
+               متماثل على الجانبين (56 بكسل يمينا ويسارا). وبتساوي
+               الحشوين يصبح منتصف مساحة النص هو منتصف الزر بالضبط.
+
+               وابقينا الرمز بلا حركة ولا ظلال، فلا تكلفة على اداء الجوال.
+               ------------------------------------------------------------ */
             .manager-dashboard-grid button {
+                position: relative;
                 min-height: 66px;
+                display: flex;
                 flex-direction: row;
-                justify-content: center;
                 align-items: center;
-                gap: 14px;
-                padding: 15px 18px;
+                justify-content: center;
+                gap: 0;
+                /* حشو متماثل: يحجز مكان الرمز ويبقي النص موسطا فعليا */
+                padding: 15px 56px;
                 font-size: 16.5px;
                 text-align: center;
+                line-height: 1.6;
                 border-radius: 14px;
             }
 
-            /* الايقونة تصبح الى جانب النص لا فوقه */
             .manager-dashboard-grid button::before {
-                margin-bottom: 0 !important;
+                /* خارج التدفق: لا يزاحم النص ولا يدخل في حساب التوسيط */
+                position: absolute !important;
+                right: 18px;
+                top: 50%;
+                transform: translateY(-50%) !important;
+                margin: 0 !important;
+                width: auto;
                 font-size: 24px !important;
-                width: 30px;
-                text-align: center;
-                flex-shrink: 0;
+                opacity: 0.95 !important;
+                /* بلا حركة: نحافظ على خفة الموقع في الجوال */
+                animation: none !important;
+                transition: none !important;
+                pointer-events: none;
             }
 
-            /* زر الخروج يبقى مميزا: موسط وبفاصل يعلوه */
+            /* الازرار الممتدة بعرض الصف: نفس المبدأ بحشو اوسع قليلا */
             .manager-dashboard-grid .btn-logout-full {
-                justify-content: center;
                 min-height: 60px;
                 margin-top: 8px;
                 font-size: 17px;
-            }
-            .manager-dashboard-grid .btn-logout-full::before {
-                margin-left: 10px !important;
-                width: auto;
+                padding: 15px 60px;
             }
         }
 
@@ -1610,7 +1631,9 @@
             .container { padding: 18px 12px; }
             .header h1 { font-size: 19px; }
             /* القائمة الراسية مطبقة اصلا من نقطة 768، نكتفي بتصغير طفيف */
-            .manager-dashboard-grid button { font-size: 15.5px; padding: 14px 15px; min-height: 62px; }
+            /* نصغر الحشو والرمز معا فيبقى التوسيط مضبوطا */
+            .manager-dashboard-grid button { font-size: 15.5px; padding: 14px 48px; min-height: 62px; }
+            .manager-dashboard-grid .btn-logout-full { padding: 14px 50px; }
             .manager-dashboard-grid button::before { font-size: 22px !important; width: 26px; }
         }
 
@@ -3601,19 +3624,20 @@
             <button class="btn-manager btn-icon-watermark icon-daily-report" data-action-badge="report" onclick="checkPermissionAndGo('openDailyReports')">التقارير اليومية</button>
             <button class="btn-manager btn-icon-watermark icon-user-shield" onclick="loadManagersList()">الادارة العامة</button>
 
-            <!-- زر سجل التدقيق: يخفى بشكل افتراضي، ولا يظهر الا للمبرمج
-                 والمدير العام (role = general)، ويتحكم في اظهاره الدالة
-                 updateReadOnlyBadges التي تنفذ عند كل تنقل بين الشاشات. -->
-            <button id="btnAuditLog" class="btn-manager btn-icon-watermark icon-audit" style="display:none;" onclick="openAuditLog()">سجل التدقيق</button>
-
             <button class="btn-manager btn-icon-watermark icon-key btn-logout-full" data-action-badge="password" onclick="checkPermissionAndGo('openPasswordRequests')">طلبات استعادة كلمة المرور</button>
-            
+
+            <!-- زر سجل التدقيق: للمبرمج وحده لا يشاركه فيه احد.
+                 موضعه بين طلبات استعادة كلمة المرور وتسجيل الخروج،
+                 وياخذ عرض الصف كاملا (btn-logout-full) فلا يبقى وحيدا
+                 في صف ناقص. اظهاره تتولاه updateReadOnlyBadges. -->
+            <button id="btnAuditLog" class="btn-manager btn-icon-watermark icon-audit btn-logout-full" style="display:none;" onclick="openAuditLog()">سجل التدقيق</button>
+
             <button class="btn-neutral btn-icon-watermark icon-logout btn-logout-full" onclick="exitManagerArea()">تسجيل خروج</button>
         </div>
     </div>
 
     <!-- ==============================================================
-         شاشة سجل التدقيق: للمبرمج والمدير العام فقط
+         شاشة سجل التدقيق: للمبرمج وحده
          تعرض سجلات مجموعة audit_log من الاحدث الى الاقدم
          ============================================================== -->
     <div id="auditLogScreen" class="container screen" style="max-width: 1250px;">
@@ -6215,7 +6239,7 @@
     }
 
     /* ------------------------------------------------------------------
-       عرض شاشة سجل التدقيق: مقصورة على المبرمج والمدير العام
+       عرض شاشة سجل التدقيق: مقصورة على المبرمج وحده
        ------------------------------------------------------------------
        الحراسة هنا مضاعفة عمدا: مرة عبر اخفاء الزر نفسه في الواجهة
        (updateReadOnlyBadges)، ومرة عبر التحقق من الصلاحية داخل هذه
@@ -6223,7 +6247,7 @@
        مباشرة من الكونسول لتجاوز القيد.
        ------------------------------------------------------------------ */
     window.openAuditLog = async function() {
-        if (!isManager() || !(isMaster() || session.role === "general")) { denyAccess(); return; }
+        if (!isMaster()) { denyAccess(); return; }
 
         window.switchScreen('auditLogScreen');
 
@@ -6837,12 +6861,12 @@
             el.style.display = hasPerm(perm) ? "" : "none";
         });
 
-        /* زر سجل التدقيق: يظهر فقط للمبرمج وللمدير العام */
+        /* زر سجل التدقيق: للمبرمج وحده.
+           سجل التدقيق يوثق كل عملية حساسة ومن نفذها، ومنها اجراءات
+           المدير العام نفسه. فحصره بالمبرمج يبقيه شاهدا مستقلا على
+           الجميع بلا استثناء. */
         const btnAudit = document.getElementById("btnAuditLog");
-        if (btnAudit) {
-            const canSeeAudit = isManager() && (isMaster() || session.role === "general");
-            btnAudit.style.display = canSeeAudit ? "flex" : "none";
-        }
+        if (btnAudit) btnAudit.style.display = isMaster() ? "flex" : "none";
     };
 
     /* ==================================================================
