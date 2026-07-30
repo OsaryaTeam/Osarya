@@ -549,6 +549,72 @@
         .icon-bell::before { content: "\f0f3"; }
         .icon-daily-report::before { content: "\f15c"; }
         .icon-user-shield::before { content: "\f505"; }
+        /* ==================================================================
+           (جديد) نظام الالوان الوظيفية
+           ==================================================================
+           لكل وظيفة لونها، والازرار المتشابهة في العائلة تختلف درجتها
+           حتى تبقى مميزة عن بعضها:
+
+             تسجيل الخروج   : احمر عنابي داكن
+             عرض البلاغات   : ازرق بحري
+
+           الغرض ان يميز المستخدم وظيفة الزر من لونه قبل قراءته.
+           ================================================================== */
+
+        /* --- إنشاء تنبيه: اصفر كهرماني --- */
+        .btn-notice-amber {
+            background: linear-gradient(135deg, #f0a52e, #d68910) !important;
+            color: #3d2a05 !important;
+            box-shadow: 0 10px 25px rgba(214, 137, 16, 0.3) !important;
+        }
+        .btn-notice-amber:hover { box-shadow: 0 14px 32px rgba(214, 137, 16, 0.45) !important; }
+        /* العلامة المائية داكنة هنا، لان ارضية الزر فاتحة */
+        .btn-notice-amber::before { color: rgba(61, 42, 5, 0.20) !important; }
+
+        /* --- إنشاء إنذار: احمر ناري فاتح، اخف وضوحا من احمر الخروج --- */
+        .btn-alert-red {
+            background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+            color: #fff !important;
+            box-shadow: 0 10px 25px rgba(192, 57, 43, 0.3) !important;
+        }
+        .btn-alert-red:hover { box-shadow: 0 14px 32px rgba(192, 57, 43, 0.45) !important; }
+
+        /* --- القوائم المنسدلة الجاهزة: برتقالي --- */
+        .btn-templates-orange {
+            background: linear-gradient(135deg, #e8833a, #c96a24) !important;
+            color: #fff !important;
+            box-shadow: 0 10px 25px rgba(201, 106, 36, 0.3) !important;
+        }
+        .btn-templates-orange:hover { box-shadow: 0 14px 32px rgba(201, 106, 36, 0.45) !important; }
+
+        /* --- سجل التنبيهات والإنذارات: تدرج يجمع لوني النوعين معا،
+               يبدا باصفر التنبيهات وينتهي باحمر الإنذارات --- */
+        .btn-notice-log-mix {
+            background: linear-gradient(120deg, #f0a52e 0%, #e0762f 48%, #c0392b 100%) !important;
+            color: #fff !important;
+            box-shadow: 0 10px 25px rgba(199, 92, 45, 0.32) !important;
+        }
+        .btn-notice-log-mix:hover { box-shadow: 0 14px 32px rgba(199, 92, 45, 0.45) !important; }
+
+        /* تسجيل الخروج: احمر عنابي داكن، اغمق من اي احمر اخر في النظام */
+        .btn-logout-red {
+            background: linear-gradient(135deg, #8e2723, #6d1b17) !important;
+            color: #fff !important;
+            box-shadow: 0 10px 25px rgba(109, 27, 23, 0.3) !important;
+        }
+        .btn-logout-red:hover { box-shadow: 0 14px 32px rgba(109, 27, 23, 0.44) !important; }
+
+        /* عرض البلاغات: ازرق بحري */
+        .btn-reports-navy {
+            background: linear-gradient(135deg, #2c5f8a, #1b3f5f) !important;
+            color: #fff !important;
+            box-shadow: 0 10px 25px rgba(27, 63, 95, 0.32) !important;
+        }
+        .btn-reports-navy:hover { box-shadow: 0 14px 32px rgba(27, 63, 95, 0.45) !important; }
+
+        /* كانت مستخدمة في زر طلبات استعادة كلمة المرور بلا تعريف،
+           فيظهر الزر بلا رمز. f084 = مفتاح */
+        .icon-key::before { content: "\f084"; }
         .icon-audit::before { content: "\f1da"; }
 
         .btn-group { display: flex; gap: 20px; margin-top: 35px; flex-wrap: wrap; width: 100%; }
@@ -3431,7 +3497,13 @@
                 <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeSupportForm()">الغاء</button>
             </div>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="closeForgotPassword()">العودة للبوابة</button>
+        </div>
+</div>
 
     <div id="researcherLoginScreen" class="container screen">
         <h2>شاشة الباحث: تسجيل الدخول</h2>
@@ -3485,8 +3557,8 @@
            3                    تعديل السجلات              قيد التطوير
            4                    قائمة الباحثين             قيد التطوير
            5 (سطر2 يمين)        طلبات الاجازات             طلب اجازة
-           6                    انشاء إنذار | تنبيه        إنذاراتي | تنبيهاتي
-           7                    التقرير اليومي             انشاء تقرير يومي
+           6                    إنشاء تنبيه | إنذار        إنذاراتي | تنبيهاتي
+           7                    التقرير اليومي             إنشاء تقرير يومي
            8                    الادارة العامة             قيد التطوير
 
          الازرار غير المفعلة تستدعي comingSoon فتظهر رسالة توضيحية،
@@ -3503,13 +3575,16 @@
 
             <button class="btn-researcher btn-icon-watermark icon-calendar-plus" onclick="openLeaveRequest()">طلب اجازة</button>
             <button class="btn-researcher btn-icon-watermark icon-bell" onclick="openMyNotices()">تنبيهاتي | إنذاراتي</button>
-            <button class="btn-researcher btn-icon-watermark icon-daily-report" onclick="openDailyReportCreate('create')">انشاء تقرير يومي</button>
+            <button class="btn-researcher btn-icon-watermark icon-daily-report" onclick="openDailyReportCreate('create')">إنشاء تقرير يومي</button>
 
-            <button class="btn-neutral btn-icon-watermark icon-logout btn-logout-full" onclick="exitResearcherArea()">تسجيل خروج</button>
+            <button class="btn-logout-red btn-icon-watermark icon-logout btn-logout-full" onclick="exitResearcherArea()">تسجيل خروج</button>
         </div>
     </div>
 
     <div id="researcherScreen" class="container screen">
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
+        </div>
         <h2>توثيق زيارة</h2>
 
         <!-- تنبيه مسبق: يقلل مفاجأة رفض التوثيق بسبب الموقع -->
@@ -3565,6 +3640,9 @@
     </div>
 
     <div id="researcherQueryScreen" class="container screen">
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
+        </div>
         <h2>الاستعلام عن زيارة</h2>
         
         <div class="input-group" style="margin-top: 15px;">
@@ -3635,12 +3713,12 @@
         
         <div class="manager-dashboard-grid">
             <button class="btn-manager btn-icon-watermark icon-results" onclick="checkPermissionAndGo('managerControlScreen')">الاستعلام عن زيارات</button>
-            <button class="btn-manager btn-icon-watermark icon-search" data-action-badge="visit" onclick="checkPermissionAndGo('managerQueryScreen')">الاستعلام عن زيارة والتعديل على بياناتها</button>
+            <button class="btn-manager btn-icon-watermark icon-search" data-action-badge="visit" onclick="checkPermissionAndGo('managerQueryScreen')">التعديل على زيارة</button>
             <button class="btn-manager btn-icon-watermark icon-edit" onclick="checkPermissionAndGo('editVisits')">تعديل السجلات</button>
             <button class="btn-manager btn-icon-watermark icon-users" onclick="checkPermissionAndGo('loadResearchersList')">قائمة الباحثين</button>
             
             <button class="btn-manager btn-icon-watermark icon-leave" data-action-badge="leave" onclick="checkPermissionAndGo('loadLeaveRequests')">طلبات الاجازات</button>
-            <button class="btn-manager btn-icon-watermark icon-bell" onclick="checkPermissionAndGo('openNoticeAdmin')">انشاء إنذار | تنبيه</button>
+            <button class="btn-manager btn-icon-watermark icon-bell" onclick="checkPermissionAndGo('openNoticeAdmin')">إنشاء تنبيه | إنذار</button>
             <button class="btn-manager btn-icon-watermark icon-daily-report" data-action-badge="report" onclick="checkPermissionAndGo('openDailyReports')">التقارير اليومية</button>
             <button class="btn-manager btn-icon-watermark icon-user-shield" onclick="loadManagersList()">الادارة العامة</button>
 
@@ -3652,7 +3730,7 @@
                  في صف ناقص. اظهاره تتولاه updateReadOnlyBadges. -->
             <button id="btnAuditLog" class="btn-manager btn-icon-watermark icon-audit btn-logout-full" style="display:none;" onclick="openAuditLog()">سجل التدقيق</button>
 
-            <button class="btn-neutral btn-icon-watermark icon-logout btn-logout-full" onclick="exitManagerArea()">تسجيل خروج</button>
+            <button class="btn-logout-red btn-icon-watermark icon-logout btn-logout-full" onclick="exitManagerArea()">تسجيل خروج</button>
         </div>
     </div>
 
@@ -3668,11 +3746,68 @@
 
         <div class="rule-note">
             <i class="fas fa-shield-halved"></i>
-            هذا السجل يوثق العمليات الحساسة في النظام تلقائيا، ويعرض هنا
-            من الاحدث الى الاقدم. هذه الشاشة مقصورة على المبرمج والمدير
-            العام فقط.
+            هذا السجل يوثق العمليات الحساسة في النظام تلقائيا، ويعرض من
+            الاحدث الى الاقدم.
+            <br><strong>ملاحظة:</strong> عمليات المبرمج نفسه لا تظهر هنا، وهي مسجلة
+            في قاعدة البيانات كغيرها ويمكن مراجعتها من لوحة Firebase.
         </div>
 
+        <!-- ==========================================================
+             فلاتر السجل
+             ----------------------------------------------------------
+             قائمة العمليات تبنى من السجلات الموجودة فعلا لا من قائمة
+             مكتوبة مسبقا، فتظهر فيها تلقائيا اي عملية جديدة تضاف
+             للنظام مستقبلا بلا تعديل هنا، ويعرض عدد سجلات كل نوع.
+             ========================================================== -->
+        <div class="sorting-controls">
+            <strong style="font-size: 16px; margin-bottom: 8px;"><i class="fas fa-filter"></i> تصفية السجل:</strong>
+
+            <div class="form-grid" style="margin-top: 5px;">
+                <div class="input-group">
+                    <label for="auditFilterAction">نوع العملية:</label>
+                    <select id="auditFilterAction" class="year-select" style="width:100%;" onchange="renderAuditLog()"></select>
+                </div>
+
+                <div class="input-group">
+                    <label for="auditFilterActor">صفة المنفذ:</label>
+                    <select id="auditFilterActor" class="year-select" style="width:100%;" onchange="renderAuditLog()">
+                        <option value="all">الجميع</option>
+                        <option value="manager">المدراء</option>
+                        <option value="researcher">الباحثون</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="auditFilterFrom">من تاريخ:</label>
+                    <div class="input-with-icon">
+                        <input type="text" id="auditFilterFrom" class="custom-date-picker" placeholder="يوم / شهر / سنة" onchange="renderAuditLog()">
+                        <i class="fas fa-calendar-alt right-icon"></i>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="auditFilterTo">الى تاريخ:</label>
+                    <div class="input-with-icon">
+                        <input type="text" id="auditFilterTo" class="custom-date-picker" placeholder="يوم / شهر / سنة" onchange="renderAuditLog()">
+                        <i class="fas fa-calendar-alt right-icon"></i>
+                    </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <label for="auditFilterText">بحث في الاسم او التفاصيل:</label>
+                    <div class="input-with-icon">
+                        <input type="text" id="auditFilterText" placeholder="اكتب كلمة للبحث عنها..." oninput="renderAuditLog()">
+                        <i class="fas fa-magnifying-glass right-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-group" style="margin-top: 10px;">
+                <button class="btn-neutral btn-small btn-icon-watermark icon-times" onclick="clearAuditFilters()">الغاء كل الفلاتر</button>
+            </div>
+        </div>
+
+        <div id="auditLogCount" class="records-info"></div>
         <div id="auditLogLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري تحميل السجل...</div>
         <div id="auditLogError" class="error-message"></div>
 
@@ -3697,7 +3832,13 @@
                 <tbody id="auditLogBody"></tbody>
             </table>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- شاشة الادارة العامة والصلاحيات -->
     <div id="adminPermissionsScreen" class="container screen" style="max-width: 1100px;">
@@ -3851,17 +3992,39 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <div id="managerControlScreen" class="container screen">
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
         <h2>الاستعلام عن زيارات</h2>
         
         <div class="form-grid">
+            <!-- الترتيب المعتمد: الاسم المستخدم، ثم رقم الزيارة، ثم نطاق التواريخ -->
             <div class="input-group full-width">
                 <label for="searchEmpId">الاسم المستخدم للباحث (اختياري):</label>
                 <div class="input-with-icon">
                     <input type="text" id="searchEmpId" placeholder="ادخل الاسم المستخدم للباحث">
                     <i class="fas fa-id-badge right-icon"></i>
+                </div>
+            </div>
+
+            <div class="input-group full-width">
+                <label for="searchVisitId">رقم الزيارة (اختياري):</label>
+                <div class="input-with-icon">
+                    <input type="text" id="searchVisitId" inputmode="numeric" placeholder="ادخل رقم الزيارة للبحث عنها">
+                    <i class="fas fa-hashtag right-icon"></i>
+                </div>
+                <div class="field-hint" style="display:block;">
+                    <i class="fas fa-lightbulb"></i>
+                    عند تحديد رقم الزيارة تعرض تلك الزيارة وحدها، ويتجاهل نطاق التاريخ.
                 </div>
             </div>
 
@@ -3892,9 +4055,12 @@
     </div>
 
     <div id="managerQueryScreen" class="container screen">
-        <h2>الاستعلام عن زيارة والتعديل على بياناتها</h2>
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+        <h2>التعديل على زيارة</h2>
         <!-- صندوق بلاغات الزيارات الخاطئة المرفوعة من الباحثين -->
-        <button class="btn-neutral btn-icon-watermark icon-flag" data-action-badge="visit-report" onclick="openRequests('visit')">بلاغات الزيارة الخاطئة</button>
+        <button class="btn-reports-navy btn-icon-watermark icon-flag" data-action-badge="visit-report" onclick="openRequests('visit')">بلاغات الزيارة الخاطئة</button>
         
         <div class="input-group" style="margin-top: 15px;">
             <label for="queryVisitIdMan">رقم الزيارة المراد الاستعلام عنها:</label>
@@ -4063,7 +4229,13 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <div id="editVisitsScreen" class="container screen" style="max-width: 1100px;">
         <div style="text-align: left; margin-bottom: 10px;">
@@ -4104,6 +4276,12 @@
             </div>
         </div>
 
+        <!-- حالة الفراغ: تظهر داخل الشاشة بدل منع فتحها -->
+        <div id="editVisitsEmpty" class="empty-state" style="display:none;">
+            <i class="fas fa-folder-open"></i>
+            لا توجد اي زيارات مسجلة لتعديلها حاليا
+        </div>
+
         <div class="table-container">
             <table id="editVisitsTable">
                 <thead>
@@ -4127,7 +4305,13 @@
         <div id="editMoreWrap" class="more-wrap" style="display:none;">
             <button type="button" id="btnLoadMoreEdit" class="btn-neutral btn-icon-watermark icon-results" onclick="loadMoreEdit()">عرض المزيد من السجلات</button>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
 
     <!-- ==============================================================
@@ -4194,7 +4378,13 @@
             <button class="btn-neutral btn-icon-watermark icon-medical" onclick="openSickLeave()">طلب اجازة مرضية</button>
             <button class="btn-neutral btn-icon-watermark icon-history" onclick="openLeaveHistory()">سجل طلبات الاجازات</button>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الباحث: سجل طلبات الاجازات
@@ -4235,7 +4425,13 @@
                 <tbody id="leaveHistBody"></tbody>
             </table>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="openLeaveRequest()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الباحث: طلب اجازة مرضية
@@ -4305,7 +4501,13 @@
             <button id="btnSubmitSick" class="btn-researcher btn-icon-watermark icon-save" onclick="submitSickLeave()">ارسال طلب الاجازة المرضية</button>
             <button class="btn-neutral btn-icon-watermark icon-history" onclick="openLeaveHistory()">سجل طلبات الاجازات</button>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="openLeaveRequest()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الادارة: طلبات الاجازات
@@ -4346,7 +4548,7 @@
         </div>
 
         <!-- قسم ترحيل الرصيد بين السنوات -->
-        <button class="btn-neutral btn-icon-watermark icon-flag" data-action-badge="leave-report" onclick="openRequests('leave')">بلاغات طلبات الإجازات</button>
+        <button class="btn-reports-navy btn-icon-watermark icon-flag" data-action-badge="leave-report" onclick="openRequests('leave')">بلاغات طلبات الإجازات</button>
         <button class="btn-manager btn-icon-watermark icon-exchange" data-requires-perm="طلبات الاجازات" onclick="toggleCarrySection()">ترحيل رصيد اجازات باحث</button>
 
         <div id="carrySection" class="add-form-section" style="display:none;">
@@ -4413,7 +4615,13 @@
                 <tbody id="leaveMngBody"></tbody>
             </table>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          سجل الاشعارات الدائم
@@ -4441,7 +4649,13 @@
         </div>
 
         <div id="notifHistList" class="notif-hist-list"></div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="closeNotifHistory()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الباحث: زياراتي
@@ -4499,10 +4713,16 @@
                 <tbody id="myVisitsBody"></tbody>
             </table>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
-         شاشة الادارة: انشاء إنذار | تنبيه
+         شاشة الادارة: إنشاء تنبيه | إنذار
          --------------------------------------------------------------
          ثلاثة ازرار: اصدار تنبيه، اصدار انذار، وادارة القوائم الجاهزة.
          ملاحظة على الترتيب: التنبيه يسبق الانذار دائما في كل الشاشات
@@ -4512,18 +4732,24 @@
         <div style="text-align: left; margin-bottom: 10px;">
             <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
         </div>
-        <h2>انشاء إنذار | تنبيه</h2>
+        <h2>إنشاء تنبيه | إنذار</h2>
         <div class="readonly-badge" data-perm="التنبيهات والانذارات" style="display:none;">
             <i class="fas fa-eye"></i>
             وضع العرض فقط: يمكنك الاطلاع والبحث والفلترة، ولا تملك صلاحية التعديل في هذه الشاشة.
         </div>
 
 
-        <button class="btn-manager btn-icon-watermark icon-bell" data-requires-perm="التنبيهات والانذارات" onclick="openNoticeCreate('notice')">انشاء تنبيه</button>
-        <button class="btn-manager btn-icon-watermark icon-warning" data-requires-perm="التنبيهات والانذارات" onclick="openNoticeCreate('alert')">انشاء إنذار</button>
-        <button class="btn-neutral btn-icon-watermark icon-list" onclick="openNoticeTemplates()">انشاء قائمة منسدلة بالتنبيهات | الإنذارات</button>
-        <button class="btn-neutral btn-icon-watermark icon-history" onclick="openNoticeLog()">سجل التنبيهات | الإنذارات الصادرة</button>
-    </div>
+        <button class="btn-notice-amber btn-icon-watermark icon-bell" data-requires-perm="التنبيهات والانذارات" onclick="openNoticeCreate('notice')">إنشاء تنبيه</button>
+        <button class="btn-alert-red btn-icon-watermark icon-warning" data-requires-perm="التنبيهات والانذارات" onclick="openNoticeCreate('alert')">إنشاء إنذار</button>
+        <button class="btn-templates-orange btn-icon-watermark icon-list" onclick="openNoticeTemplates()">إنشاء قائمة منسدلة بالتنبيهات | الإنذارات</button>
+        <button class="btn-notice-log-mix btn-icon-watermark icon-history" onclick="openNoticeLog()">سجل التنبيهات | الإنذارات الصادرة</button>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الادارة: نموذج اصدار تنبيه او انذار
@@ -4588,7 +4814,13 @@
         <div class="btn-group">
             <button id="btnIssueNotice" class="btn-manager btn-icon-watermark icon-save" onclick="issueNotice()">اصدار التنبيه</button>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="openNoticeAdmin()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الادارة: اختيار القائمة المراد ادارتها
@@ -4610,9 +4842,15 @@
             هذا يختصر وقت المدير ويضمن ان تكون الصيغة موحدة لا تختلف من مدير لاخر.
         </p>
 
-        <button class="btn-manager btn-icon-watermark icon-bell" onclick="openTemplatesList('notice')">قائمة التنبيهات المنسدلة</button>
-        <button class="btn-manager btn-icon-watermark icon-warning" onclick="openTemplatesList('alert')">قائمة الإنذارات المنسدلة</button>
-    </div>
+        <button class="btn-notice-amber btn-icon-watermark icon-bell" onclick="openTemplatesList('notice')">قائمة التنبيهات المنسدلة</button>
+        <button class="btn-alert-red btn-icon-watermark icon-warning" onclick="openTemplatesList('alert')">قائمة الإنذارات المنسدلة</button>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="openNoticeAdmin()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الادارة: ادارة صيغ قائمة واحدة
@@ -4650,7 +4888,13 @@
         </div>
 
         <div id="templatesList" class="templates-list"></div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="openNoticeTemplates()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الادارة: سجل التنبيهات | الإنذارات الصادرة
@@ -4715,7 +4959,13 @@
                 <tbody id="noticeLogBody"></tbody>
             </table>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="openNoticeAdmin()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الباحث: تنبيهاتي | إنذاراتي
@@ -4726,9 +4976,15 @@
         </div>
         <h2>تنبيهاتي | إنذاراتي</h2>
 
-        <button class="btn-researcher btn-icon-watermark icon-bell" onclick="openMyNoticesList('notice')">عرض التنبيهات المسجلة عليك</button>
-        <button class="btn-researcher btn-icon-watermark icon-warning" onclick="openMyNoticesList('alert')">عرض الإنذارات المسجلة عليك</button>
-    </div>
+        <button class="btn-notice-amber btn-icon-watermark icon-bell" onclick="openMyNoticesList('notice')">عرض التنبيهات المسجلة عليك</button>
+        <button class="btn-alert-red btn-icon-watermark icon-warning" onclick="openMyNoticesList('alert')">عرض الإنذارات المسجلة عليك</button>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الباحث: قائمة التنبيهات او الانذارات المسجلة عليه
@@ -4765,7 +5021,13 @@
                 <tbody id="myNoticesBody"></tbody>
             </table>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="openMyNotices()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة حسابي (للباحث والمدير معا)
@@ -4878,7 +5140,13 @@
                 <button id="btnChangePass" class="btn-manager btn-icon-watermark icon-save" onclick="changeMyPassword()">تأكيد تغيير كلمة المرور</button>
             </div>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="closeAccount()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الباحث: التقرير اليومي
@@ -4965,7 +5233,13 @@
             <button class="btn-neutral btn-icon-watermark icon-pdf" onclick="printDailyReport()">طباعة</button>
             <button id="drSendBtn" class="btn-researcher btn-icon-watermark icon-send" onclick="sendDailyReport()">ارسال التقرير للادارة</button>
         </div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الادارة: التقارير اليومية
@@ -4979,7 +5253,7 @@
         </div>
         <h2>التقارير اليومية</h2>
 
-        <button class="btn-neutral btn-icon-watermark icon-flag" data-action-badge="report-report" onclick="openRequests('report')">بلاغات التقارير اليومية</button>
+        <button class="btn-reports-navy btn-icon-watermark icon-flag" data-action-badge="report-report" onclick="openRequests('report')">بلاغات التقارير اليومية</button>
 
         <div class="input-group" style="margin-top: 18px;">
             <label for="drAdminDate">اختر اليوم المراد عرض تقاريره:</label>
@@ -5001,7 +5275,13 @@
         </div>
 
         <div id="drAdminList"></div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الباحث: الإبلاغ عن مشاكل تقنية
@@ -5026,7 +5306,13 @@
 
         <!-- متابعة كل ما سبق تقديمه من بلاغات وردود الادارة عليها -->
         <button class="btn-neutral btn-icon-watermark icon-history" onclick="openMyReports()">متابعة البلاغات</button>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الباحث: متابعة البلاغات
@@ -5062,7 +5348,13 @@
         </div>
 
         <div id="myRepList"></div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="openTechReports()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الباحث: بلاغ زيارة خاطئة
@@ -5148,7 +5440,13 @@
 
         <div id="vrError" class="error-message"></div>
         <div id="vrSuccess" class="success-message"></div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="openTechReports()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الباحث: بلاغ طلب اجازة
@@ -5222,7 +5520,13 @@
 
         <div id="lrError" class="error-message"></div>
         <div id="lrSuccess" class="success-message"></div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="openTechReports()">العودة للبوابة</button>
+        </div>
+</div>
 
     <!-- ==============================================================
          شاشة الادارة: صناديق البلاغات
@@ -5270,7 +5574,13 @@
         </div>
 
         <div id="pwList"></div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <div id="requestsScreen" class="container screen" style="max-width: 1000px;">
         <div style="text-align: left; margin-bottom: 10px;">
@@ -5302,7 +5612,13 @@
         </div>
 
         <div id="reqList"></div>
-    </div>
+    
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+</div>
 
     <div id="resultsScreen" class="container screen" style="max-width: 1000px;">
         <div style="text-align: left; margin-bottom: 10px;">
@@ -5393,6 +5709,12 @@
         و<a href="https://policies.google.com/terms" target="_blank" rel="noopener">شروط الخدمة</a>
         الخاصة بجوجل.
     </div>
+
+        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
+             فلا يضطر للتمرير الى الاعلى -->
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerControlScreen')">العودة للبوابة</button>
+        </div>
 </div>
 
 <script type="module">
@@ -6266,6 +6588,9 @@
        الدالة قبل اي جلب فعلي للبيانات، حتى لا يكفي استدعاء الدالة
        مباشرة من الكونسول لتجاوز القيد.
        ------------------------------------------------------------------ */
+    /* السجلات المحملة بعد استبعاد عمليات المبرمج */
+    let auditRecords = [];
+
     window.openAuditLog = async function() {
         if (!isMaster()) { denyAccess(); return; }
 
@@ -6281,47 +6606,168 @@
 
         try {
             const snap = await getDocs(query(collection(db, "audit_log"), limit(AUDIT_LOG_LIMIT)));
-            const list = [];
+            let list = [];
             snap.forEach(function(d) { list.push(Object.assign({ id: d.id }, d.data())); });
 
+            /* ------------------------------------------------------------
+               استبعاد عمليات المبرمج من العرض
+               ------------------------------------------------------------
+               عملياته تسجل في قاعدة البيانات كغيرها ولا تحذف منها ابدا،
+               لكنها لا تعرض في هذه الشاشة. الغرض ان يكون السجل نافذة
+               على عمل الفريق لا على عمل صاحب الشاشة نفسه.
+               التمييز بالاسم المستخدم لا بالاسم، فالاسماء قد تتشابه
+               بينما الاسم المستخدم فريد ومحجوز.
+               ------------------------------------------------------------ */
+            auditRecords = list.filter(function(r) {
+                return String(r.actorId || "").trim().toUpperCase() !== RESERVED_MASTER_USERNAME;
+            });
+
             /* الاحدث اولا */
-            list.sort(function(a, b) {
+            auditRecords.sort(function(a, b) {
                 return String(b.at || "").localeCompare(String(a.at || ""));
             });
 
-            if (list.length === 0) {
-                if (empty) empty.style.display = "block";
-            } else {
-                const frag = document.createDocumentFragment();
-                list.forEach(function(rec, idx) {
-                    const tr = document.createElement("tr");
-
-                    const tdNum = document.createElement("td");
-                    tdNum.textContent = idx + 1;
-                    tdNum.style.fontWeight = "900";
-                    tdNum.style.backgroundColor = "rgba(222, 140, 67, 0.1)";
-                    tr.appendChild(tdNum);
-
-                    [rec.action || "-", rec.details || "-", rec.actorName || "-",
-                     rec.actorId || "-", rec.actorType || "-"].forEach(function(v) {
-                        const td = document.createElement("td");
-                        td.textContent = v;
-                        tr.appendChild(td);
-                    });
-
-                    const tdAt = document.createElement("td");
-                    tdAt.textContent = window.formatDateTimeToEnglish(rec.at);
-                    tr.appendChild(tdAt);
-
-                    frag.appendChild(tr);
-                });
-                if (tbody) tbody.appendChild(frag);
-            }
+            buildAuditActionFilter();
+            renderAuditLog();
         } catch (e) {
             showMsg("auditLogError", "<i class='fas fa-wifi'></i> تعذر جلب سجل التدقيق من السحابة.");
         }
         if (loading) loading.style.display = "none";
     };
+
+    /* ------------------------------------------------------------------
+       بناء قائمة انواع العمليات
+       ------------------------------------------------------------------
+       تبنى من السجلات الفعلية لا من قائمة ثابتة، فلا تحتاج تعديلا كلما
+       اضيفت عملية جديدة للنظام. ويعرض عدد سجلات كل نوع بجانب اسمه،
+       فيعرف المبرمج حجم النشاط قبل ان يفلتر.
+       ------------------------------------------------------------------ */
+    function buildAuditActionFilter() {
+        const sel = document.getElementById("auditFilterAction");
+        if (!sel) return;
+
+        const prev = sel.value;
+        const counts = {};
+        auditRecords.forEach(function(r) {
+            const a = (r.action || "غير محدد").trim();
+            counts[a] = (counts[a] || 0) + 1;
+        });
+
+        /* ترتيب بالاكثر تكرارا اولا، فالاهم يظهر في الاعلى */
+        const names = Object.keys(counts).sort(function(a, b) {
+            if (counts[b] !== counts[a]) return counts[b] - counts[a];
+            return a.localeCompare(b, 'ar');
+        });
+
+        sel.innerHTML = '<option value="all">كل العمليات (' + auditRecords.length + ')</option>';
+        names.forEach(function(n) {
+            const o = document.createElement("option");
+            o.value = n;
+            o.textContent = n + "  (" + counts[n] + ")";
+            sel.appendChild(o);
+        });
+
+        /* نحافظ على اختيار المستخدم ان بقي متاحا بعد اعادة البناء */
+        if (prev && (prev === "all" || counts[prev])) sel.value = prev;
+    }
+
+    window.clearAuditFilters = function() {
+        const a = document.getElementById("auditFilterAction");
+        const t = document.getElementById("auditFilterActor");
+        const x = document.getElementById("auditFilterText");
+        if (a) a.value = "all";
+        if (t) t.value = "all";
+        if (x) x.value = "";
+        ["auditFilterFrom", "auditFilterTo"].forEach(function(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (el._flatpickr) el._flatpickr.clear(); else el.value = "";
+        });
+        renderAuditLog();
+    };
+
+    /* رسم الجدول بعد تطبيق كل الفلاتر معا */
+    window.renderAuditLog = function() {
+        const tbody = document.getElementById("auditLogBody");
+        const empty = document.getElementById("auditLogEmpty");
+        const count = document.getElementById("auditLogCount");
+        if (!tbody) return;
+
+        const fAction = (document.getElementById("auditFilterAction") || {}).value || "all";
+        const fActor  = (document.getElementById("auditFilterActor") || {}).value || "all";
+        const fText   = ((document.getElementById("auditFilterText") || {}).value || "").trim().toLowerCase();
+        const fFrom   = window.toEnglishDigits((document.getElementById("auditFilterFrom") || {}).value || "");
+        const fTo     = window.toEnglishDigits((document.getElementById("auditFilterTo") || {}).value || "");
+
+        const list = auditRecords.filter(function(r) {
+            if (fAction !== "all" && (r.action || "غير محدد").trim() !== fAction) return false;
+            if (fActor !== "all" && r.actorType !== fActor) return false;
+
+            /* التاريخ مخزن كنص ISO كامل، فنقارن العشرة الاولى منه (YYYY-MM-DD) */
+            if (fFrom || fTo) {
+                const day = String(r.at || "").slice(0, 10);
+                if (fFrom && day < fFrom) return false;
+                if (fTo && day > fTo) return false;
+            }
+
+            if (fText) {
+                const hay = [r.actorName, r.actorId, r.details, r.action].join(" ").toLowerCase();
+                if (hay.indexOf(fText) === -1) return false;
+            }
+            return true;
+        });
+
+        tbody.innerHTML = "";
+
+        if (count) {
+            count.textContent = "المعروض: " + list.length + " سجل" +
+                (list.length !== auditRecords.length ? (" من اصل " + auditRecords.length) : "");
+        }
+
+        if (list.length === 0) {
+            if (empty) {
+                empty.style.display = "block";
+                empty.innerHTML = '<i class="fas fa-inbox"></i> لا توجد سجلات مطابقة للفلترة الحالية';
+            }
+            return;
+        }
+        if (empty) empty.style.display = "none";
+
+        const frag = document.createDocumentFragment();
+        list.forEach(function(rec, idx) {
+            const tr = document.createElement("tr");
+
+            const tdNum = document.createElement("td");
+            tdNum.textContent = idx + 1;
+            tdNum.style.fontWeight = "900";
+            tdNum.style.backgroundColor = "rgba(222, 140, 67, 0.1)";
+            tr.appendChild(tdNum);
+
+            [rec.action || "-", rec.details || "-", rec.actorName || "-",
+             rec.actorId || "-", auditActorLabel(rec.actorType)].forEach(function(v, i) {
+                const td = document.createElement("td");
+                td.textContent = v;
+                if (i === 1) td.className = "reason-cell";   /* التفاصيل تلتف بدل ان تمدد الجدول */
+                tr.appendChild(td);
+            });
+
+            const tdAt = document.createElement("td");
+            tdAt.textContent = window.formatDateTimeToEnglish(rec.at);
+            tr.appendChild(tdAt);
+
+            frag.appendChild(tr);
+        });
+
+        tbody.appendChild(frag);
+        window.applyCardLabels("auditLogTable");
+    };
+
+    /* ترجمة صفة المنفذ الى نص عربي */
+    function auditActorLabel(t) {
+        if (t === "manager") return "مدير";
+        if (t === "researcher") return RESEARCHER_TITLE;
+        return "-";
+    }
 
     /* ==================================================================
        (6) ادارة الجلسة: الحفظ عند التحديث + انتهاء الخمول
@@ -6594,7 +7040,7 @@
     });
 
     /* اعدادات التقويم مكتوبة مرة واحدة ويعاد استخدامها لكل حقل،
-       بدل انشاء كائن اعدادات جديد في كل مرة */
+       بدل إنشاء كائن اعدادات جديد في كل مرة */
     function datePickerOptions() {
         const currentYear = new Date().getFullYear();
         return {
@@ -6937,7 +7383,7 @@
     function idSetSize(s) { return s ? s.size : 0; }
 
     /* اظهار او اخفاء شارة على كل الازرار التي تحمل قيمة معينة للسمة
-       data-action-badge، مع انشاء عنصر الشارة عند اول حاجة فقط.
+       data-action-badge، مع إنشاء عنصر الشارة عند اول حاجة فقط.
        دالة مجانية بالكامل (لا تستعلم قاعدة البيانات)، فيمكن استدعاؤها
        عند اي تنقل بين الشاشات لضمان ظهور الشارة على الزر الصحيح فور
        دخوله، دون اي تكلفة اضافية. */
@@ -7836,6 +8282,8 @@
 
         lastSearchParams = {
             empId: window.toEnglishDigits(document.getElementById("searchEmpId").value.trim()),
+            /* رقم الزيارة: بحث دقيق يتجاهل نطاق التاريخ عند تحديده */
+            visitId: window.toEnglishDigits(document.getElementById("searchVisitId").value.trim()),
             start: window.toEnglishDigits(document.getElementById("startDate").value),
             end: window.toEnglishDigits(document.getElementById("endDate").value)
         };
@@ -7874,9 +8322,20 @@
             } else {
                 const cons = [];
                 if (p.empId) cons.push(where("empId", "==", p.empId));
-                if (p.start) cons.push(where("execDate", ">=", p.start));
-                if (p.end) cons.push(where("execDate", "<=", p.end));
-                cons.push((p.start || p.end) ? orderBy("execDate", "desc") : orderBy("regDate", "desc"));
+                /* ------------------------------------------------------------
+                   رقم الزيارة يلغي نطاق التاريخ
+                   ------------------------------------------------------------
+                   رقم الزيارة فريد، فالبحث به يعني ارادة زيارة بعينها لا
+                   مجموعة. واضافة شرطي التاريخ معه تحتاج فهرسا مركبا اضافيا
+                   بلا فائدة، وقد تخفي الزيارة المطلوبة لو كانت خارج النطاق.
+                   ------------------------------------------------------------ */
+                if (p.visitId) {
+                    cons.push(where("visitId", "==", p.visitId));
+                } else {
+                    if (p.start) cons.push(where("execDate", ">=", p.start));
+                    if (p.end) cons.push(where("execDate", "<=", p.end));
+                    cons.push((p.start || p.end) ? orderBy("execDate", "desc") : orderBy("regDate", "desc"));
+                }
                 if (!isFirstPage && lastResultsDoc) cons.push(startAfter(lastResultsDoc));
                 cons.push(limit(PAGE_SIZE));
 
@@ -7909,8 +8368,8 @@
             }
         } catch (error) {
             if (isIndexError(error)) {
-                /* لم يتم انشاء الفهرس المركب بعد: التحويل مؤقتا للفلترة المحلية */
-                console.warn("Firestore index مطلوب. رابط الانشاء موجود في رسالة الخطأ ادناه:", error.message);
+                /* لم يتم إنشاء الفهرس المركب بعد: التحويل مؤقتا للفلترة المحلية */
+                console.warn("Firestore index مطلوب. رابط الإنشاء موجود في رسالة الخطأ ادناه:", error.message);
                 resultsClientMode = true;
                 try {
                     pageVisits = await clientSideVisitsFilter(p);
@@ -7976,15 +8435,20 @@
        تستخدم فقط اذا لم يكن الفهرس المركب جاهزا في Firestore.
        خطرها انها تجلب مجموعة الزيارات كاملة، لذلك وضعنا لها سقفا
        صارما يمنع استنزاف حصة القراءة اليومية دفعة واحدة.
-       الحل الدائم: انشاء الفهرس من الرابط الذي يظهر في كونسول المتصفح.
+       الحل الدائم: إنشاء الفهرس من الرابط الذي يظهر في كونسول المتصفح.
        ------------------------------------------------------------------ */
     async function clientSideVisitsFilter(p) {
         const snap = await getDocs(query(collection(db, "visits"), limit(FALLBACK_SCAN_LIMIT)));
         let visits = [];
         snap.forEach(function(d) { visits.push(Object.assign({ id: d.id }, d.data())); });
         if (p.empId) visits = visits.filter(function(v) { return v.empId === p.empId; });
-        if (p.start) visits = visits.filter(function(v) { return String(v.execDate) >= p.start; });
-        if (p.end) visits = visits.filter(function(v) { return String(v.execDate) <= p.end; });
+        /* رقم الزيارة يلغي نطاق التاريخ، اتساقا مع الاستعلام من الخادم */
+        if (p.visitId) {
+            visits = visits.filter(function(v) { return String(v.visitId) === p.visitId; });
+        } else {
+            if (p.start) visits = visits.filter(function(v) { return String(v.execDate) >= p.start; });
+            if (p.end) visits = visits.filter(function(v) { return String(v.execDate) <= p.end; });
+        }
         visits.sort(function(a, b) { return new Date(b.regDate) - new Date(a.regDate); });
         return visits;
     }
@@ -8120,19 +8584,28 @@
 
         editVisits = isFirstPage ? pageVisits : editVisits.concat(pageVisits);
 
-        if (isFirstPage && editVisits.length === 0) {
-            showMsg("managerControlError", "<i class='fas fa-folder-open'></i> لا توجد اي زيارات مسجلة لتعديلها.");
-            return;
-        }
-
+        /* ------------------------------------------------------------------
+           الشاشة تفتح دائما حتى لو لم توجد سجلات
+           ------------------------------------------------------------------
+           كان الكود يعرض رسالة "لا توجد زيارات" ثم يخرج قبل فتح الشاشة،
+           فيبقى المدير في البوابة ويظن ان الزر معطل. الصحيح ان تفتح
+           الشاشة وتعرض حالة الفراغ بداخلها، فيرى ادوات الفرز والعودة
+           ويفهم ان النظام يعمل ولا سجلات فيه بعد.
+           ------------------------------------------------------------------ */
         if (isFirstPage) {
             document.querySelectorAll('#editVisitsScreen .btn-sort, #editVisitsScreen .sort-dropdown-content button').forEach(function(b) { b.classList.remove('active-sort'); });
-            document.getElementById('edit_sort_main').classList.add('active-sort');
-            document.getElementById('edit_sort_default').classList.add('active-sort');
+            const sm = document.getElementById('edit_sort_main');
+            const sd = document.getElementById('edit_sort_default');
+            if (sm) sm.classList.add('active-sort');
+            if (sd) sd.classList.add('active-sort');
         }
 
         renderEditTable();
         if (isFirstPage) window.switchScreen('editVisitsScreen');
+
+        /* حالة الفراغ تعرض داخل الشاشة لا قبل فتحها */
+        const editEmpty = document.getElementById("editVisitsEmpty");
+        if (editEmpty) editEmpty.style.display = (editVisits.length === 0) ? "block" : "none";
     }
 
     window.sortEdit = function(criteria, btnElement) {
@@ -8235,7 +8708,7 @@
         if (wrap) wrap.style.display = editHasMore ? "block" : "none";
 
         /* لا ننشئ تقويما لكل صف الان، بل عند اول لمسة على الحقل فقط.
-           مع 100 صف كان الانشاء الفوري يجمد الصفحة لثوان على الجوال */
+           مع 100 صف كان الإنشاء الفوري يجمد الصفحة لثوان على الجوال */
         lazyDateInputs.forEach(function(inp) { window.attachLazyDatePicker(inp); });
     }
 
@@ -9323,7 +9796,7 @@
                 if (c.name === "managers") {
                     const w = document.createElement("span");
                     w.className = "reset-row-warn";
-                    w.textContent = "يمسح كل المدراء عدا حسابك انت، فيفقدون الدخول حتى تعيد انشاءهم.";
+                    w.textContent = "يمسح كل المدراء عدا حسابك انت، فيفقدون الدخول حتى تعيد إنشاءهم.";
                     txt.appendChild(w);
                 } else if (c.name === "audit_log") {
                     const w = document.createElement("span");
@@ -9933,7 +10406,7 @@
 
        يحاول اولا الترتيب من طرف الخادم (يحتاج فهرسا مركبا)، وعند فشله
        (الفهرس غير جاهز بعد) يتحول تلقائيا لمستمع بديل بلا ترتيب مع
-       الترتيب محليا بعد كل دفعة، فلا ينكسر شيء قبل انشاء الفهرس.
+       الترتيب محليا بعد كل دفعة، فلا ينكسر شيء قبل إنشاء الفهرس.
        ================================================================== */
     function startNotificationsListener() {
         stopNotificationsListener();
