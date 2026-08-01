@@ -4152,7 +4152,58 @@
             </div>
         </div>
 
-        <button class="btn-manager btn-icon-watermark icon-user-plus" onclick="toggleAddResearcherForm()">اضافة باحث جديد</button>
+        <div class="sorting-controls">
+            <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-map-location-dot"></i> تصفية حسب المنطقة:</strong>
+            <div class="input-with-icon" style="max-width: 260px;">
+                <select id="resRegionFilter" onchange="filterResearchersByRegion(this.value)"></select>
+                <i class="fas fa-map-location-dot right-icon"></i>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-manager btn-icon-watermark icon-user-plus" onclick="toggleAddResearcherForm()">اضافة باحث جديد</button>
+            <button class="btn-manager btn-icon-watermark icon-user-plus" onclick="toggleBulkImportPanel()" style="background: linear-gradient(135deg, #4a8794, #396d78);">استيراد دفعة باحثين</button>
+        </div>
+
+        <!-- ==========================================================
+             لوحة استيراد دفعة الباحثين
+             ----------------------------------------------------------
+             تنشئ حسابات لكل الباحثين الجاهزة بياناتهم دفعة واحدة،
+             بأسماء مستخدمين وكلمات مرور مؤقتة مولدة تلقائيا، ثم تعرض
+             زر واتساب لكل باحث لارسال بياناته له.
+             ========================================================== -->
+        <div id="bulkImportPanel" class="add-form-section" style="display:none;">
+            <h3><i class="fas fa-users"></i> استيراد دفعة الباحثين</h3>
+            <p style="margin:0 0 12px;">
+                سيتم انشاء <strong id="bulkImportCount">0</strong> حساب باحث جديد، لكل حساب اسم مستخدم بصيغة
+                OSB#### وكلمة مرور مؤقتة تولد تلقائيا ويجب على الباحث تغييرها فور تسجيل الدخول لاول مرة.
+            </p>
+            <div id="bulkImportError" class="error-message"></div>
+            <div id="bulkImportProgress" class="loading-message" style="display:block;"></div>
+            <div class="btn-group">
+                <button id="btnRunBulkImport" class="btn-manager btn-icon-watermark icon-save" onclick="runBulkImportResearchers()">بدء الاستيراد</button>
+                <button class="btn-neutral btn-icon-watermark icon-times" onclick="toggleBulkImportPanel()">اغلاق</button>
+            </div>
+
+            <div id="bulkImportResultsWrap" style="display:none; margin-top:15px;">
+                <div class="table-container">
+                    <table id="bulkImportResultsTable">
+                        <thead>
+                            <tr>
+                                <th>م</th>
+                                <th>اسم الباحث</th>
+                                <th>الاسم المستخدم</th>
+                                <th>كلمة المرور المؤقتة</th>
+                                <th>المنطقة</th>
+                                <th>الحالة</th>
+                                <th>الاجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulkImportResultsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         <div id="addResearcherSection" class="add-form-section" style="display: none;">
             <h3 id="addResearcherTitle">بيانات الباحث الجديد</h3>
@@ -4184,6 +4235,13 @@
                     <div class="field-hint" style="display:block;">
                         <i class="fas fa-lightbulb"></i>
                         اختياري لكنه مهم: يفعل زر الواتساب ويتيح للباحث استعادة كلمة مروره بنفسه.
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="newResRegion">المنطقة:</label>
+                    <div class="input-with-icon">
+                        <select id="newResRegion"></select>
+                        <i class="fas fa-map-location-dot right-icon"></i>
                     </div>
                 </div>
 
@@ -4220,6 +4278,7 @@
                         <th>اسم الباحث</th>
                         <th>الاسم المستخدم</th>
                         <th>رقم الجوال</th>
+                        <th>المنطقة</th>
                         <th>كلمة المرور</th>
                         <th>حالة الباحث</th>
                         <th>الاجراء</th>
@@ -5952,6 +6011,36 @@
     const MEMBER_TITLE          = "عضو في ادارة فريق الباحث الاجتماعي";
     const RESEARCHER_TITLE      = "باحث اجتماعي";
 
+    /* مناطق المملكة المستخدمة في بيانات الباحثين، حقل التصفية، ونموذج
+       الاضافة والتعديل. اي منطقة جديدة تضاف هنا فقط وتظهر تلقائيا
+       في كل القوائم والفلاتر التي تعتمد عليها */
+    const SAUDI_REGIONS = [
+        "الرياض", "مكة المكرمة", "المدينة المنورة", "الشرقية", "عسير",
+        "جازان", "القصيم", "حائل", "تبوك", "الحدود الشمالية",
+        "نجران", "الباحة", "الجوف"
+    ];
+
+    /* تعبئة قائمة منسدلة بالمناطق. تستخدم في نموذج اضافة/تعديل الباحث
+       وفي فلتر المنطقة باعلى قائمة الباحثين */
+    function populateRegionSelect(selectEl, selectedValue, includeAllOption) {
+        if (!selectEl) return;
+        selectEl.innerHTML = "";
+        if (includeAllOption) {
+            const optAll = document.createElement("option");
+            optAll.value = "";
+            optAll.text = "كل المناطق";
+            selectEl.appendChild(optAll);
+        }
+        SAUDI_REGIONS.forEach(function(region) {
+            const opt = document.createElement("option");
+            opt.value = region;
+            opt.text = region;
+            if (region === selectedValue) opt.selected = true;
+            selectEl.appendChild(opt);
+        });
+        if (window.updateSelectStyle) window.updateSelectStyle(selectEl);
+    }
+
     function roleTitle(role) {
         return (role === "general") ? GENERAL_MANAGER_TITLE : MEMBER_TITLE;
     }
@@ -6140,6 +6229,7 @@
     let researchersList = [];
     let managersList = [];
     let currentFilterStatus = 'all';
+    let currentFilterRegion = '';
     let editingManagerId = null;
     let editingResearcherId = null;
 
@@ -8833,7 +8923,7 @@
             }
             updateResearcherCounts();
             toast("تم تحديث حالة الباحث بنجاح.", "success");
-            if (filterAfter && filterAfter !== 'all') renderResearchersTable(filterAfter);
+            if (filterAfter && filterAfter !== 'all') renderResearchersTable(filterAfter, currentFilterRegion);
         } catch (error) {
             toast("حدث خطأ اثناء تحديث حالة الباحث. يرجى المحاولة مرة اخرى.", "error");
             window.loadResearchersList();
@@ -8855,10 +8945,16 @@
         document.querySelectorAll('#researchersListScreen .btn-sort').forEach(function(b) { b.classList.remove('active-sort'); });
         btnElement.classList.add('active-sort');
         currentFilterStatus = status;
-        renderResearchersTable(status);
+        renderResearchersTable(status, currentFilterRegion);
     };
 
-    function renderResearchersTable(filterStatus) {
+    /* تصفية حسب المنطقة، تعمل مع فلتر الحالة معا */
+    window.filterResearchersByRegion = function(region) {
+        currentFilterRegion = region || '';
+        renderResearchersTable(currentFilterStatus, currentFilterRegion);
+    };
+
+    function renderResearchersTable(filterStatus, filterRegion) {
         const tbody = document.getElementById("researchersTableBody");
         tbody.innerHTML = "";
 
@@ -8869,6 +8965,9 @@
             } else {
                 filteredList = researchersList.filter(function(r) { return r.status === filterStatus; });
             }
+        }
+        if (filterRegion) {
+            filteredList = filteredList.filter(function(r) { return r.region === filterRegion; });
         }
 
         /* البناء في الذاكرة ثم الادراج دفعة واحدة لتقليل اعادة الرسم */
@@ -8899,6 +8998,16 @@
                 tdPhone.style.color = "#a5601f";
                 tdPhone.style.fontSize = "12.5px";
                 tdPhone.style.fontWeight = "700";
+            }
+
+            const tdRegion = document.createElement("td");
+            if (r.region) {
+                tdRegion.textContent = r.region;
+            } else {
+                tdRegion.textContent = "غير محددة";
+                tdRegion.style.color = "#a5601f";
+                tdRegion.style.fontSize = "12.5px";
+                tdRegion.style.fontWeight = "700";
             }
 
             /* كلمة المرور لم تعد تعرض اطلاقا - مشفرة ولا يمكن استرجاعها */
@@ -8983,6 +9092,7 @@
             tr.appendChild(tdName);
             tr.appendChild(tdId);
             tr.appendChild(tdPhone);
+            tr.appendChild(tdRegion);
             tr.appendChild(tdPass);
             tr.appendChild(tdStatus);
             tr.appendChild(tdAction);
@@ -9064,7 +9174,7 @@
     window.cancelDeleteResearcher = function() {
         pendingDeleteResearcher = null;
         document.getElementById("deleteResPanel").style.display = "none";
-        renderResearchersTable(currentFilterStatus);
+        renderResearchersTable(currentFilterStatus, currentFilterRegion);
     };
 
     /* حصر عدد السجلات المرتبطة بالباحث */
@@ -9163,6 +9273,9 @@
         tbody.innerHTML = "";
         rLoading.style.display = "block";
         currentFilterStatus = 'all';
+        currentFilterRegion = '';
+        const regionFilterEl = document.getElementById("resRegionFilter");
+        if (regionFilterEl) populateRegionSelect(regionFilterEl, '', true);
 
         try {
             const snap = await getDocs(collection(db, "researchers"));
@@ -9176,7 +9289,7 @@
             const firstBtn = document.querySelector('#researchersListScreen .btn-sort');
             if (firstBtn) firstBtn.classList.add('active-sort');
 
-            renderResearchersTable('all');
+            renderResearchersTable('all', currentFilterRegion);
             rLoading.style.display = "none";
             window.switchScreen('researchersListScreen');
         } catch (error) {
@@ -9196,6 +9309,7 @@
             passInput.value = "";
 
             document.getElementById("newResPhone").value = "";
+            populateRegionSelect(document.getElementById("newResRegion"), null, false);
 
             /* اسم مستخدم مقترح تلقائيا بصيغة OSB#### وقابل للتعديل */
             document.getElementById("newResId").value = suggestResearcherId();
@@ -9230,6 +9344,7 @@
         document.getElementById("newResName").value = researcher.empName;
         document.getElementById("newResId").value = researcher.empId;
         document.getElementById("newResPhone").value = researcher.phone || "";
+        populateRegionSelect(document.getElementById("newResRegion"), researcher.region || "", false);
         const rHintE = document.getElementById("resIdHint");
         if (rHintE) rHintE.style.display = "none";
 
@@ -9300,8 +9415,10 @@
                 return;
             }
 
+            const regionVal = (document.getElementById("newResRegion") || {}).value || "";
+
             if (editingResearcherId) {
-                const payload = { empName: name, empId: id };
+                const payload = { empName: name, empId: id, region: regionVal };
                 /* الجوال يحدث فقط ان كتب شيئا، فلا يمسح رقما مسجلا
                    لمجرد ترك الحقل فارغا اثناء تعديل بيانات اخرى */
                 if (rawPhone) payload.phone = phone;
@@ -9313,7 +9430,7 @@
             } else {
                 await addDoc(collection(db, "researchers"), {
                     empName: name, empId: id, password: await hashPassword(pass),
-                    phone: phone,
+                    phone: phone, region: regionVal,
                     status: 'active', createdAt: new Date().toISOString()
                 });
                 logAudit("اضافة باحث", name + " (" + id + ")");
@@ -9639,6 +9756,284 @@
         const used = researchersList.map(function(r) { return r.empId; });
         return generateUniqueId(ID_PREFIX_RESEARCHER, used);
     }
+
+    /* ==================================================================
+       (17-ب) استيراد دفعة باحثين جاهزة
+       ==================================================================
+       بيانات القائمة التي زودنا بها المدير (الاسم، الجوال، المنطقة).
+       يولد النظام لكل باحث اسم مستخدم بصيغة OSB#### وكلمة مرور مؤقتة
+       تراعي شرط النظام (6 خانات على الاقل، ارقام وحروف، وحرف كبير
+       واحد على الاقل)، ويضع الحساب في وضع "يجب تغيير كلمة المرور عند
+       اول دخول" تلقائيا. كلمة المرور تظهر نصا هنا فقط لحظة الانشاء
+       ليرسلها المدير عبر الواتساب، ولا تخزن ابدا نصا صريحا في قاعدة
+       البيانات ولا يمكن استرجاعها لاحقا.
+       ================================================================== */
+
+    const BULK_IMPORT_DATA = [
+        { name: "ابتهاج محمد عبدالله الشمري", phone: "537559441", region: "الشرقية" },
+        { name: "أبرار خلف فرحان العنزي", phone: "536557323", region: "الشرقية" },
+        { name: "ابراهيم بن يوسف محمد الجبيره", phone: "569765745", region: "الشرقية" },
+        { name: "ابراهيم محمد ابراهيم شيخ", phone: "550181995", region: "جازان" },
+        { name: "احمد حسن حسين قرادي", phone: "533922999", region: "جازان" },
+        { name: "احمد حسن عبدالرحمن الحازمي", phone: "598557027", region: "عسير" },
+        { name: "أحمد حسن محمد ال مبارك", phone: "537343836", region: "عسير" },
+        { name: "احمد علي محمد البناي", phone: "592328983", region: "الشرقية" },
+        { name: "احمد محجوب محمد هاشم", phone: "582121551", region: "جازان" },
+        { name: "أحمد هاشم عقيل الساده", phone: "563033079", region: "الشرقية" },
+        { name: "إسحاق علي جابر العليلي المالكي", phone: "592500150", region: "جازان" },
+        { name: "أسماء محمد عبدالله الطريف", phone: "541554331", region: "الشرقية" },
+        { name: "أسماء محمد هادي ال مداوي", phone: "509410331", region: "عسير" },
+        { name: "أسيا محمد حسين العبدالله", phone: "564474543", region: "الشرقية" },
+        { name: "الجوهره الحلو خلف العنزي", phone: "554191872", region: "الشرقية" },
+        { name: "إلهام عبدالله صالح الحيكان", phone: "561655347", region: "الشرقية" },
+        { name: "الهنوف حمود ثواب الرشيدي", phone: "567783018", region: "الشرقية" },
+        { name: "امل ابراهيم معيض ال مغدي", phone: "506896176", region: "الشرقية" },
+        { name: "امل احمد ناصر الحازمي", phone: "509757807", region: "جازان" },
+        { name: "آيات سلطان العنزي", phone: "504479996", region: "الشرقية" },
+        { name: "باسم حسن محمد عسيري", phone: "532059118", region: "عسير" },
+        { name: "باسمة هليل عبدالله الحربي", phone: "564331535", region: "المدينة المنورة" },
+        { name: "بخيته محمد ظافر القحطاني", phone: "599362010", region: "عسير" },
+        { name: "جواهر عبدالعزيز محمد الغوينم", phone: "552059777", region: "الشرقية" },
+        { name: "جواهر محمد حسن مجرشي", phone: "535424337", region: "المدينة المنورة" },
+        { name: "حسن عبدالله بن عمران الجباره", phone: "557682123", region: "الشرقية" },
+        { name: "حسن علي أحمد سويكت", phone: "540933359", region: "الشرقية" },
+        { name: "حصة جمعان فهد المهشوري", phone: "540686601", region: "الشرقية" },
+        { name: "حميدة حسن راشد المحاسنة", phone: "567192882", region: "الشرقية" },
+        { name: "حميدة كاظم عبدالله بن درويش", phone: "568292865", region: "الشرقية" },
+        { name: "حور احمد حسن عسيري", phone: "537566998", region: "عسير" },
+        { name: "حيدر حمزه عبدالكريم آل درويش", phone: "532177888", region: "الشرقية" },
+        { name: "خالد سعود المطيري", phone: "559642510", region: "المدينة المنورة" },
+        { name: "خالد عبدالله علي الراشد", phone: "541770023", region: "الشرقية" },
+        { name: "خليل هادي علي عسيري", phone: "505910274", region: "عسير" },
+        { name: "ذهب محمد عوض حنان", phone: "501230069", region: "جازان" },
+        { name: "رحمه عبّده جابر عسيري", phone: "502134301", region: "عسير" },
+        { name: "رسميه الاسمر البني البجايده العنزي", phone: "540230556", region: "الشرقية" },
+        { name: "رغيد محمد حمزه نحاس", phone: "543762069", region: "المدينة المنورة" },
+        { name: "رقيا حمد محمد صميلي", phone: "557075504", region: "جازان" },
+        { name: "رهام لطيف صالح الظفيري", phone: "531190371", region: "الشرقية" },
+        { name: "روان شداد فرحان العنزي", phone: "550343880", region: "الشرقية" },
+        { name: "ريناد حامد حميد المخلفي", phone: "568068487", region: "المدينة المنورة" },
+        { name: "زهراء احمد صالح اليريمي", phone: "550383484", region: "عسير" },
+        { name: "زهراء أحمد يحي النعمي", phone: "552721819", region: "جازان" },
+        { name: "زهرة محمد علي ال حيان", phone: "506945412", region: "الشرقية" },
+        { name: "زياد علي سلطان الخميسي", phone: "530531112", region: "جازان" },
+        { name: "سارة عيظه سلمان المعيني", phone: "552543669", region: "جازان" },
+        { name: "ساره عايض محماس العتيبي", phone: "558161068", region: "الشرقية" },
+        { name: "سعد عامر عبدالله العامر", phone: "548058911", region: "الشرقية" },
+        { name: "شهد سعيد عبدالله الشهراني", phone: "500235984", region: "عسير" },
+        { name: "شيخه عبدالله عبدالرحمن الشهري", phone: "558762558", region: "عسير" },
+        { name: "صالح زيد صياح العنزي", phone: "533259508", region: "الشرقية" },
+        { name: "طلال احمد الشمري", phone: "536564382", region: "الشرقية" },
+        { name: "عائشه دايل محمد القرني", phone: "508311443", region: "عسير" },
+        { name: "عباس عبدالله مكي الحماده", phone: "547520638", region: "الشرقية" },
+        { name: "عبد العزيز ناصر عبد الرحمن ال حديل", phone: "552938893", region: "عسير" },
+        { name: "عبدالرحمن ابراهيم محمد عسيري", phone: "565626772", region: "عسير" },
+        { name: "عبدالرحمن بن عبدالمحسن بن عبدالرحمن النعيم", phone: "533237996", region: "الشرقية" },
+        { name: "عبدالرحمن عبدالله ضيف الله كريري", phone: "580831935", region: "جازان" },
+        { name: "عبدالرحمن محمد سعيد الريا", phone: "533413346", region: "الشرقية" },
+        { name: "عبدالعزيز عبدالرحمن سلمان الناجم", phone: "501770577", region: "الشرقية" },
+        { name: "عبدالله بن رجاء بن محمد آل ظافر", phone: "594860696", region: "الشرقية" },
+        { name: "عبدالله بندر مبارك الثويني", phone: "500999911", region: "الشرقية" },
+        { name: "عبدالله جابر عائض آل دحان الشهراني", phone: "504311862", region: "جازان" },
+        { name: "عبدالله علي يحيى علي", phone: "501180089", region: "عسير" },
+        { name: "عبدالله غازي كسار الشمري", phone: "563000867", region: "الشرقية" },
+        { name: "عبدالله مصطفى مبارك السليم", phone: "561288474", region: "الشرقية" },
+        { name: "عبدالله يحيى عبدالله نجمي", phone: "557760792", region: "جازان" },
+        { name: "عبدالمحسن عبدالله محمد ال بريد عسيري", phone: "509859416", region: "عسير" },
+        { name: "عبدالوهاب عبدالله مسفر الشهراني", phone: "558810918", region: "عسير" },
+        { name: "عبده يحيى نافع الصبيحي", phone: "500050173", region: "عسير" },
+        { name: "عزيزه محمد موسى شراحيلي", phone: "509784390", region: "جازان" },
+        { name: "عفاف عبدالعزيز عبدالله الخوفي", phone: "546111675", region: "الشرقية" },
+        { name: "علي احمد علي اسياقات", phone: "563078925", region: "الشرقية" },
+        { name: "علي عامر زايد عسيري", phone: "501205893", region: "عسير" },
+        { name: "علي محمد حمد القحطاني", phone: "551616519", region: "الشرقية" },
+        { name: "عمر جبران حسن فرحان", phone: "592655356", region: "جازان" },
+        { name: "فاطمه هيازع غازي الشهري", phone: "501546719", region: "عسير" },
+        { name: "فهد حمود بن سعد المهدوي العوفي", phone: "545433915", region: "المدينة المنورة" },
+        { name: "فهد محمد أحمد خبراني", phone: "553026598", region: "جازان" },
+        { name: "فيصل طراد حبيب الشمري", phone: "533697769", region: "الشرقية" },
+        { name: "فيصل ماجد سليمان الفيفي", phone: "509032519", region: "جازان" },
+        { name: "لطيفة عواض ساير القرشي", phone: "502090239", region: "الشرقية" },
+        { name: "لطيفه فيصل سعد الخوفي", phone: "569210507", region: "الشرقية" },
+        { name: "ليلة يحيى حسن العليلي", phone: "594966084", region: "جازان" },
+        { name: "ليلى فتح الدين ناصر الليل", phone: "508912516", region: "الشرقية" },
+        { name: "محمد احمد علي حنتول", phone: "553123513", region: "جازان" },
+        { name: "محمد عبدالعزيز محمد المرشد", phone: "556722256", region: "الشرقية" },
+        { name: "محمد عرار حسين فلقي", phone: "534628949", region: "عسير" },
+        { name: "محمد قاسم محمد والد", phone: "562817691", region: "جازان" },
+        { name: "مروج احمد محمد بخاري", phone: "565441406", region: "المدينة المنورة" },
+        { name: "مريم خالد سلطان العواد", phone: "566468013", region: "الشرقية" },
+        { name: "مريم علي جاسم العبود", phone: "566811141", region: "الشرقية" },
+        { name: "مشاري فرحان عاشق العنزي", phone: "509283544", region: "الشرقية" },
+        { name: "مشاعل محمد عبدالله الشهري", phone: "595026911", region: "الشرقية" },
+        { name: "مضاوي مرعي حيدر القحطاني", phone: "544225733", region: "الشرقية" },
+        { name: "مفرح حسن سليمان المالكي", phone: "534463970", region: "جازان" },
+        { name: "منيره عبد العزيز محمد المرشد", phone: "536001158", region: "الشرقية" },
+        { name: "مها أحمد مبارك البيطار", phone: "568223690", region: "الشرقية" },
+        { name: "مها محمد جده دبش", phone: "507691042", region: "جازان" },
+        { name: "ميثاء عبد الرحمن السهلي", phone: "501890089", region: "الشرقية" },
+        { name: "ناصر محمد ناصر الحبابي", phone: "553994934", region: "عسير" },
+        { name: "ندى عبدالله عمران الحيدري", phone: "580580110", region: "المدينة المنورة" },
+        { name: "نهى عمر عتيق الصبحي", phone: "553732558", region: "المدينة المنورة" },
+        { name: "نواف صطم عياد الشمري", phone: "552529938", region: "الشرقية" },
+        { name: "نوال مسفر مهدي ال كناد القحطاني", phone: "557773809", region: "عسير" },
+        { name: "نور هلال محارب العتيبي", phone: "538515556", region: "الشرقية" },
+        { name: "نورة ماجد حسين اليامي", phone: "508402696", region: "الشرقية" },
+        { name: "نوره علي راشد المري", phone: "540679666", region: "الشرقية" },
+        { name: "نوف ردن ثامر الوجعان", phone: "533462014", region: "الشرقية" },
+        { name: "نوير ماشع محمد البديري", phone: "509281996", region: "الشرقية" },
+        { name: "وليد احمد عبدالله عسيري", phone: "509201748", region: "عسير" },
+        { name: "يحي محمد جابر القحطاني", phone: "502576275", region: "عسير" },
+        { name: "يحيى محمد غانم الحازمي", phone: "550278681", region: "عسير" },
+        { name: "يحيى مريع عيسى الحقوي", phone: "554594524", region: "جازان" }
+    ];
+
+    let bulkImportResults = [];
+
+    window.toggleBulkImportPanel = function() {
+        if (!guard('قائمة الباحثين')) return;
+        const panel = document.getElementById("bulkImportPanel");
+        if (!panel) return;
+        const opening = (panel.style.display === "none" || panel.style.display === "");
+        panel.style.display = opening ? "block" : "none";
+        if (opening) {
+            document.getElementById("bulkImportCount").textContent = BULK_IMPORT_DATA.length;
+            document.getElementById("bulkImportResultsWrap").style.display = "none";
+            document.getElementById("bulkImportResultsBody").innerHTML = "";
+            hideMsg("bulkImportError");
+            bulkImportResults = [];
+            window.scrollTo({ top: panel.offsetTop - 20, behavior: 'smooth' });
+        }
+    };
+
+    window.runBulkImportResearchers = async function() {
+        if (!(await guardLive('قائمة الباحثين'))) return;
+
+        const btn = document.getElementById("btnRunBulkImport");
+        const progressEl = document.getElementById("bulkImportProgress");
+        hideMsg("bulkImportError");
+        btn.disabled = true;
+        bulkImportResults = [];
+
+        const resultsBody = document.getElementById("bulkImportResultsBody");
+        resultsBody.innerHTML = "";
+        document.getElementById("bulkImportResultsWrap").style.display = "block";
+
+        /* اسماء مستخدمين مستخدمة حاليا، تحدث محليا اثناء الاستيراد
+           لضمان عدم تكرار اي رقم بين باحث واخر ضمن نفس الدفعة */
+        const usedIds = researchersList.map(function(r) { return r.empId; });
+
+        let done = 0, failed = 0;
+        for (let i = 0; i < BULK_IMPORT_DATA.length; i++) {
+            const item = BULK_IMPORT_DATA[i];
+            progressEl.textContent = "جاري الاستيراد: " + (i + 1) + " / " + BULK_IMPORT_DATA.length + " — " + item.name;
+
+            const username = generateUniqueId(ID_PREFIX_RESEARCHER, usedIds);
+            usedIds.push(username);
+            const tempPass = generateTempPassword();
+            const phone = normalizeSaudiPhone(item.phone);
+
+            const row = { name: item.name, username: username, tempPass: tempPass, region: item.region, phone: phone, ok: false };
+
+            try {
+                await addDoc(collection(db, "researchers"), {
+                    empName: item.name,
+                    empId: username,
+                    password: await hashPassword(tempPass),
+                    phone: phone,
+                    region: item.region,
+                    status: 'active',
+                    mustChangePassword: true,
+                    createdAt: new Date().toISOString()
+                });
+                row.ok = true;
+                done++;
+            } catch (e) {
+                row.ok = false;
+                failed++;
+            }
+
+            bulkImportResults.push(row);
+            appendBulkImportRow(row, i + 1);
+        }
+
+        progressEl.textContent = "اكتمل الاستيراد: " + done + " حساب تم انشاؤه بنجاح" + (failed ? "، وتعذر انشاء " + failed + " حساب" : "") + ".";
+        logAudit("استيراد دفعة باحثين", done + " حساب من اصل " + BULK_IMPORT_DATA.length);
+        btn.disabled = false;
+        window.loadResearchersList();
+    };
+
+    function appendBulkImportRow(row, idx) {
+        const tbody = document.getElementById("bulkImportResultsBody");
+        const tr = document.createElement("tr");
+
+        const tdM = document.createElement("td");
+        tdM.textContent = idx;
+
+        const tdName = document.createElement("td");
+        tdName.textContent = row.name;
+
+        const tdUser = document.createElement("td");
+        tdUser.textContent = row.username;
+        tdUser.style.fontWeight = "800";
+
+        const tdPass = document.createElement("td");
+        tdPass.textContent = row.ok ? row.tempPass : "—";
+        tdPass.style.direction = "ltr";
+        tdPass.style.fontWeight = "800";
+
+        const tdRegion = document.createElement("td");
+        tdRegion.textContent = row.region || "-";
+
+        const tdStatus = document.createElement("td");
+        tdStatus.innerHTML = row.ok
+            ? "<span style='color:#2e7d32;font-weight:800;'><i class='fas fa-check-circle'></i> تم</span>"
+            : "<span style='color:#c0392b;font-weight:800;'><i class='fas fa-times-circle'></i> فشل</span>";
+
+        const tdAction = document.createElement("td");
+        if (row.ok && validSaudiPhone(row.phone)) {
+            const btnWa = document.createElement("button");
+            btnWa.type = "button";
+            btnWa.className = "btn-icon-watermark icon-whatsapp btn-table btn-whatsapp-row";
+            btnWa.textContent = "واتساب";
+            btnWa.onclick = function() { sendBulkImportCredentials(row); };
+            tdAction.appendChild(btnWa);
+        } else if (row.ok) {
+            const span = document.createElement("span");
+            span.className = "no-perm-note";
+            span.textContent = "لا يوجد جوال";
+            tdAction.appendChild(span);
+        }
+
+        tr.appendChild(tdM);
+        tr.appendChild(tdName);
+        tr.appendChild(tdUser);
+        tr.appendChild(tdPass);
+        tr.appendChild(tdRegion);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdAction);
+        tbody.appendChild(tr);
+    }
+
+    /* ارسال بيانات حساب مستورد حديثا عبر الواتساب، مع كلمة المرور
+       المؤقتة الظاهرة نصا لحظة الانشاء فقط، وتنبيه بوجوب تغييرها */
+    function sendBulkImportCredentials(row) {
+        const lines = [
+            "الاسم: " + row.name,
+            "",
+            "الاسم المستخدم: " + row.username,
+            "",
+            "كلمة المرور المؤقتة: " + row.tempPass,
+            "",
+            "الصفة: " + RESEARCHER_TITLE,
+            "",
+            "مهم: يجب تغيير كلمة المرور فور تسجيل الدخول لاول مرة."
+        ];
+        const wa = String(row.phone).replace(/^\+/, "");
+        window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
+        logAudit("ارسال بيانات حساب مستورد", row.name + " (" + row.username + ")");
+    }
+
 
     /* ------------------------------------------------------------------
        ارسال بيانات الدخول لمدير عبر الواتساب (المبرمج وحده)
