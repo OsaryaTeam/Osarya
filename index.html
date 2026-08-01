@@ -792,6 +792,11 @@
 
         .loading-message { color: #4a8794; font-weight: 700; display: none; background: rgba(226, 239, 243, 0.9); backdrop-filter: blur(5px); padding: 15px; border-radius: 12px; border: 1px solid #c3dae2; text-align: center; animation: pulse 1.5s infinite; }
         body.dark-mode .loading-message { background: rgba(74, 135, 148, 0.15); color: #7fb1bc; border-color: rgba(74, 135, 148, 0.3); }
+
+        /* شريط تقدم الاستيراد الجماعي: يبين نسبة الانجاز الفعلية بدل شاشة انتظار بلا مؤشر */
+        .loading-message .progress-track { margin-top: 10px; height: 14px; border-radius: 8px; background: rgba(74, 135, 148, 0.15); overflow: hidden; }
+        .loading-message .progress-fill { height: 100%; width: 0%; border-radius: 8px; background: linear-gradient(90deg, #de8c43, #4a8794); transition: width 0.3s ease; }
+        body.dark-mode .loading-message .progress-track { background: rgba(255, 255, 255, 0.08); }
         
         .employee-info { background: linear-gradient(135deg, rgba(233, 243, 245, 0.9), rgba(255,255,255,0.7)); backdrop-filter: blur(10px); padding: 18px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #c3dae2; text-align: center; font-size: 18px; color: #4a8794; font-weight: 800; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         body.dark-mode .employee-info { background: linear-gradient(135deg, rgba(20, 35, 39, 0.8), rgba(27, 48, 53, 0.6)); border-color: rgba(74, 135, 148, 0.3); color: #7fb1bc; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
@@ -4172,7 +4177,10 @@
             </p>
 
             <div id="bulkImportSummary" class="field-hint" style="display:block;"></div>
-            <div id="bulkImportLoading" class="loading-message" style="display:none;"><i class="fas fa-spinner fa-spin"></i> جاري استيراد الباحثين، الرجاء الانتظار...</div>
+            <div id="bulkImportLoading" class="loading-message" style="display:none;">
+                <div><i class="fas fa-spinner fa-spin"></i> <span id="bulkImportProgressText">جاري استيراد الباحثين، الرجاء الانتظار...</span></div>
+                <div class="progress-track"><div id="bulkImportProgressFill" class="progress-fill"></div></div>
+            </div>
             <div id="bulkImportError" class="error-message"></div>
 
             <div class="table-container" style="margin-top: 10px;">
@@ -5800,7 +5808,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
-    import { getFirestore, collection, addDoc, getDocs, getDoc, onSnapshot, query, where, updateDoc, deleteDoc, doc, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, getDoc, onSnapshot, query, where, updateDoc, deleteDoc, doc, orderBy, limit, startAfter, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD1l2V8e7tHr1M3k5EzuLhf0b8tcaf3e90",
@@ -9610,6 +9618,51 @@
 
     let bulkImportCandidates = [];   /* من سيضاف فعليا في هذا التشغيل، بعد استبعاد المكرر */
 
+    /* ------------------------------------------------------------------
+       سبب تعليق الاستيراد الجماعي لعدة دقائق بلا اي مؤشر تقدم:
+       كانت الدالة القديمة ترسل كل باحث في طلب شبكة منفصل (addDoc) وتنتظره
+       بالتتابع قبل الانتقال للتالي. مع قائمة من مئة باحث فاكثر هذا يعني
+       مئة رحلة ذهاب وعودة الى الخادم، الواحدة تلو الاخرى، ولا توجد اي
+       رسالة تحدث المستخدم بينها. الحل هنا: تجميع الباحثين في دفعات
+       (writeBatch) بحيث ترسل عشرات الباحثين في طلب شبكة واحد بدل طلب لكل
+       واحد، مع تحديث شريط ونص التقدم بعد كل دفعة، ومهلة زمنية لكل دفعة
+       حتى لا تبقى الشاشة معلقة الى الابد اذا انقطع الاتصال منتصف الطريق.
+       ------------------------------------------------------------------ */
+    const BULK_IMPORT_BATCH_SIZE = 20;
+    const BULK_IMPORT_BATCH_TIMEOUT_MS = 25000;
+
+    function commitBatchWithTimeout(batch) {
+        return new Promise(function(resolve, reject) {
+            let finished = false;
+            const timer = setTimeout(function() {
+                if (finished) return;
+                finished = true;
+                reject(new Error("timeout"));
+            }, BULK_IMPORT_BATCH_TIMEOUT_MS);
+
+            batch.commit().then(function() {
+                if (finished) return;
+                finished = true;
+                clearTimeout(timer);
+                resolve();
+            }).catch(function(e) {
+                if (finished) return;
+                finished = true;
+                clearTimeout(timer);
+                reject(e);
+            });
+        });
+    }
+
+    /* تحديث نص وشريط التقدم اثناء الاستيراد الجماعي */
+    function updateBulkImportProgress(done, total) {
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        const txt = document.getElementById("bulkImportProgressText");
+        const fill = document.getElementById("bulkImportProgressFill");
+        if (txt) txt.textContent = "جاري الاستيراد: " + done + " من " + total + " (" + pct + "%)";
+        if (fill) fill.style.width = pct + "%";
+    }
+
     window.toggleBulkImportSection = function() {
         if (!guard('قائمة الباحثين')) return;
         const section = document.getElementById("bulkImportSection");
@@ -9689,17 +9742,27 @@
         document.getElementById("bulkImportLoading").style.display = "block";
         document.getElementById("btnRunBulkImport").disabled = true;
 
+        const total = bulkImportCandidates.length;
+        updateBulkImportProgress(0, total);
+
         const usedIds = researchersList.map(function(r) { return r.empId; });
         const results = [];
 
-        for (let i = 0; i < bulkImportCandidates.length; i++) {
-            const cand = bulkImportCandidates[i];
-            try {
+        for (let start = 0; start < total; start += BULK_IMPORT_BATCH_SIZE) {
+            const chunk = bulkImportCandidates.slice(start, start + BULK_IMPORT_BATCH_SIZE);
+            const batch = writeBatch(db);
+            const chunkInfo = [];
+
+            /* نجهز بيانات كل باحث في الدفعة (اسم مستخدم فريد وكلمة مرور
+               مؤقتة مشفرة)، ثم نرسل الدفعة كاملة في طلب شبكة واحد */
+            for (let i = 0; i < chunk.length; i++) {
+                const cand = chunk[i];
                 const empId = generateUniqueId(ID_PREFIX_RESEARCHER, usedIds);
                 usedIds.push(empId);
                 const tempPass = generateTempPassword();
+                const ref = doc(collection(db, "researchers"));
 
-                await addDoc(collection(db, "researchers"), {
+                batch.set(ref, {
                     empName: cand.name,
                     empId: empId,
                     password: await hashPassword(tempPass),
@@ -9710,10 +9773,16 @@
                     createdAt: new Date().toISOString()
                 });
 
-                results.push({ name: cand.name, empId: empId, tempPass: tempPass, phone: cand.phone });
+                chunkInfo.push({ name: cand.name, empId: empId, tempPass: tempPass, phone: cand.phone });
+            }
+
+            try {
+                await commitBatchWithTimeout(batch);
+                results.push.apply(results, chunkInfo);
+                updateBulkImportProgress(results.length, total);
             } catch (e) {
-                showMsg("bulkImportError", "<i class='fas fa-wifi'></i> توقف الاستيراد عند الباحث \"" + esc(cand.name) +
-                    "\" بسبب خطأ في الاتصال. من تم استيراده بنجاح مسجل بالفعل ولن يتكرر، " +
+                showMsg("bulkImportError", "<i class='fas fa-wifi'></i> توقف الاستيراد بعد " + results.length + " من " + total +
+                    " باحث بسبب خطأ في الاتصال. من تم استيراده بنجاح مسجل بالفعل ولن يتكرر، " +
                     "افتح الاستيراد الجماعي مرة اخرى لاكمال الباقي.");
                 break;
             }
