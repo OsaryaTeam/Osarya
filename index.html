@@ -4129,10 +4129,13 @@
         <div class="form-grid">
             <!-- الترتيب المعتمد: الاسم المستخدم، ثم رقم الزيارة، ثم نطاق التواريخ -->
             <div class="input-group full-width">
-                <label for="searchEmpId">الاسم المستخدم للباحث (اختياري):</label>
-                <div class="input-with-icon">
-                    <input type="text" id="searchEmpId" placeholder="ادخل الاسم المستخدم للباحث">
-                    <i class="fas fa-id-badge right-icon"></i>
+                <label for="searchEmpId">اسم الباحث (اختياري):</label>
+                <select id="searchEmpId" class="year-select" style="width:100%;">
+                    <option value="">-- كل الباحثين --</option>
+                </select>
+                <div class="field-hint" style="display:block;">
+                    <i class="fas fa-lightbulb"></i>
+                    تعرض القائمة الباحثين الذين على رأس العمل. اتركها على "كل الباحثين" للاستعلام الشامل.
                 </div>
             </div>
 
@@ -8092,7 +8095,7 @@
         /* مزامنة قبل الفتح حتى تظهر الشاشة بحالة الصلاحيات الحالية */
         await window.syncPermissions(false);
 
-        if (action === 'managerControlScreen') window.switchScreen('managerControlScreen');
+        if (action === 'managerControlScreen') { window.switchScreen('managerControlScreen'); loadSearchResearchers(); }
         else if (action === 'managerQueryScreen') window.switchScreen('managerQueryScreen');
         else if (action === 'editVisits') window.loadVisitsForEditing();
         else if (action === 'loadResearchersList') window.loadResearchersList();
@@ -8673,6 +8676,46 @@
     function isIndexError(err) {
         const m = (err && (err.message || "")) + "";
         return (err && err.code === "failed-precondition") || m.indexOf("index") !== -1;
+    }
+
+    /* ------------------------------------------------------------------
+       تعبئة قائمة الباحثين في شاشة الاستعلام
+       ------------------------------------------------------------------
+       القيمة المخزنة هي الاسم المستخدم لان الزيارات تربط به لا بالاسم،
+       والمعروض هو الاسم ليسهل على المدير اختيار الباحث دون حفظ ارقام.
+
+       تعرض من هم على رأس العمل فقط. ولو كان في السجلات زيارات لباحث
+       لم يعد على رأس العمل، يبقى الاستعلام الشامل (كل الباحثين) قادرا
+       على اظهارها.
+       ------------------------------------------------------------------ */
+    async function loadSearchResearchers() {
+        const sel = document.getElementById("searchEmpId");
+        if (!sel) return;
+
+        const prev = sel.value;   /* نحافظ على اختيار المدير ان اعاد الفتح */
+
+        try {
+            const snap = await getDocs(collection(db, "researchers"));
+            const list = [];
+            snap.forEach(function(d) {
+                const r = d.data();
+                if (!r.status || r.status === "active") list.push(r);
+            });
+            list.sort(function(a, b) { return String(a.empName).localeCompare(String(b.empName), 'ar'); });
+
+            sel.innerHTML = '<option value="">-- كل الباحثين --</option>';
+            list.forEach(function(r) {
+                const o = document.createElement("option");
+                o.value = r.empId;
+                o.textContent = r.empName;
+                sel.appendChild(o);
+            });
+
+            if (prev) sel.value = prev;
+        } catch (e) {
+            /* فشل التحميل لا يعطل الشاشة: يبقى خيار الاستعلام الشامل */
+            sel.innerHTML = '<option value="">-- كل الباحثين --</option>';
+        }
     }
 
     window.searchVisits = async function() {
@@ -10606,10 +10649,164 @@
        شكل الصفحة عند الطباعة معرف في قسم @media print ضمن التنسيقات،
        وهو يخفي الازرار والشريط العلوي ويبقي الترويسة والجدول فقط.
        ------------------------------------------------------------------ */
+    /* عدد الزيارات في كل صفحة. عشرون تملأ الصفحة الافقية دون ازدحام */
+    const PDF_ROWS_PER_PAGE = 20;
+
     window.exportToPDF = function() {
         if (!isManager()) return;
-        logAudit("تصدير بيانات", "تصدير PDF لعدد " + fetchedVisits.length + " سجل");
-        window.print();
+        if (!fetchedVisits.length) { toast("لا توجد نتائج لتصديرها.", "warn"); return; }
+
+        const win = window.open("", "_blank");
+        if (!win) { toast("منع المتصفح فتح نافذة الطباعة، اسمح بالنوافذ المنبثقة.", "warn"); return; }
+
+        /* ------------------------------------------------------------------
+           لماذا نافذة مستقلة لا طباعة الصفحة نفسها؟
+           ------------------------------------------------------------------
+           طباعة الصفحة تحتاج اخفاء عشرات العناصر بقواعد @media print،
+           وكل شاشة جديدة تضاف قد تفلت من الاخفاء فتشوه المخرجات. وبناء
+           مستند مستقل يعطي تحكما كاملا في الشكل: اتجاه الصفحة، عدد
+           الصفوف، تكرار الترويسة، وفواصل الصفحات.
+
+           والناتج نص حقيقي لا صورة، فيمكن البحث فيه ونسخه، ويحفظ بصيغة
+           PDF من نافذة الطباعة نفسها.
+           ------------------------------------------------------------------ */
+
+        /* تقسيم الزيارات الى صفحات */
+        const pages = [];
+        for (let i = 0; i < fetchedVisits.length; i += PDF_ROWS_PER_PAGE) {
+            pages.push(fetchedVisits.slice(i, i + PDF_ROWS_PER_PAGE));
+        }
+
+        /* وصف نطاق الاستعلام ليظهر في الترويسة */
+        const p = lastSearchParams || {};
+        const scope = [];
+        if (p.empId) {
+            const first = fetchedVisits[0];
+            scope.push("الباحث: " + ((first && first.empName) || p.empId) + " (" + p.empId + ")");
+        } else {
+            scope.push("كل الباحثين");
+        }
+        if (p.visitId) scope.push("رقم الزيارة: " + p.visitId);
+        else if (p.start || p.end) {
+            scope.push("الفترة: " + (p.start ? fmtDate(p.start) : "البداية") +
+                       " الى " + (p.end ? fmtDate(p.end) : "اليوم"));
+        }
+
+        const esc2 = function(s) {
+            return String(s == null ? "" : s)
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        };
+
+        /* بناء صفحات المستند */
+        let body = "";
+        pages.forEach(function(rows, pi) {
+            body += '<div class="page">';
+            body += '<div class="doc-head">' +
+                        '<div class="doc-title">تقرير الزيارات الميدانية</div>' +
+                        '<div class="doc-sub">ادارة فريق الباحث الاجتماعي - جمعية التنمية الاسرية بالاحساء</div>' +
+                        '<div class="doc-scope">' + esc2(scope.join("   |   ")) + '</div>' +
+                    '</div>';
+
+            body += '<table><thead><tr>' +
+                        '<th class="c-num">م</th>' +
+                        '<th class="c-name">اسم الباحث</th>' +
+                        '<th class="c-user">الاسم المستخدم</th>' +
+                        '<th class="c-vid">رقم الزيارة</th>' +
+                        '<th class="c-type">حالة الزيارة</th>' +
+                        '<th class="c-date">تاريخ التنفيذ</th>' +
+                        '<th class="c-reg">تاريخ التوثيق</th>' +
+                        '<th class="c-note">التفاصيل</th>' +
+                    '</tr></thead><tbody>';
+
+            rows.forEach(function(v, ri) {
+                const t = v.visitType || "done";
+                const cfg = VISIT_TYPES[t] || VISIT_TYPES.done;
+
+                /* التفاصيل تجمع سبب النوع والباحث المحول اليه ان وجد */
+                let extra = v.note || "";
+                if (v.transferToName) {
+                    extra = "حولت الى: " + v.transferToName + (extra ? " — " + extra : "");
+                }
+
+                body += '<tr>' +
+                    '<td class="c-num">' + (pi * PDF_ROWS_PER_PAGE + ri + 1) + '</td>' +
+                    '<td class="c-name">' + esc2(v.empName) + '</td>' +
+                    '<td class="c-user">' + esc2(v.empId) + '</td>' +
+                    '<td class="c-vid">' + esc2(v.visitId) + '</td>' +
+                    '<td class="c-type"><span class="chip ' + cfg.cls + '">' + esc2(cfg.label) + '</span></td>' +
+                    '<td class="c-date">' + esc2(fmtDate(v.execDate)) + '</td>' +
+                    '<td class="c-reg">' + esc2(window.formatDateTimeToEnglish(v.regDate)) + '</td>' +
+                    '<td class="c-note">' + esc2(extra || "-") + '</td>' +
+                '</tr>';
+            });
+
+            body += '</tbody></table>';
+            body += '<div class="doc-foot">' +
+                        '<span>صفحة ' + (pi + 1) + ' من ' + pages.length + '</span>' +
+                        '<span>اجمالي الزيارات: ' + fetchedVisits.length + '</span>' +
+                        '<span>تاريخ الاصدار: ' + new Date().toLocaleDateString("ar-SA-u-nu-latn") + '</span>' +
+                    '</div>';
+            body += '</div>';
+        });
+
+        win.document.write(
+            '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
+            '<title>تقرير الزيارات الميدانية</title>' +
+            '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">' +
+            '<style>' +
+            /* الصفحة افقية مع هوامش مريحة */
+            '@page { size: A4 landscape; margin: 10mm; }' +
+            '* { box-sizing: border-box; }' +
+            'body { font-family: Tajawal, Tahoma, sans-serif; margin: 0; color: #000; background: #fff; }' +
+
+            /* كل جدول في صفحة مستقلة */
+            '.page { page-break-after: always; }' +
+            '.page:last-child { page-break-after: auto; }' +
+
+            '.doc-head { text-align: center; margin-bottom: 10px; border-bottom: 3px solid #4a8794; padding-bottom: 8px; }' +
+            '.doc-title { font-size: 20px; font-weight: 800; color: #2c5f6a; }' +
+            '.doc-sub { font-size: 12px; font-weight: 600; color: #555; margin-top: 3px; }' +
+            '.doc-scope { font-size: 12px; font-weight: 700; color: #a5601f; margin-top: 6px; }' +
+
+            'table { width: 100%; border-collapse: collapse; table-layout: fixed; }' +
+            'th, td { border: 1px solid #666; padding: 6px 5px; font-size: 11px; text-align: center; vertical-align: middle; word-wrap: break-word; }' +
+            'th { background: #4a8794 !important; color: #fff !important; font-weight: 800; font-size: 11.5px; ' +
+                 '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+            'tbody tr:nth-child(even) td { background: #f4f7f8 !important; ' +
+                 '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+
+            /* عرض الاعمدة: مجموعها 100 بالمئة */
+            '.c-num { width: 4%; font-weight: 800; }' +
+            '.c-name { width: 17%; }' +
+            '.c-user { width: 10%; }' +
+            '.c-vid { width: 9%; font-weight: 700; }' +
+            '.c-type { width: 12%; }' +
+            '.c-date { width: 11%; }' +
+            '.c-reg { width: 15%; font-size: 10px; }' +
+            '.c-note { width: 22%; text-align: right; font-size: 10px; }' +
+
+            /* شارات حالة الزيارة بالوانها */
+            '.chip { display: inline-block; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 800; color: #fff; ' +
+                    '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+            '.vt-done { background: #1e7a50 !important; }' +
+            '.vt-transfer { background: #2a6a9c !important; }' +
+            '.vt-failed { background: #a8402f !important; }' +
+            '.vt-outside { background: #8a4a9e !important; }' +
+            '.vt-other { background: #5a6a77 !important; }' +
+
+            '.doc-foot { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 6px; ' +
+                        'border-top: 1px solid #999; font-size: 10.5px; font-weight: 600; color: #555; }' +
+            '</style></head><body>' + body + '</body></html>'
+        );
+
+        win.document.close();
+        win.focus();
+
+        logAudit("تصدير بيانات", "تصدير PDF لعدد " + fetchedVisits.length + " سجل في " + pages.length + " صفحة");
+
+        /* مهلة قصيرة ليكتمل تحميل الخط قبل فتح نافذة الطباعة */
+        setTimeout(function() { win.print(); }, 700);
     };
 
     /* ==================================================================
