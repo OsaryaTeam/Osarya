@@ -561,6 +561,72 @@
            الغرض ان يميز المستخدم وظيفة الزر من لونه قبل قراءته.
            ================================================================== */
 
+        /* ==================================================================
+           (جديد) انواع الزيارات
+           ------------------------------------------------------------------
+           لكل نوع لونه، ويستخدم في ازرار الاختيار وفي شارة النوع داخل
+           النموذج وفي جداول الادارة، فيتعرف المستخدم على النوع من لونه.
+           ================================================================== */
+        .btn-visit-done {
+            background: linear-gradient(135deg, #2e9e6b, #1e7a50) !important;
+            color: #fff !important;
+            box-shadow: 0 10px 25px rgba(30, 122, 80, 0.3) !important;
+        }
+        .btn-visit-transfer {
+            background: linear-gradient(135deg, #3d8bc4, #2a6a9c) !important;
+            color: #fff !important;
+            box-shadow: 0 10px 25px rgba(42, 106, 156, 0.3) !important;
+        }
+        .btn-visit-failed {
+            background: linear-gradient(135deg, #d15a4a, #a8402f) !important;
+            color: #fff !important;
+            box-shadow: 0 10px 25px rgba(168, 64, 47, 0.3) !important;
+        }
+        .btn-visit-outside {
+            background: linear-gradient(135deg, #b06fc4, #8a4a9e) !important;
+            color: #fff !important;
+            box-shadow: 0 10px 25px rgba(138, 74, 158, 0.3) !important;
+        }
+        .btn-visit-other {
+            background: linear-gradient(135deg, #7a8a99, #5a6a77) !important;
+            color: #fff !important;
+            box-shadow: 0 10px 25px rgba(90, 106, 119, 0.3) !important;
+        }
+
+        /* شارة النوع اعلى نموذج التوثيق */
+        .visit-type-banner {
+            margin-top: 18px;
+            padding: 13px 18px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 16px;
+            text-align: center;
+            color: #fff;
+        }
+        .visit-type-banner.vt-done     { background: linear-gradient(135deg, #2e9e6b, #1e7a50); }
+        .visit-type-banner.vt-transfer { background: linear-gradient(135deg, #3d8bc4, #2a6a9c); }
+        .visit-type-banner.vt-failed   { background: linear-gradient(135deg, #d15a4a, #a8402f); }
+        .visit-type-banner.vt-outside  { background: linear-gradient(135deg, #b06fc4, #8a4a9e); }
+        .visit-type-banner.vt-other    { background: linear-gradient(135deg, #7a8a99, #5a6a77); }
+
+        /* شارة صغيرة داخل الجداول */
+        .visit-type-chip {
+            display: inline-block;
+            padding: 5px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+            color: #fff;
+        }
+        .visit-type-chip.vt-done     { background: #1e7a50; }
+        .visit-type-chip.vt-transfer { background: #2a6a9c; }
+        .visit-type-chip.vt-failed   { background: #a8402f; }
+        .visit-type-chip.vt-outside  { background: #8a4a9e; }
+        .visit-type-chip.vt-other    { background: #5a6a77; }
+
+        .icon-map-pin::before { content: "\f3c5"; }
+
         /* --- إنشاء تنبيه: اصفر كهرماني --- */
         .btn-notice-amber {
             background: linear-gradient(135deg, #f0a52e, #d68910) !important;
@@ -3568,7 +3634,7 @@
         <h2>بوابة الباحث</h2>
 
         <div class="manager-dashboard-grid researcher-dashboard-grid">
-            <button class="btn-researcher btn-icon-watermark icon-register" onclick="switchScreen('researcherScreen')">توثيق زيارة</button>
+            <button class="btn-researcher btn-icon-watermark icon-register" onclick="switchScreen('visitTypeScreen')">توثيق زيارة</button>
             <button class="btn-researcher btn-icon-watermark icon-search" onclick="switchScreen('researcherQueryScreen')">الاستعلام عن زيارة</button>
             <button class="btn-researcher btn-icon-watermark icon-my-visits" onclick="openMyVisits()">زياراتي</button>
             <button class="btn-researcher btn-icon-watermark icon-flag" onclick="openTechReports()">الإبلاغ عن مشاكل تقنية</button>
@@ -3581,20 +3647,62 @@
         </div>
     </div>
 
-    <div id="researcherScreen" class="container screen">
+    <!-- ==============================================================
+         شاشة الباحث: اختيار نوع الزيارة
+         --------------------------------------------------------------
+         خمسة انواع، لكل منها حقوله الخاصة. النوع الاول وحده يتطلب
+         تحديد الموقع، لان اثبات التواجد يخص الزيارة المنفذة فعلا،
+         اما البقية فلم تنفذ في موقعها اصلا.
+         ============================================================== -->
+    <div id="visitTypeScreen" class="container screen">
         <div style="text-align: left; margin-bottom: 10px;">
             <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
         </div>
         <h2>توثيق زيارة</h2>
 
-        <!-- تنبيه مسبق: يقلل مفاجأة رفض التوثيق بسبب الموقع -->
-        <div class="rule-note">
+        <p style="text-align:center; color:#6c757d; font-size:15px; line-height:1.9;">
+            اختر نوع الزيارة التي تريد توثيقها.
+        </p>
+
+        <button class="btn-visit-done btn-icon-watermark icon-register" onclick="openVisitForm('done')">المنفذة</button>
+        <button class="btn-visit-transfer btn-icon-watermark icon-exchange" onclick="openVisitForm('transferred')">المحولة</button>
+        <button class="btn-visit-failed btn-icon-watermark icon-times" onclick="openVisitForm('failed')">التعذر</button>
+        <button class="btn-visit-outside btn-icon-watermark icon-map-pin" onclick="openVisitForm('outside')">خارج النطاق</button>
+        <button class="btn-visit-other btn-icon-watermark icon-list" onclick="openVisitForm('other')">أخرى</button>
+
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
+        </div>
+    </div>
+
+    <!-- ==============================================================
+         شاشة الباحث: نموذج توثيق الزيارة
+         --------------------------------------------------------------
+         شاشة واحدة تخدم الانواع الخمسة، تظهر الحقول الخاصة بكل نوع
+         وتخفي ما لا يخصه. الاسم والاسم المستخدم يؤخذان من الجلسة ولا
+         يعدلان، فلا يمكن توثيق زيارة باسم باحث اخر.
+         ============================================================== -->
+    <div id="researcherScreen" class="container screen">
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('visitTypeScreen')">العودة</button>
+        </div>
+        <h2 id="visitFormTitle">توثيق زيارة</h2>
+
+        <div id="visitTypeBadge" class="visit-type-banner"></div>
+
+        <!-- تنبيه الموقع: يظهر للزيارة المنفذة وحدها -->
+        <div id="visitGeoNote" class="rule-note" style="display:none;">
             <i class="fas fa-location-crosshairs"></i>
             يسجل موقعك تلقائيا مع الزيارة لاثبات تواجدك في موقعها وقت تنفيذها.
             <strong>تأكد من تفعيل خدمة الموقع في جهازك والسماح للموقع باستخدامها</strong>،
-            فلا يمكن توثيق اي زيارة بدون تحديد الموقع.
+            فلا يمكن توثيق زيارة منفذة بدون تحديد الموقع.
         </div>
-        
+
+        <div class="rule-note">
+            <i class="fas fa-calendar-day"></i>
+            يسمح بتوثيق زيارات <strong>اليوم</strong> و<strong>الامس</strong> فقط.
+        </div>
+
         <div class="form-grid">
             <div class="input-group">
                 <label for="empName">اسم الباحث:</label>
@@ -3627,6 +3735,18 @@
                     <i class="fas fa-calendar-alt right-icon"></i>
                 </div>
             </div>
+
+            <!-- خاص بالمحولة -->
+            <div class="input-group full-width" id="visitTransferToGroup" style="display:none;">
+                <label for="visitTransferTo">الباحث الذي تم تحويل الزيارة له:</label>
+                <select id="visitTransferTo" class="year-select" style="width:100%;"></select>
+            </div>
+
+            <!-- خانة نصية يتغير عنوانها بحسب النوع -->
+            <div class="input-group full-width" id="visitNoteGroup" style="display:none;">
+                <label for="visitNote" id="visitNoteLabel">التفاصيل:</label>
+                <textarea id="visitNote" class="leave-notes" rows="4" placeholder="اكتب التفاصيل هنا..."></textarea>
+            </div>
         </div>
 
         <div id="researcherLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري الاتصال بالسحابة...</div>
@@ -3635,7 +3755,7 @@
 
         <div class="btn-group">
             <button id="btnRegister" class="btn-researcher btn-icon-watermark icon-save" onclick="registerVisit()">وثق الزيارة الان</button>
-            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('visitTypeScreen')">العودة</button>
         </div>
     </div>
 
@@ -5180,29 +5300,30 @@
                 <span class="dr-auto-label">عدد الزيارات المنفذة</span>
                 <span class="dr-auto-value dr-auto-num" id="drExecuted">0</span>
             </div>
+            <div class="dr-auto-row">
+                <span class="dr-auto-label">عدد الزيارات المتعذرة</span>
+                <span class="dr-auto-value dr-auto-num" id="drAuto_failed">0</span>
+            </div>
+            <div class="dr-auto-row">
+                <span class="dr-auto-label">عدد الزيارات المحولة</span>
+                <span class="dr-auto-value dr-auto-num" id="drAuto_transferred">0</span>
+            </div>
+            <div class="dr-auto-row">
+                <span class="dr-auto-label">عدد الزيارات خارج النطاق</span>
+                <span class="dr-auto-value dr-auto-num" id="drAuto_outOfScope">0</span>
+            </div>
             <div class="dr-auto-note">
                 <i class="fas fa-lock"></i>
-                عدد الزيارات المنفذة يحسب تلقائيا من الزيارات التي وثقتها بتاريخ اليوم، ولا يمكن تعديله يدويا.
+                هذه الاعداد تحسب تلقائيا من الزيارات التي وثقتها بتاريخ اليوم بحسب نوع كل زيارة،
+                ولا يمكن تعديلها يدويا فهي مطابقة لسجلك الفعلي.
             </div>
         </div>
 
         <!-- القوائم المنسدلة -->
         <div class="form-grid" style="margin-top: 22px;">
             <div class="input-group">
-                <label for="dr_failed">عدد الزيارات المتعذرة:</label>
-                <select id="dr_failed" class="year-select" style="width:100%;" onchange="renderDailyPreview()"></select>
-            </div>
-            <div class="input-group">
                 <label for="dr_remaining">عدد المتبقي في السلة من إسناد اليوم:</label>
                 <select id="dr_remaining" class="year-select" style="width:100%;" onchange="renderDailyPreview()"></select>
-            </div>
-            <div class="input-group">
-                <label for="dr_transferred">عدد الزيارات المحولة:</label>
-                <select id="dr_transferred" class="year-select" style="width:100%;" onchange="renderDailyPreview()"></select>
-            </div>
-            <div class="input-group">
-                <label for="dr_outOfScope">عدد الزيارات خارج النطاق:</label>
-                <select id="dr_outOfScope" class="year-select" style="width:100%;" onchange="renderDailyPreview()"></select>
             </div>
             <div class="input-group">
                 <label for="dr_technical">عدد المشاكل التقنية:</label>
@@ -6499,6 +6620,26 @@
        عدم تسجيله. الزيارات القديمة السابقة لهذه الميزة ليس فيها حقل
        موقع اصلا، فتعرض "لم يسجل" بلا خطأ.
        ------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------
+       شارة نوع الزيارة
+       ------------------------------------------------------------------
+       الزيارات القديمة السابقة للتقسيم بلا حقل نوع، وتعامل كمنفذة
+       لانها كانت النوع الوحيد وقت تسجيلها.
+       ------------------------------------------------------------------ */
+    function visitTypeChip(v) {
+        const t = (v && v.visitType) || "done";
+        const cfg = VISIT_TYPES[t] || VISIT_TYPES.done;
+        const span = document.createElement("span");
+        span.className = "visit-type-chip " + cfg.cls;
+        span.textContent = cfg.label;
+        return span;
+    }
+
+    function visitTypeLabel(v) {
+        const t = (v && v.visitType) || "done";
+        return (VISIT_TYPES[t] || VISIT_TYPES.done).label;
+    }
+
     function visitLocationHtml(v) {
         const loc = v && v.location;
         if (!loc || !loc.status) return '<span style="color:#8a9a9d;">لم يسجل</span>';
@@ -6518,6 +6659,7 @@
         if (!loc || !loc.status) return "لم يسجل";
         const map = {
             ok:          "تم تحديده",
+            not_required: "لا يتطلب تحديد موقع",
             denied:      "رفض الباحث اذن الموقع",
             unavailable: "تعذر تحديد الموقع",
             timeout:     "انتهت مهلة تحديد الموقع",
@@ -7578,7 +7720,7 @@
         managerPortal: 'manager', adminPermissionsScreen: 'manager', managerControlScreen: 'manager',
         managerQueryScreen: 'manager', researchersListScreen: 'manager', editVisitsScreen: 'manager',
         resultsScreen: 'manager',
-        researcherPortal: 'researcher', researcherScreen: 'researcher', researcherQueryScreen: 'researcher',
+        researcherPortal: 'researcher', researcherScreen: 'researcher', visitTypeScreen: 'researcher', researcherQueryScreen: 'researcher',
         /* شاشات نظام الاجازات */
         leaveManageScreen: 'manager',
         leaveRequestScreen: 'researcher', leaveHistoryScreen: 'researcher', sickLeaveScreen: 'researcher',
@@ -7969,6 +8111,174 @@
        (13) توثيق الزيارة
        ================================================================== */
 
+    /* ==================================================================
+       انواع الزيارات
+       ==================================================================
+       خمسة انواع لكل منها حقوله ومتطلباته:
+
+         done        : منفذة فعلا   -> يتطلب تحديد الموقع بدقة 15 مترا
+         transferred : محولة لباحث اخر -> يتطلب اختيار الباحث وسبب التحويل
+         failed      : تعذرت        -> يتطلب سبب التعذر
+         outside     : خارج النطاق  -> يتطلب توضيح التفاصيل
+         other       : اخرى         -> يتطلب توضيح التفاصيل
+
+       لماذا الموقع للمنفذة وحدها؟
+       ----------------------------
+       الغرض من تسجيل الموقع اثبات تواجد الباحث في موقع الزيارة وقت
+       تنفيذها. اما البقية فلم تنفذ في موقعها اصلا (محولة او متعذرة او
+       خارج النطاق)، فطلب الموقع فيها بلا معنى وقد يعطل الباحث.
+       ================================================================== */
+    const VISIT_TYPES = {
+        done: {
+            label: "زيارة منفذة",
+            title: "توثيق زيارة منفذة",
+            geo: true,
+            note: null,
+            cls: "vt-done"
+        },
+        transferred: {
+            label: "زيارة محولة",
+            title: "توثيق زيارة محولة",
+            geo: false,
+            note: "سبب تحويل الزيارة",
+            notePlaceholder: "وضح سبب تحويل الزيارة الى باحث اخر...",
+            transfer: true,
+            cls: "vt-transfer"
+        },
+        failed: {
+            label: "زيارة متعذرة",
+            title: "توثيق زيارة متعذرة",
+            geo: false,
+            note: "سبب التعذر",
+            notePlaceholder: "وضح سبب تعذر تنفيذ الزيارة...",
+            cls: "vt-failed"
+        },
+        outside: {
+            label: "زيارة خارج النطاق",
+            title: "توثيق زيارة خارج النطاق",
+            geo: false,
+            note: "توضيح التفاصيل",
+            notePlaceholder: "وضح تفاصيل الزيارة خارج النطاق...",
+            cls: "vt-outside"
+        },
+        other: {
+            label: "أخرى",
+            title: "توثيق زيارة - أخرى",
+            geo: false,
+            note: "توضيح التفاصيل",
+            notePlaceholder: "اكتب التوضيح والتفاصيل...",
+            cls: "vt-other"
+        }
+    };
+
+    let currentVisitType = "done";
+
+    /* ------------------------------------------------------------------
+       حد التاريخ المسموح: اليوم والامس فقط
+       ------------------------------------------------------------------
+       يمنع توثيق زيارات قديمة يصعب التحقق منها، ويمنع تواريخ مستقبلية
+       لا معنى لها. يطبق في التقويم نفسه (فلا يستطيع اختيار غيرهما)
+       وفي التحقق قبل الحفظ (فلا يتجاوزه من يعدل الحقل يدويا).
+       ------------------------------------------------------------------ */
+    function yesterdayISO() {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        const p = function(n) { return String(n).padStart(2, "0"); };
+        return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+    }
+
+    function isAllowedVisitDate(iso) {
+        return iso === todayISO() || iso === yesterdayISO();
+    }
+
+    window.openVisitForm = async function(type) {
+        if (!isResearcher()) { window.switchScreen('researcherLoginScreen'); return; }
+
+        const cfg = VISIT_TYPES[type];
+        if (!cfg) return;
+        currentVisitType = type;
+
+        /* الاسم والاسم المستخدم من الجلسة لا من ادخال المستخدم */
+        document.getElementById("empName").value = session.name || "";
+        document.getElementById("empId").value = session.empId || "";
+        document.getElementById("visitId").value = "";
+        document.getElementById("visitNote").value = "";
+
+        document.getElementById("visitFormTitle").textContent = cfg.title;
+
+        const badge = document.getElementById("visitTypeBadge");
+        badge.textContent = "نوع الزيارة: " + cfg.label;
+        badge.className = "visit-type-banner " + cfg.cls;
+
+        /* تنبيه الموقع للمنفذة وحدها */
+        document.getElementById("visitGeoNote").style.display = cfg.geo ? "block" : "none";
+
+        /* الخانة النصية: تظهر بعنوانها الخاص لمن يحتاجها */
+        const noteGroup = document.getElementById("visitNoteGroup");
+        if (cfg.note) {
+            noteGroup.style.display = "block";
+            document.getElementById("visitNoteLabel").textContent = cfg.note + ":";
+            document.getElementById("visitNote").placeholder = cfg.notePlaceholder || "";
+        } else {
+            noteGroup.style.display = "none";
+        }
+
+        /* قائمة الباحثين للمحولة فقط */
+        const trGroup = document.getElementById("visitTransferToGroup");
+        trGroup.style.display = cfg.transfer ? "block" : "none";
+
+        hideMsg("researcherError");
+        hideMsg("researcherSuccess");
+        document.getElementById("researcherLoading").style.display = "none";
+
+        /* تقييد التقويم باليوم والامس */
+        const dateEl = document.getElementById("execDate");
+        if (dateEl._flatpickr) {
+            dateEl._flatpickr.set("minDate", yesterdayISO());
+            dateEl._flatpickr.set("maxDate", todayISO());
+            dateEl._flatpickr.setDate(todayISO(), false);
+        } else {
+            dateEl.value = todayISO();
+        }
+
+        window.switchScreen('researcherScreen');
+
+        /* تحميل الباحثين بعد فتح الشاشة حتى لا يتأخر ظهورها */
+        if (cfg.transfer) await loadTransferResearchers();
+    };
+
+    /* قائمة الباحثين على رأس العمل، مع استبعاد الباحث نفسه فلا يحول
+       زيارته الى نفسه */
+    async function loadTransferResearchers() {
+        const sel = document.getElementById("visitTransferTo");
+        sel.innerHTML = '<option value="">جاري التحميل...</option>';
+
+        try {
+            const snap = await getDocs(collection(db, "researchers"));
+            const list = [];
+            snap.forEach(function(d) {
+                const r = Object.assign({ id: d.id }, d.data());
+                if (r.empId === session.empId) return;              /* لا يحول لنفسه */
+                if (!r.status || r.status === "active") list.push(r); /* على رأس العمل */
+            });
+            list.sort(function(a, b) { return String(a.empName).localeCompare(String(b.empName), 'ar'); });
+
+            sel.innerHTML = list.length
+                ? '<option value="">-- اختر الباحث --</option>'
+                : '<option value="">لا يوجد باحثون اخرون على رأس العمل</option>';
+
+            list.forEach(function(r) {
+                const o = document.createElement("option");
+                o.value = r.empId;
+                o.textContent = r.empName + " (" + r.empId + ")";
+                o.setAttribute("data-name", r.empName);
+                sel.appendChild(o);
+            });
+        } catch (e) {
+            sel.innerHTML = '<option value="">تعذر تحميل قائمة الباحثين</option>';
+        }
+    }
+
     window.registerVisit = async function() {
         if (!isResearcher()) {
             toast("يجب تسجيل الدخول كباحث اولا.", "error");
@@ -7988,8 +8298,42 @@
         hideMsg("researcherError");
         hideMsg("researcherSuccess");
 
+        const cfg = VISIT_TYPES[currentVisitType] || VISIT_TYPES.done;
+
         if (!name || !id || !vId || !eDate) {
             showMsg("researcherError", "<i class='fas fa-exclamation-circle'></i> عذرا، يجب تعبئة جميع الحقول قبل التوثيق!");
+            return;
+        }
+
+        /* ------------------------------------------------------------------
+           حد التاريخ: اليوم والامس فقط
+           ------------------------------------------------------------------
+           يفحص هنا ايضا رغم تقييد التقويم، لان الحقل نصي ويمكن تعديله
+           يدويا او بادوات المطور. الفحص عند الحفظ هو الحاجز الفعلي.
+           ------------------------------------------------------------------ */
+        if (!isAllowedVisitDate(eDate)) {
+            showMsg("researcherError", "<i class='fas fa-calendar-xmark'></i> <strong>تاريخ غير مسموح</strong>" +
+                "<br>يمكن توثيق زيارات اليوم (" + fmtDate(todayISO()) + ") والامس (" + fmtDate(yesterdayISO()) + ") فقط.");
+            return;
+        }
+
+        /* الحقول الخاصة بالنوع */
+        const noteVal = document.getElementById("visitNote").value.trim();
+        const transferToId = cfg.transfer ? document.getElementById("visitTransferTo").value : "";
+        let transferToName = "";
+
+        if (cfg.transfer) {
+            if (!transferToId) {
+                showMsg("researcherError", "<i class='fas fa-exclamation-circle'></i> الرجاء اختيار الباحث الذي حولت اليه الزيارة.");
+                return;
+            }
+            const selEl = document.getElementById("visitTransferTo");
+            const opt = selEl.options[selEl.selectedIndex];
+            transferToName = opt ? (opt.getAttribute("data-name") || "") : "";
+        }
+
+        if (cfg.note && !noteVal) {
+            showMsg("researcherError", "<i class='fas fa-exclamation-circle'></i> الرجاء تعبئة خانة " + cfg.note + ".");
             return;
         }
 
@@ -8010,10 +8354,18 @@
                 return;
             }
 
-            /* التقاط الموقع قبل الحفظ مباشرة، ليكون اقرب ما يمكن
-               للحظة التوثيق الفعلية */
+            /* ------------------------------------------------------------
+               الموقع للزيارة المنفذة وحدها
+               ------------------------------------------------------------
+               بقية الانواع لم تنفذ في موقعها اصلا، فطلب الموقع فيها بلا
+               معنى. نسجل لها حالة تبين انها غير مطلوبة، فلا تختلط
+               بالزيارات التي تعذر فيها التحديد فعلا.
+               ------------------------------------------------------------ */
+            let loc = { status: "not_required" };
+
+            if (cfg.geo) {
             rLoading.innerHTML = '<i class="fas fa-location-crosshairs"></i> جاري تحديد موقعك بدقة...';
-            const loc = await captureLocation(function(acc) {
+            loc = await captureLocation(function(acc) {
                 /* عرض تحسن الدقة لحظيا بدل شاشة صامتة */
                 rLoading.innerHTML = '<i class="fas fa-location-crosshairs"></i> جاري تحديد موقعك بدقة... ' +
                     'الدقة الحالية نحو ' + acc + ' متر (المطلوب ' + GEO_MAX_ACCURACY_M + ' متر او اقل)';
@@ -8046,12 +8398,24 @@
                     locationStatusText(loc) + "</strong>" + how);
                 return;
             }
+            }   /* نهاية شرط cfg.geo */
 
             rLoading.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاتصال بالسحابة وتوثيق البيانات...';
 
             const regDate = new Date().toISOString();
             const newRef = await addDoc(collection(db, "visits"), {
                 empName: name, empId: id, visitId: vId, execDate: eDate, regDate: regDate,
+
+                /* نوع الزيارة: الزيارات القديمة بلا حقل نوع تعامل
+                   كمنفذة، فهي كانت النوع الوحيد وقت تسجيلها */
+                visitType: currentVisitType,
+                visitTypeLabel: cfg.label,
+
+                /* حقول خاصة بالنوع، تحفظ فارغة لغير اصحابها */
+                note: cfg.note ? noteVal : "",
+                transferToId: transferToId || "",
+                transferToName: transferToName || "",
+
                 /* موقع الباحث لحظة التوثيق */
                 location: loc,
                 locationStatus: loc.status,
@@ -8077,26 +8441,61 @@
                 }
             }
 
-            logAudit("توثيق زيارة", "رقم الزيارة: " + vId + " | تاريخ التنفيذ: " + eDate);
+            logAudit("توثيق زيارة", cfg.label + " | رقم الزيارة: " + vId + " | تاريخ التنفيذ: " + eDate +
+                (transferToName ? " | حولت الى: " + transferToName : "") +
+                (noteVal ? " | " + cfg.note + ": " + noteVal : ""));
+
+            /* ------------------------------------------------------------
+               اشعار الباحث المحول اليه
+               ------------------------------------------------------------
+               يعلم بان زيارة حولت اليه ليتابعها. الزيارة تبقى مسجلة باسم
+               المحول وحده كسجل توثيقي، ويوثقها المحول اليه بنفسه ان
+               نفذها لاحقا، فتبقى مسؤولية كل باحث واضحة في سجله.
+               ------------------------------------------------------------ */
+            if (cfg.transfer && transferToId) {
+                try {
+                    await pushNotification({
+                        title: "زيارة محولة اليك",
+                        body: "حول اليك الباحث " + name + " الزيارة رقم " + vId +
+                              " بتاريخ " + fmtDate(eDate) +
+                              (noteVal ? ". السبب: " + noteVal : "") +
+                              ". وثقها من بوابتك عند تنفيذها.",
+                        to: transferToId,
+                        audience: "researcher",
+                        type: "visit_transferred",
+                        refId: newRef.id
+                    });
+                } catch (e) { /* فشل الاشعار لا يبطل التوثيق */ }
+            }
 
             rLoading.style.display = "none";
             btn.disabled = false;
-            let successMsg = "<i class='fas fa-check-circle'></i> تم توثيق الزيارة في النظام بنجاح!";
-            if (loc.status === "ok") {
+
+            let successMsg = "<i class='fas fa-check-circle'></i> تم توثيق " + cfg.label + " في النظام بنجاح!";
+
+            if (cfg.geo) {
+                if (loc.status === "ok") {
+                    successMsg += "<br><span style='font-size:13px;font-weight:600;'>" +
+                        "تم توثيق موقعك مع الزيارة (دقة نحو " + loc.accuracy + " متر)." +
+                        "</span>";
+                } else {
+                    successMsg += "<br><span style='font-size:13px;font-weight:600;'>" +
+                        "ملاحظة: لم يسجل موقعك (" + locationStatusText(loc) + ")، وسجلت الزيارة بدونه." +
+                        "</span>";
+                }
+            } else if (cfg.transfer && transferToName) {
                 successMsg += "<br><span style='font-size:13px;font-weight:600;'>" +
-                    "تم توثيق موقعك مع الزيارة (دقة نحو " + loc.accuracy + " متر)." +
-                    (loc.accuracy > GEO_MAX_ACCURACY_M ? " الدقة ضعيفة، ويفضل تفعيل نظام تحديد المواقع للحصول على دقة اعلى." : "") +
-                    "</span>";
-            } else {
-                successMsg += "<br><span style='font-size:13px;font-weight:600;'>" +
-                    "ملاحظة: لم يسجل موقعك (" + locationStatusText(loc) + ")، وسجلت الزيارة بدونه." +
+                    "تم ابلاغ الباحث " + esc(transferToName) + " بالتحويل." +
                     "</span>";
             }
+
             showMsg("researcherSuccess", successMsg);
 
+            /* تفريغ الحقول مع ابقاء التاريخ على اليوم، فالباحث غالبا
+               يوثق عدة زيارات متتالية في الجلسة نفسها */
             document.getElementById("visitId").value = '';
-            const datePickerInstance = document.getElementById("execDate")._flatpickr;
-            if (datePickerInstance) datePickerInstance.clear();
+            document.getElementById("visitNote").value = '';
+            if (cfg.transfer) document.getElementById("visitTransferTo").value = '';
         } catch (error) {
             rLoading.style.display = "none";
             btn.disabled = false;
@@ -8413,7 +8812,7 @@
             const thead = document.getElementById("tableHead");
             thead.innerHTML = "";
             const trHead = document.createElement("tr");
-            ["م", "اسم الباحث", "الاسم المستخدم", "رقم الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق", "موقع التوثيق"].forEach(function(h) {
+            ["م", "اسم الباحث", "الاسم المستخدم", "رقم الزيارة", "نوع الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق", "موقع التوثيق"].forEach(function(h) {
                 const th = document.createElement("th");
                 th.textContent = h;
                 trHead.appendChild(th);
@@ -8485,10 +8884,21 @@
 
         fetchedVisits.forEach(function(v, index) {
             const trRow = document.createElement("tr");
-            [index + 1, v.empName, v.empId, v.visitId, v.execDate, window.formatDateTimeToEnglish(v.regDate)].forEach(function(f, i) {
+            [index + 1, v.empName, v.empId, v.visitId].forEach(function(f, i) {
                 const td = document.createElement("td");
                 td.textContent = f;
                 if (i === 0) { td.style.fontWeight = "900"; td.style.backgroundColor = "rgba(222, 140, 67, 0.1)"; }
+                trRow.appendChild(td);
+            });
+
+            /* عمود نوع الزيارة */
+            const tdType = document.createElement("td");
+            tdType.appendChild(visitTypeChip(v));
+            trRow.appendChild(tdType);
+
+            [v.execDate, window.formatDateTimeToEnglish(v.regDate)].forEach(function(f) {
+                const td = document.createElement("td");
+                td.textContent = f;
                 trRow.appendChild(td);
             });
 
@@ -13897,11 +14307,32 @@
     const DR_MAX_OPTION = 20;   /* اقصى قيمة في القوائم المنسدلة */
 
     /* حقول التقرير مرتبة كما تظهر في النموذج وفي المعاينة */
+    /* ------------------------------------------------------------------
+       حقول التقرير اليومي
+       ------------------------------------------------------------------
+       بعد تقسيم الزيارات الى انواع، صارت اربعة حقول تحسب تلقائيا من
+       الزيارات الموثقة فعلا بتاريخ اليوم بدل ادخالها يدويا:
+
+         المنفذة · المتعذرة · المحولة · خارج النطاق
+
+       فائدة ذلك ان التقرير يطابق السجل الفعلي بلا خطأ ولا سهو، ولا
+       يمكن للباحث ان يذكر رقما يخالف ما وثقه.
+
+       ويبقى ادخال ما لا يستنتج من الزيارات:
+         المتبقي في السلة · المشاكل التقنية · اخرى
+       ------------------------------------------------------------------ */
+
+    /* تحسب من الزيارات: المفتاح هنا هو نوع الزيارة نفسه */
+    const DR_AUTO_FIELDS = [
+        { key: "done",        type: "done",        label: "عدد الزيارات المنفذة" },
+        { key: "failed",      type: "failed",      label: "عدد الزيارات المتعذرة" },
+        { key: "transferred", type: "transferred", label: "عدد الزيارات المحولة" },
+        { key: "outOfScope",  type: "outside",     label: "عدد الزيارات خارج النطاق" }
+    ];
+
+    /* يدخلها الباحث بنفسه، فلا سبيل لاستنتاجها من الزيارات */
     const DR_FIELDS = [
-        { key: "failed",      label: "عدد الزيارات المتعذرة" },
         { key: "remaining",   label: "عدد المتبقي في السلة من إسناد اليوم" },
-        { key: "transferred", label: "عدد الزيارات المحولة" },
-        { key: "outOfScope",  label: "عدد الزيارات خارج النطاق" },
         { key: "technical",   label: "عدد المشاكل التقنية" },
         { key: "other",       label: "أخرى" }
     ];
@@ -13985,14 +14416,34 @@
 
        الاثر: من الاف القراءات الى عشرات، اي توفير يتجاوز 95 بالمئة.
        ------------------------------------------------------------------ */
+    let drAutoCounts = { done: 0, failed: 0, transferred: 0, outOfScope: 0 };
+
     async function computeExecutedVisits() {
         const snap = await getDocs(query(collection(db, "visits"), where("execDate", "==", drTodayISO)));
-        let n = 0;
-        snap.forEach(function(d) { if (String(d.data().empId) === session.empId) n++; });
-        drExecutedCount = n;
+
+        drAutoCounts = { done: 0, failed: 0, transferred: 0, outOfScope: 0 };
+
+        snap.forEach(function(d) {
+            const v = d.data();
+            if (String(v.empId) !== session.empId) return;
+
+            /* الزيارات القديمة بلا حقل نوع تعامل كمنفذة، فهي كانت
+               النوع الوحيد وقت تسجيلها */
+            const t = v.visitType || "done";
+            const f = DR_AUTO_FIELDS.find(function(x) { return x.type === t; });
+            if (f) drAutoCounts[f.key]++;
+        });
+
+        drExecutedCount = drAutoCounts.done;
+
+        /* عرض كل الاعداد المحسوبة */
+        DR_AUTO_FIELDS.forEach(function(f) {
+            const el = document.getElementById("drAuto_" + f.key);
+            if (el) el.textContent = drAutoCounts[f.key];
+        });
 
         const box = document.getElementById("drExecuted");
-        if (box) box.textContent = n;
+        if (box) box.textContent = drAutoCounts.done;
         const dayBox = document.getElementById("drDayLabel");
         if (dayBox) dayBox.textContent = arabicDayLabel(drTodayISO);
     }
@@ -14010,6 +14461,7 @@
         if (found) {
             drExistingId = found.id;
             /* نعبئ النموذج بالقيم المرسلة سابقا */
+            /* المحسوبة لا تعبأ، فهي تحسب من الزيارات في كل مرة */
             DR_FIELDS.forEach(function(f) {
                 const sel = document.getElementById("dr_" + f.key);
                 if (sel) sel.value = String(found[f.key] || 0);
@@ -14030,6 +14482,13 @@
             executed: drExecutedCount,
             notes: document.getElementById("drNotes").value.trim()
         };
+
+        /* المحسوبة تلقائيا من الزيارات الموثقة */
+        DR_AUTO_FIELDS.forEach(function(f) {
+            data[f.key] = drAutoCounts[f.key] || 0;
+        });
+
+        /* المدخلة يدويا */
         DR_FIELDS.forEach(function(f) {
             const sel = document.getElementById("dr_" + f.key);
             data[f.key] = sel ? Number(sel.value || 0) : 0;
@@ -14042,7 +14501,9 @@
         const lines = [];
         lines.push("اسم الباحث: " + empName);
         lines.push("اليوم والتاريخ: " + arabicDayLabel(iso));
-        lines.push("عدد الزيارات المنفذة: " + data.executed);
+        /* المحسوبة تلقائيا اولا، فهي جوهر التقرير ومطابقة للسجل */
+        DR_AUTO_FIELDS.forEach(function(f) { lines.push(f.label + ": " + (data[f.key] || 0)); });
+        /* ثم ما ادخله الباحث بنفسه */
         DR_FIELDS.forEach(function(f) { lines.push(f.label + ": " + (data[f.key] || 0)); });
         lines.push("ملاحظات: " + (data.notes ? data.notes : "لا يوجد"));
         return lines.join("\n");
@@ -14236,7 +14697,8 @@
             const grid = document.createElement("div");
             grid.className = "report-grid";
 
-            const items = [{ label: "عدد الزيارات المنفذة", value: r.executed || 0 }];
+            const items = [];
+            DR_AUTO_FIELDS.forEach(function(f) { items.push({ label: f.label, value: r[f.key] || 0 }); });
             DR_FIELDS.forEach(function(f) { items.push({ label: f.label, value: r[f.key] || 0 }); });
 
             items.forEach(function(it) {
@@ -15041,7 +15503,8 @@
         }
         /* تقرير يومي */
         const d = r.newData || {};
-        const parts = ["المنفذة: " + (d.executed || 0)];
+        const parts = [];
+        DR_AUTO_FIELDS.forEach(function(f) { parts.push(f.label + ": " + (d[f.key] || 0)); });
         DR_FIELDS.forEach(function(f) { parts.push(f.label + ": " + (d[f.key] || 0)); });
         return [
             { l: "تاريخ التقرير", v: arabicDayLabel(r.reportDate) },
