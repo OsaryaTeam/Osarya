@@ -2619,6 +2619,31 @@
         body.dark-mode .must-change-banner { color: #f0b473; background: rgba(222,140,67,0.2); }
         .must-change-banner i { margin-left: 7px; }
 
+        /* ---------------- نتيجة فحص الاتصال ---------------- */
+        .conn-test-box {
+            margin-top: 12px;
+            padding: 15px 17px;
+            border-radius: 12px;
+            background: rgba(74,135,148,0.08);
+            border: 1px solid rgba(74,135,148,0.25);
+            font-size: 14px;
+            line-height: 1.9;
+        }
+        body.dark-mode .conn-test-box { background: rgba(74,135,148,0.14); }
+        .conn-row { font-weight: 800; margin-bottom: 8px; }
+        .conn-ok { color: #0f5132; }
+        .conn-bad { color: #c0392b; }
+        body.dark-mode .conn-ok { color: #75d1a1; }
+        body.dark-mode .conn-bad { color: #ff9d9d; }
+        .conn-detail { font-size: 12.5px; font-weight: 600; color: #6c757d; margin: 3px 0 0 0; line-height: 1.8; }
+        body.dark-mode .conn-detail { color: #9aabae; }
+        .conn-summary {
+            margin-top: 12px; padding-top: 10px;
+            border-top: 1px solid rgba(74,135,148,0.3);
+            font-size: 14px; line-height: 1.9;
+        }
+        .icon-plug::before { content: "\f1e6"; }
+
         /* ---------------- صفوف اختيار ما يصفر ---------------- */
         .reset-tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 
@@ -3696,6 +3721,7 @@
             يسجل موقعك تلقائيا مع الزيارة لاثبات تواجدك في موقعها وقت تنفيذها.
             <strong>تأكد من تفعيل خدمة الموقع في جهازك والسماح للموقع باستخدامها</strong>،
             فلا يمكن توثيق زيارة منفذة بدون تحديد الموقع.
+            <div id="visitGeoDeviceNote" style="margin-top:8px;font-size:13px;"></div>
         </div>
 
         <div class="rule-note">
@@ -3973,6 +3999,10 @@
              اداة تشغيلية للانتقال من مرحلة التجربة الى الاطلاق الرسمي،
              وللصيانة الدورية عند الحاجة. تخفى عن الجميع الا المبرمج.
              ========================================================== -->
+        <!-- اداة تشخيص الاتصال: للمبرمج وحده -->
+        <button id="btnConnTest" class="btn-neutral btn-icon-watermark icon-plug" style="display:none;" onclick="runConnectionTest()">فحص الاتصال بقاعدة البيانات</button>
+        <div id="connTestResult" class="conn-test-box" style="display:none;"></div>
+
         <button id="btnResetSystem" class="btn-danger btn-icon-watermark icon-times" style="display:none;" onclick="openResetPanel()">تصفير بيانات النظام</button>
 
         <!-- ملاحظة سابقة: كان هنا زر "تصفير بيانات النظام".
@@ -6242,6 +6272,23 @@
        GEO_MAX_ACCURACY_M : دقة اعلى من هذا الرقم بالامتار تعد ضعيفة
              وتوسم في السجل، فقد تكون من شبكة لا من قمر صناعي. */
     const GEO_REQUIRED       = true;
+
+    /* ------------------------------------------------------------------
+       الفرق بين الجوال والحاسب في تحديد الموقع
+       ------------------------------------------------------------------
+       الجوال يحدد موقعه بالاقمار الصناعية فيصل الى امتار معدودة.
+       اما الحاسب فلا يملك مستقبل اقمار غالبا، ويحدد موقعه من شبكات
+       الواي فاي المجاورة او عنوان الانترنت، فتكون دقته مئات الامتار
+       الى كيلومترات، وتسوء اكثر داخل المباني.
+
+       فرض دقة 15 مترا على الحاسب يعني استحالة التوثيق منه عمليا.
+
+       المعالجة: الزيارة الميدانية يفترض ان توثق من الميدان بالجوال،
+       وهو ما يحقق مقصد الميزة. اما التوثيق من الحاسب فيسمح به بدقة
+       اوسع، وتوسم الزيارة بان موقعها تقريبي، فتميزها الادارة بوضوح
+       في السجلات وتقرر بشأنها.
+       ------------------------------------------------------------------ */
+    const GEO_DESKTOP_ACCURACY_M = 3000;   /* الحد المقبول على الحاسب */
     const GEO_TIMEOUT_MS     = 15000;
     /* الدقة المطلوبة بالامتار. القراءة الاولى من الجهاز غالبا ضعيفة
        (مئات الامتار من الشبكة)، ثم تتحسن تدريجيا مع التقاط الاقمار.
@@ -6542,6 +6589,24 @@
        onProgress اختيارية: تستدعى مع كل قراءة لعرض التحسن للمستخدم
        بدل تركه امام شاشة صامتة.
        ------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------
+       هل الجهاز جوال؟
+       ------------------------------------------------------------------
+       نعتمد على وجود لمس فعلي مع شاشة ضيقة، لا على اسم المتصفح وحده،
+       فهو اصدق في التمييز واقل عرضة للخطأ مع الاجهزة الحديثة.
+       ------------------------------------------------------------------ */
+    function isMobileDevice() {
+        const ua = navigator.userAgent || "";
+        if (/Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(ua)) return true;
+        /* اجهزة تدعم اللمس وشاشتها ضيقة */
+        return (navigator.maxTouchPoints > 1) && (window.innerWidth <= 1024);
+    }
+
+    /* الدقة المطلوبة بحسب الجهاز */
+    function requiredAccuracy() {
+        return isMobileDevice() ? GEO_MAX_ACCURACY_M : GEO_DESKTOP_ACCURACY_M;
+    }
+
     function captureLocation(onProgress) {
         return new Promise(function(resolve) {
             if (!navigator.geolocation) {
@@ -6591,14 +6656,14 @@
                     }
                     if (onProgress) onProgress(Math.round(acc));
 
-                    /* بلغنا الدقة المطلوبة: نقبل فورا */
-                    if (acc <= GEO_MAX_ACCURACY_M) finish(makeResult(c, false));
+                    /* بلغنا الدقة المطلوبة لهذا الجهاز: نقبل فورا */
+                    if (acc <= requiredAccuracy()) finish(makeResult(c, false));
                 },
                 function(err) {
                     /* 1 = رفض الاذن | 2 = تعذر التحديد | 3 = انتهت المهلة */
                     const map = { 1: "denied", 2: "unavailable", 3: "timeout" };
                     /* لو وصلتنا قراءة قبل الخطأ نرجعها بدل الفشل الكامل */
-                    if (best) { finish(makeResult(best, best.accuracy > GEO_MAX_ACCURACY_M)); return; }
+                    if (best) { finish(makeResult(best, best.accuracy > requiredAccuracy())); return; }
                     finish({ status: map[err && err.code] || "unavailable" });
                 },
                 {
@@ -6610,7 +6675,7 @@
 
             /* انتهت المهلة: نرجع افضل ما وصل، موسوما ان كان دون المطلوب */
             timer = setTimeout(function() {
-                if (best) finish(makeResult(best, best.accuracy > GEO_MAX_ACCURACY_M));
+                if (best) finish(makeResult(best, best.accuracy > requiredAccuracy()));
                 else finish({ status: "timeout" });
             }, GEO_TIMEOUT_MS);
         });
@@ -6675,6 +6740,53 @@
     function locationMapsUrl(loc) {
         if (!loc || loc.status !== "ok") return "";
         return "https://www.google.com/maps?q=" + loc.lat + "," + loc.lng;
+    }
+
+    /* ==================================================================
+       ترجمة اخطاء قاعدة البيانات
+       ==================================================================
+       كانت كل الاخطاء تعرض رسالة واحدة: "تحقق من اتصالك بالانترنت".
+       وهذا يضلل المستخدم حين يكون السبب مختلفا تماما، فيبحث في شبكته
+       وهي سليمة بينما المشكلة في قواعد الوصول او في التحقق من التطبيق.
+
+       هذه الدالة تقرأ رمز الخطأ الذي ترجعه المكتبة وتبين سببه الفعلي
+       والخطوة اللازمة لحله.
+       ================================================================== */
+    function dbErrorMessage(err, action) {
+        const code = (err && err.code) ? String(err.code) : "";
+        const what = action || "تنفيذ العملية";
+
+        /* قواعد الامان في قاعدة البيانات رفضت العملية */
+        if (code.indexOf("permission-denied") !== -1 || code.indexOf("PERMISSION_DENIED") !== -1) {
+            return "<i class='fas fa-lock'></i> <strong>رفضت قاعدة البيانات العملية</strong>" +
+                   "<br>الاتصال بالانترنت سليم، لكن قواعد الوصول منعت " + what + "." +
+                   "<br>السبب الاشيع: انتهاء صلاحية قواعد الوضع التجريبي في Firestore، او تفعيل الالزام في App Check قبل اكتمال التحقق." +
+                   "<br><span style='font-size:12px;'>ابلغ المبرمج بهذه الرسالة: permission-denied</span>";
+        }
+
+        /* التطبيق غير موثق لدى App Check */
+        if (code.indexOf("app-check") !== -1 || code.indexOf("unauthenticated") !== -1) {
+            return "<i class='fas fa-shield-halved'></i> <strong>تعذر التحقق من التطبيق</strong>" +
+                   "<br>افتح النظام من رابطه الرسمي وحدث الصفحة بالضغط على Ctrl+Shift+R." +
+                   "<br><span style='font-size:12px;'>رمز الخطأ: " + esc(code) + "</span>";
+        }
+
+        /* الخدمة متوقفة او الشبكة منقطعة فعلا */
+        if (code.indexOf("unavailable") !== -1 || code.indexOf("deadline-exceeded") !== -1) {
+            return "<i class='fas fa-wifi'></i> <strong>تعذر الوصول الى الخادم</strong>" +
+                   "<br>تحقق من اتصالك بالانترنت واعد المحاولة.";
+        }
+
+        /* استعلام يحتاج فهرسا مركبا لم ينشأ بعد */
+        if (code.indexOf("failed-precondition") !== -1) {
+            return "<i class='fas fa-database'></i> <strong>الاستعلام يحتاج فهرسا في قاعدة البيانات</strong>" +
+                   "<br>ابلغ المبرمج، فالرابط اللازم يظهر في كونسول المتصفح.";
+        }
+
+        /* اي سبب اخر: نعرض الرمز بدل اخفائه، فهو مفتاح التشخيص */
+        return "<i class='fas fa-triangle-exclamation'></i> <strong>تعذر " + what + "</strong>" +
+               (code ? ("<br><span style='font-size:12px;'>رمز الخطأ: " + esc(code) + "</span>") : "") +
+               ((err && err.message) ? ("<br><span style='font-size:11.5px;opacity:0.8;'>" + esc(err.message) + "</span>") : "");
     }
 
     /* رسالة منبثقة موحدة بدلا من alert */
@@ -8216,6 +8328,21 @@
         /* تنبيه الموقع للمنفذة وحدها */
         document.getElementById("visitGeoNote").style.display = cfg.geo ? "block" : "none";
 
+        /* توضيح الفرق بين الجوال والحاسب قبل ان يحاول */
+        const devNote = document.getElementById("visitGeoDeviceNote");
+        if (devNote && cfg.geo) {
+            if (isMobileDevice()) {
+                devNote.innerHTML = "<i class='fas fa-mobile-screen'></i> الدقة المطلوبة على الجوال: " +
+                    GEO_MAX_ACCURACY_M + " متر او اقل.";
+                devNote.style.color = "";
+            } else {
+                devNote.innerHTML = "<i class='fas fa-desktop'></i> <strong>انت تستخدم حاسبا:</strong> " +
+                    "دقة تحديد الموقع فيه محدودة لانه لا يستقبل الاقمار الصناعية، وستوسم الزيارة بان موقعها تقريبي. " +
+                    "<strong>يفضل توثيق الزيارات الميدانية من الجوال.</strong>";
+                devNote.style.color = "#a5601f";
+            }
+        }
+
         /* الخانة النصية: تظهر بعنوانها الخاص لمن يحتاجها */
         const noteGroup = document.getElementById("visitNoteGroup");
         if (cfg.note) {
@@ -8371,7 +8498,7 @@
             loc = await captureLocation(function(acc) {
                 /* عرض تحسن الدقة لحظيا بدل شاشة صامتة */
                 rLoading.innerHTML = '<i class="fas fa-location-crosshairs"></i> جاري تحديد موقعك بدقة... ' +
-                    'الدقة الحالية نحو ' + acc + ' متر (المطلوب ' + GEO_MAX_ACCURACY_M + ' متر او اقل)';
+                    'الدقة الحالية نحو ' + acc + ' متر (المطلوب ' + requiredAccuracy() + ' متر او اقل)';
             });
 
             /* الدقة الضعيفة ترفض كالموقع المفقود: توثيق بدقة 300 متر
@@ -8379,9 +8506,16 @@
             if (GEO_REQUIRED && loc.status === "ok" && loc.accuracyPoor) {
                 rLoading.style.display = "none";
                 btn.disabled = false;
+                /* الرسالة تختلف بحسب الجهاز، فسبب ضعف الدقة يختلف */
+                let tip;
+                if (isMobileDevice()) {
+                    tip = "<br>اخرج الى مكان مكشوف بعيدا عن الجدران، وتأكد من تفعيل نظام تحديد المواقع (GPS)، ثم اعد المحاولة.";
+                } else {
+                    tip = "<br><strong>انت تستخدم حاسبا</strong>، وهو يحدد موقعه من شبكات الواي فاي لا من الاقمار الصناعية، فدقته محدودة." +
+                          "<br>لتوثيق الزيارات الميدانية استخدم <strong>جوالك</strong>، فهو الاصح لاثبات تواجدك في موقع الزيارة.";
+                }
                 showMsg("researcherError", "<i class='fas fa-location-crosshairs'></i> <strong>دقة الموقع غير كافية</strong>" +
-                    "<br>افضل دقة وصلت هي " + loc.accuracy + " متر، والمطلوب " + GEO_MAX_ACCURACY_M + " متر او اقل." +
-                    "<br>اخرج الى مكان مكشوف بعيدا عن الجدران، وتأكد من تفعيل نظام تحديد المواقع (GPS)، ثم اعد المحاولة.");
+                    "<br>افضل دقة وصلت هي " + loc.accuracy + " متر، والمطلوب " + requiredAccuracy() + " متر او اقل." + tip);
                 return;
             }
 
@@ -8418,6 +8552,11 @@
                 note: cfg.note ? noteVal : "",
                 transferToId: transferToId || "",
                 transferToName: transferToName || "",
+
+                /* نوع الجهاز ودقته المطلوبة: تميز الادارة الزيارة
+                   الموثقة من حاسب (موقع تقريبي) عن الموثقة من الميدان */
+                deviceType: isMobileDevice() ? "mobile" : "desktop",
+                accuracyRequired: cfg.geo ? requiredAccuracy() : null,
 
                 /* موقع الباحث لحظة التوثيق */
                 location: loc,
@@ -8502,7 +8641,8 @@
         } catch (error) {
             rLoading.style.display = "none";
             btn.disabled = false;
-            showMsg("researcherError", "<i class='fas fa-wifi'></i> حدث خطأ اثناء التوثيق. يرجى التاكد من اتصالك بالانترنت.");
+            console.error("خطأ في توثيق الزيارة:", error);
+            showMsg("researcherError", dbErrorMessage(error, "توثيق الزيارة"));
         }
     };
 
@@ -9826,6 +9966,8 @@
         /* اداة التصفير: للمبرمج وحده لا للمدير العام */
         const btnReset = document.getElementById("btnResetSystem");
         if (btnReset) btnReset.style.display = isMaster() ? "block" : "none";
+        const btnConn = document.getElementById("btnConnTest");
+        if (btnConn) btnConn.style.display = isMaster() ? "block" : "none";
         const resetPanelEl = document.getElementById("resetPanel");
         if (resetPanelEl && !isMaster()) resetPanelEl.style.display = "none";
 
@@ -10194,6 +10336,102 @@
         { name: "researchers",       label: "حسابات الباحثين",             unit: "حساب", danger: true },
         { name: "managers",          label: "حسابات المدراء",              unit: "حساب", danger: true }
     ];
+
+    /* ==================================================================
+       فحص الاتصال بقاعدة البيانات
+       ==================================================================
+       اداة تشخيص للمبرمج: تجري اختبارا عمليا للقراءة والكتابة والحذف
+       ثم تبين اي مرحلة نجحت واي مرحلة فشلت ولماذا.
+
+       فائدتها ان اعراض المشاكل متشابهة: "لا يوجد اتصال" تظهر سواء كان
+       السبب انقطاع الشبكة او رفض قواعد الوصول او فشل التحقق من
+       التطبيق. وهذا الفحص يفرق بينها بيقين.
+       ================================================================== */
+    window.runConnectionTest = async function() {
+        if (!isMaster()) { denyAccess(); return; }
+
+        const box = document.getElementById("connTestResult");
+        if (!box) return;
+        box.style.display = "block";
+        box.innerHTML = '<div class="loading-inline"><i class="fas fa-spinner fa-spin"></i> جاري الفحص...</div>';
+
+        const lines = [];
+        const add = function(ok, label, detail) {
+            lines.push('<div class="conn-row ' + (ok ? "conn-ok" : "conn-bad") + '">' +
+                       (ok ? "✔ " : "✖ ") + esc(label) +
+                       (detail ? ('<div class="conn-detail">' + detail + '</div>') : "") +
+                       '</div>');
+            box.innerHTML = lines.join("");
+        };
+
+        /* 1) حالة الشبكة من المتصفح */
+        add(isOnline(), "اتصال الجهاز بالشبكة",
+            isOnline() ? "" : "المتصفح يبلغ ان الجهاز غير متصل.");
+
+        /* 2) الوصول الى الانترنت فعليا */
+        try {
+            await fetch("manifest.json?ping=" + Date.now(), { cache: "no-store" });
+            add(true, "الوصول الى خادم الموقع");
+        } catch (e) {
+            add(false, "الوصول الى خادم الموقع", "تعذر جلب ملف من نفس النطاق.");
+        }
+
+        /* 3) القراءة من قاعدة البيانات */
+        let readOk = false;
+        try {
+            const s = await getDocs(query(collection(db, "managers"), limit(1)));
+            readOk = true;
+            add(true, "القراءة من قاعدة البيانات",
+                "المصدر: " + ((s.metadata && s.metadata.fromCache) ? "الذاكرة المحلية (لم يصل الخادم)" : "الخادم مباشرة"));
+            if (s.metadata && s.metadata.fromCache) readOk = false;
+        } catch (e) {
+            add(false, "القراءة من قاعدة البيانات", "رمز الخطأ: " + esc(e && e.code));
+        }
+
+        /* 4) الكتابة: الاختبار الحاسم */
+        let testId = null;
+        try {
+            const ref = await addDoc(collection(db, "conn_test"), {
+                at: new Date().toISOString(),
+                by: session.empId || ""
+            });
+            testId = ref.id;
+            add(true, "الكتابة في قاعدة البيانات");
+        } catch (e) {
+            const code = String((e && e.code) || "");
+            let why = "رمز الخطأ: " + esc(code);
+            if (code.indexOf("permission-denied") !== -1) {
+                why += "<br><strong>السبب على الارجح:</strong> قواعد Firestore ترفض الكتابة." +
+                       "<br>افتح Firebase Console ثم Firestore ثم Rules وتأكد ان القاعدة تسمح بالكتابة، " +
+                       "فقواعد الوضع التجريبي تنتهي صلاحيتها تلقائيا بعد ثلاثين يوما.";
+            }
+            add(false, "الكتابة في قاعدة البيانات", why);
+        }
+
+        /* 5) الحذف: تنظيف اثر الاختبار */
+        if (testId) {
+            try {
+                await deleteDoc(doc(db, "conn_test", testId));
+                add(true, "الحذف من قاعدة البيانات");
+            } catch (e) {
+                add(false, "الحذف من قاعدة البيانات", "رمز الخطأ: " + esc(e && e.code));
+            }
+        }
+
+        /* خلاصة تشخيصية */
+        const summary = document.createElement("div");
+        summary.className = "conn-summary";
+        if (readOk && testId) {
+            summary.innerHTML = "<strong>النتيجة:</strong> كل شيء سليم. القراءة والكتابة تعملان.";
+        } else if (readOk && !testId) {
+            summary.innerHTML = "<strong>النتيجة:</strong> القراءة تعمل والكتابة مرفوضة. " +
+                                "المشكلة في قواعد الوصول لا في الانترنت. راجع Rules في Firebase Console.";
+        } else {
+            summary.innerHTML = "<strong>النتيجة:</strong> لا يصل النظام الى الخادم. " +
+                                "تحقق من الانترنت، ومن ان App Check لم يفعل عليه الالزام قبل اكتمال التحقق.";
+        }
+        box.appendChild(summary);
+    };
 
     window.openResetPanel = async function() {
         if (!isMaster()) { denyAccess(); return; }
