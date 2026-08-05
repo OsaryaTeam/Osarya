@@ -170,7 +170,7 @@
             justify-content: center;
             font-size: 20px;
             color: #4a8794;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
         }
         .theme-toggle-btn:hover {
             transform: scale(1.1) rotate(15deg);
@@ -227,14 +227,34 @@
         
         .shape {
             position: absolute;
-            /* تحسين اداء: خفضت الضبابية من 80 الى 60 بكسل. كلما زادت قيمة
-               blur زاد الحمل على المعالج الرسومي بشكل كبير */
-            filter: blur(60px);
-            opacity: 0.3;
-            animation: floatShape 22s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            /* ------------------------------------------------------------
+               تكلفة التمويه تتضاعف مع مساحة العنصر
+               ------------------------------------------------------------
+               هذه الاشكال كبيرة (500 الى 600 بكسل)، وتمويه 60 بكسل
+               عليها عملية ثقيلة تعاد مع كل اطار من الحركة. وعلى شاشة
+               الحاسب الكبيرة تكون المساحة اضعاف مساحة الجوال، فيظهر
+               التقطع اثناء التمرير.
+
+               خفضناه الى 40 بكسل وابطأنا الحركة، والفرق البصري لا يكاد
+               يلحظ لان الاشكال خلفية بعيدة اصلا بشفافية منخفضة.
+               ------------------------------------------------------------ */
+            filter: blur(40px);
+            opacity: 0.26;
+            animation: floatShape 30s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
             will-change: transform;
             /* contain يخبر المتصفح ان تغيرات هذا العنصر لا تؤثر على غيره */
-            contain: paint;
+            contain: strict;
+        }
+
+        /* ------------------------------------------------------------------
+           ايقاف الحركة لمن يفضل تقليلها في اعدادات نظامه
+           ------------------------------------------------------------------
+           بعض المستخدمين يفعلون هذا الخيار لحساسية من الحركة، وبعضهم
+           لتخفيف الحمل على جهاز ضعيف. نحترم الاختيار في الحالتين.
+           ------------------------------------------------------------------ */
+        @media (prefers-reduced-motion: reduce) {
+            .shape { animation: none !important; }
+            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
         
         .shape-1 { width: 500px; height: 500px; background: #de8c43; top: -100px; right: -100px; }
@@ -277,7 +297,7 @@
             cursor: pointer;
             border-radius: 20px;
             filter: drop-shadow(0 10px 15px rgba(74, 135, 148, 0.1));
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.3s ease, filter 0.3s ease;
         }
         body.dark-mode .header img { filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4)) opacity(0.95); }
         
@@ -293,15 +313,26 @@
         
         /* ---------------- الحاويات ---------------- */
         .container { 
+            /* ------------------------------------------------------------
+               عزل الحاوية عن بقية الصفحة اثناء الرسم
+               ------------------------------------------------------------
+               يخبر المتصفح ان محتوى هذه الحاوية لا يؤثر على تخطيط ما
+               حولها، فيتجنب اعادة حساب الصفحة كاملة عند اي تغيير فيها،
+               ويقتصر على رسم الجزء الظاهر منها اثناء التمرير.
+               ------------------------------------------------------------ */
+            contain: layout style;
             max-width: 800px;
             margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.7); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.82); 
+            /* خففنا التمويه من 20 الى 8 بكسل: الفرق البصري طفيف جدا
+               والتكلفة تقل كثيرا، خصوصا مع الحاويات الطويلة */
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.9);
             padding: 45px; 
             border-radius: 20px; 
-            box-shadow: 0 20px 40px rgba(74, 135, 148, 0.08), inset 0 0 0 1px rgba(255,255,255,0.5); 
+            /* ظل واحد بدل ظلين مركبين: كل ظل يحسب على حدة */
+            box-shadow: 0 12px 28px rgba(74, 135, 148, 0.10), inset 0 0 0 1px rgba(255,255,255,0.5); 
             border-top: 6px solid #4a8794;
             transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.3s ease, border 0.3s ease;
             transform: translateZ(0);
@@ -379,7 +410,7 @@
             color: #4a8794;
             opacity: 0.6;
             font-size: 18px;
-            transition: all 0.3s ease;
+            transition: color 0.25s ease, opacity 0.25s ease;
             pointer-events: none;
             z-index: 2;
         }
@@ -444,7 +475,7 @@
             height: 40px;
             border-radius: 10px;
             color: #4a8794;
-            transition: all 0.2s ease;
+            transition: color 0.25s ease, opacity 0.25s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -458,6 +489,29 @@
         body.dark-mode .toggle-password-btn:hover { background: rgba(255,255,255,0.1); color: #de8c43; }
 
         /* ---------------- الازرار الموحدة ---------------- */
+        /* ==================================================================
+           تحسينات اداء التمرير
+           ==================================================================
+           هذه القواعد تخفف عمل المتصفح اثناء التمرير، واثرها اوضح على
+           شاشات الحاسب الكبيرة لان المساحة المرسومة اضعاف مساحة الجوال.
+           ================================================================== */
+
+        /* الجداول: عزل كل صف عن غيره في الرسم، فيرسم المتصفح ما يظهر
+           في الشاشة فقط بدل الجدول كاملا */
+        .table-container tbody tr { contain: layout style; }
+
+        /* الصور والايقونات لا تعيد حساب التخطيط عند تحميلها */
+        img { content-visibility: auto; }
+
+        /* الاقسام المخفية لا ترسم اصلا.
+           الشاشات غير النشطة مخفية بـ display:none فلا ترسم، لكن
+           المحتوى الطويل داخل الشاشة النشطة يستفيد من هذا التلميح */
+        .footer-section { content-visibility: auto; contain-intrinsic-size: 1px 400px; }
+
+        /* تمرير ناعم ومتوقع في كل المتصفحات */
+        html { scroll-behavior: smooth; }
+        @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
         /* ------------------------------------------------------------------
            استجابة فورية للمس على الجوال
            ------------------------------------------------------------------
@@ -479,7 +533,7 @@
         
         button::after {
             content: ""; position: absolute; top: -50%; left: -60%; width: 20%; height: 200%;
-            background: rgba(255, 255, 255, 0.3); transform: rotate(45deg); transition: all 0.7s ease; opacity: 0;
+            background: rgba(255, 255, 255, 0.3); transform: rotate(45deg); transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0;
             z-index: 2; 
         }
         button:hover { transform: translateY(-3px); }
@@ -518,7 +572,7 @@
             color: rgba(255, 255, 255, 0.15);
             z-index: -1;
             pointer-events: none;
-            transition: all 0.4s ease;
+            transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .btn-icon-watermark:hover::before {
             transform: translateY(-50%) rotate(0deg) scale(1.1);
@@ -905,7 +959,7 @@
             font-family: 'Tajawal', sans-serif;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
             width: auto;
             margin-top: 0;
             box-shadow: none;
@@ -965,7 +1019,7 @@
             font-weight: 700;
             font-family: 'Tajawal', sans-serif;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background-color 0.2s ease, color 0.2s ease;
             border-radius: 0;
             margin: 0;
             box-shadow: none;
@@ -996,10 +1050,28 @@
         th:last-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
         
         /* تحسين اداء: transition محددة الخصائص، مهمة جدا هنا لان الجدول قد يحوي مئات الصفوف */
-        tr { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, background-color 0.25s ease; }
+                /* ------------------------------------------------------------------
+           صفوف الجداول
+           ------------------------------------------------------------------
+           ازيل من هنا backdrop-filter، وكان اثقل سبب لتقطع التمرير على
+           الحاسب: تمويه الخلفية عملية مكلفة تنفذ على كرت الشاشة، وكانت
+           تطبق على كل صف على حدة. فجدول فيه مئة صف يعني مئة طبقة تمويه
+           يعاد حسابها في كل اطار اثناء التمرير.
+
+           والخلفية الشفافة تعطي المظهر نفسه تقريبا بلا اي تكلفة، لان
+           ما خلف الصف هو لون الحاوية لا صورة تحتاج تمويها.
+           ------------------------------------------------------------------ */
+        tr {
+            background: rgba(255, 255, 255, 0.86);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            /* الحركة على التحويل والظل فقط، لا على كل الخصائص */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
         body.dark-mode tr { background: rgba(25, 43, 48, 0.6); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         
-        tbody tr:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 12px 25px rgba(74, 135, 148, 0.12); background: rgba(255, 255, 255, 1); z-index: 10; position: relative; }
+        /* التكبير مع الرفع يجبر المتصفح على اعادة رسم الصف كاملا.
+           ابقينا الرفع وحده، فهو تحويل خالص ينفذ على كرت الشاشة */
+        tbody tr:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(74, 135, 148, 0.12); background: rgba(255, 255, 255, 1); z-index: 10; position: relative; }
         body.dark-mode tbody tr:hover { background: rgba(34, 58, 64, 0.8); box-shadow: 0 12px 25px rgba(0,0,0,0.4); }
         
         td:first-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-right: 4px solid #de8c43; }
@@ -1050,7 +1122,7 @@
             font-size: 14px;
             cursor: pointer;
             outline: none;
-            transition: all 0.3s ease;
+            transition: background-color 0.25s ease, border-color 0.25s ease;
             width: 100%;
             min-width: 120px;
         }
@@ -1099,7 +1171,7 @@
             border-radius: 8px;
             border: 1px solid #c3dae2;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
             font-size: 14px;
             font-weight: 600;
         }
@@ -1173,7 +1245,7 @@
             color: #4a8794;
             text-decoration: underline;
             font-weight: 700;
-            transition: all 0.2s ease;
+            transition: color 0.25s ease, padding 0.25s ease;
         }
         body.dark-mode .footer-links li a { color: #7fb1bc; }
         .footer-links li a:hover {
