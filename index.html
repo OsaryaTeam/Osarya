@@ -2647,6 +2647,19 @@
             .ds-count-num { font-size: 23px; }
         }
 
+        /* ---------------- شارة تفعيل الحساب ---------------- */
+        .act-chip {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+            color: #fff;
+        }
+        .act-on  { background: #1e7a50; }
+        .act-off { background: #a8402f; }
+
         /* ---------------- خيارات نافذة الواتساب ---------------- */
         .wa-choice-opt {
             padding: 12px 14px;
@@ -3544,6 +3557,12 @@
             <span>الاسم والاسم المستخدم والصفة والمنطقة، بلا اي تغيير على كلمة مروره الحالية.</span>
         </div>
 
+        <div id="waInactiveNote" class="rule-note rule-note-danger" style="display:none;">
+            <i class="fas fa-user-lock"></i>
+            هذا الحساب <strong>غير مفعل</strong> ولا يستطيع صاحبه الدخول.
+            اختر <strong>مع اعادة تعيين كلمة المرور</strong> لتفعيله وارسال بياناته.
+        </div>
+
         <div class="wa-choice-opt wa-choice-warn">
             <strong>مع اعادة تعيين كلمة المرور</strong>
             <span>تعين له كلمة مرور مؤقتة جديدة وترسل معه، <strong>وتلغى كلمة مروره الحالية فورا</strong>،
@@ -3551,7 +3570,7 @@
         </div>
 
         <div class="btn-group">
-            <button class="btn-manager btn-icon-watermark icon-whatsapp" onclick="waSendInfoOnly()">البيانات فقط</button>
+            <button id="btnWaInfoOnly" class="btn-manager btn-icon-watermark icon-whatsapp" onclick="waSendInfoOnly()">البيانات فقط</button>
             <button id="btnWaReset" class="btn-alert-red btn-icon-watermark icon-key" onclick="waSendWithReset()">مع اعادة تعيين كلمة المرور</button>
             <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeWaChoice()">الغاء</button>
         </div>
@@ -4426,6 +4445,19 @@
             </div>
 
             <!-- تصفية بالمنطقة: تعمل مع تصفية الحالة اعلاه في ان واحد -->
+            <!-- بحث فوري: يتحدث مع كل حرف بلا زر -->
+            <div class="input-group" style="margin-top: 12px;">
+                <label for="resSearchBox">بحث بالاسم او الاسم المستخدم او رقم الجوال:</label>
+                <div class="input-with-icon">
+                    <input type="text" id="resSearchBox" placeholder="اكتب للبحث الفوري..." oninput="applyRegionFilter()">
+                    <i class="fas fa-magnifying-glass right-icon"></i>
+                </div>
+                <div class="field-hint" style="display:block;">
+                    <i class="fas fa-lightbulb"></i>
+                    يقبل رقم الجوال بأي صيغة (05xxxxxxxx او +966xxxxxxxxx) ويطابقها معا.
+                </div>
+            </div>
+
             <div class="form-grid" style="margin-top: 12px;">
                 <div class="input-group">
                     <label for="resRegionFilter">تصفية بالمنطقة:</label>
@@ -4439,6 +4471,7 @@
         </div>
 
         <button class="btn-manager btn-icon-watermark icon-user-plus" onclick="toggleAddResearcherForm()">اضافة باحث جديد</button>
+        <button class="btn-pdf btn-icon-watermark icon-pdf" onclick="exportResearchersPDF()">تصدير القائمة الى PDF</button>
 
         <div id="addResearcherSection" class="add-form-section" style="display: none;">
             <h3 id="addResearcherTitle">بيانات الباحث الجديد</h3>
@@ -4484,7 +4517,7 @@
                 </div>
 
                 <div class="input-group full-width">
-                    <label for="newResPass">كلمة المرور:</label>
+                    <label for="newResPass" id="newResPassLabel">كلمة المرور:</label>
                     <div class="password-wrapper">
                         <i class="fas fa-lock right-icon" style="position: absolute; right: 18px; opacity: 0.6; z-index: 2;"></i>
                         <input type="password" id="newResPass" placeholder="يجب ان تتكون من 6 خانات، ارقام وحروف، وحرف انجليزي كبير">
@@ -4498,6 +4531,13 @@
                     </div>
 
                     <div id="genPassPreview" class="gen-pass-box" style="display:none;"></div>
+
+                    <!-- شرح حالة التفعيل: يظهر عند اضافة باحث جديد -->
+                    <div id="newResPassNote" class="rule-note" style="display:none; margin-top:10px;">
+                        <i class="fas fa-circle-info"></i>
+                        يمكنك ترك كلمة المرور فارغة. عندها يضاف الباحث بحساب <strong>غير مفعل</strong>،
+                        ويفعل تلقائيا عند ارسال كلمة مرور مؤقتة له من زر الواتساب في القائمة.
+                    </div>
                 </div>
             </div>
             
@@ -4514,6 +4554,8 @@
         <div id="resListLoading" class="loading-message" style="display: none;"><i class="fas fa-spinner fa-spin"></i> جاري تحميل الباحثين...</div>
         <div id="resListError" class="error-message"></div>
 
+        <div id="resSearchCount" class="records-info"></div>
+
         <div class="table-container" style="margin-top: 20px;">
             <table id="researchersTable">
                 <thead>
@@ -4524,7 +4566,7 @@
                         <th>المنطقة</th>
                         <th>نوع العمل</th>
                         <th>رقم الجوال</th>
-                        <th>كلمة المرور</th>
+                        <th>التفعيل</th>
                         <th>حالة الباحث</th>
                         <th>الاجراء</th>
                     </tr>
@@ -5361,6 +5403,17 @@
                 <span class="account-label"><i class="fas fa-user-tag"></i> الصفة:</span>
                 <span class="account-value" id="accRole">-</span>
             </div>
+
+            <!-- بيانات تخص الباحثين وحدهم، تخفى للمدراء -->
+            <div class="account-row" id="accRegionRow" style="display:none;">
+                <span class="account-label"><i class="fas fa-map-location-dot"></i> المنطقة:</span>
+                <span class="account-value" id="accRegion">-</span>
+            </div>
+
+            <div class="account-row" id="accWorkRow" style="display:none;">
+                <span class="account-label"><i class="fas fa-briefcase"></i> نوع العمل:</span>
+                <span class="account-value" id="accWorkType">-</span>
+            </div>
             <div class="account-note">
                 <i class="fas fa-lock"></i>
                 الاسم والاسم المستخدم لا يعدلان من هنا. لتغييرهما راجع الادارة.
@@ -5953,11 +6006,6 @@
         الخاصة بجوجل.
     </div>
 
-        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
-             فلا يضطر للتمرير الى الاعلى -->
-        <div class="btn-group bottom-return">
-            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerControlScreen')">العودة للبوابة</button>
-        </div>
 </div>
 
 <script type="module">
@@ -7770,6 +7818,8 @@
                 }
                 session.name = d.empName || session.name;
                 session.phone = d.phone || "";
+                session.region = d.region || "";
+                session.workType = d.workType || "";
                 /* قد تصدر له الادارة كلمة مؤقتة وهو داخل النظام */
                 session.mustChangePassword = (d.mustChangePassword === true);
                 await saveSession();
@@ -8260,6 +8310,31 @@
             const resDoc = snapshot.docs[0];
             const resData = resDoc.data();
 
+            /* ------------------------------------------------------------
+               الحساب غير المفعل لا يدخل
+               ------------------------------------------------------------
+               حسابه موجود وبياناته مسجلة، لكن لم تسلم له كلمة مرور بعد.
+               نمنعه قبل التحقق من كلمة المرور ونرشده الى الادارة، بدل
+               رسالة "بيانات غير صحيحة" التي تحيره.
+
+               الحسابات المنشأة قبل هذه الميزة بلا حقل activated وتعامل
+               غير مفعلة، حتى تراجعها الادارة وترسل لكل باحث كلمة مروره.
+               ------------------------------------------------------------ */
+            if (resData.activated !== true || !resData.password) {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'تسجيل الدخول';
+                const waMsg = encodeURIComponent("حسابي غير مفعل، ارجو تفعيله وارسال كلمة المرور. الاسم المستخدم: " + rId);
+                loginError.innerHTML =
+                    "<i class='fas fa-user-lock'></i> <strong>حسابك غير مفعل بعد</strong>" +
+                    "<br>راجع الادارة لتفعيل حسابك واستلام كلمة المرور." +
+                    '<br><a href="https://wa.me/966539864443?text=' + waMsg + '" target="_blank" rel="noopener" ' +
+                    'style="display:inline-block; background-color:#25D366; color:white; padding:10px 20px; border-radius:8px; ' +
+                    'text-decoration:none; margin-top:12px; font-weight:bold; font-size:15px;">' +
+                    '<i class="fab fa-whatsapp"></i> تواصل مع الدعم الفني</a>';
+                loginError.style.display = "block";
+                return;
+            }
+
             const check = await verifyPassword(pass, resData.password);
             if (!check.ok) throw new Error("invalid");
 
@@ -8298,6 +8373,9 @@
                    والا ظهر تذكير تسجيل الجوال لمن سجله فعلا حتى تعمل
                    المزامنة بعد دقائق. هذا كان سبب استمرار الاشعار */
                 phone: resData.phone || "",
+                /* بيانات العمل: تعرض في شاشة حسابي */
+                region: resData.region || "",
+                workType: resData.workType || "",
                 /* هل دخل بكلمة مرور مؤقتة اصدرتها الادارة؟ */
                 mustChangePassword: resData.mustChangePassword === true
             };
@@ -9806,13 +9884,24 @@
                 tdPhone.style.fontWeight = "700";
             }
 
-            /* كلمة المرور لم تعد تعرض اطلاقا - مشفرة ولا يمكن استرجاعها */
-            const tdPass = document.createElement("td");
-            const passMask = document.createElement("span");
-            passMask.className = "pass-mask";
-            passMask.textContent = "••••••";
-            passMask.title = "كلمة المرور مشفرة ولا يمكن اظهارها. استخدم زر تعديل لتعيين كلمة مرور جديدة.";
-            tdPass.appendChild(passMask);
+            /* ------------------------------------------------------------
+               حالة التفعيل
+               ------------------------------------------------------------
+               الحسابات المنشأة قبل هذه الميزة بلا حقل activated، وتعامل
+               غير مفعلة كما طلب، فيراجعها المدير ويرسل لكل باحث كلمة
+               مروره عبر الواتساب.
+               ------------------------------------------------------------ */
+            const tdAct = document.createElement("td");
+            const actChip = document.createElement("span");
+            if (r.activated === true) {
+                actChip.className = "act-chip act-on";
+                actChip.textContent = "مفعل";
+            } else {
+                actChip.className = "act-chip act-off";
+                actChip.textContent = "غير مفعل";
+                actChip.title = "لا يستطيع الدخول. ارسل له كلمة مرور مؤقتة من زر الواتساب لتفعيله.";
+            }
+            tdAct.appendChild(actChip);
 
             const tdStatus = document.createElement("td");
             const selectStatus = document.createElement("select");
@@ -9890,7 +9979,7 @@
             tr.appendChild(tdRegion);
             tr.appendChild(tdWork);
             tr.appendChild(tdPhone);
-            tr.appendChild(tdPass);
+            tr.appendChild(tdAct);
             tr.appendChild(tdStatus);
             tr.appendChild(tdAction);
             frag.appendChild(tr);
@@ -10120,6 +10209,183 @@
         fillOptionsSelect(el, WORK_TYPES, placeholder || "-- اختر نوع العمل --");
     }
 
+    /* ==================================================================
+       تصدير قائمة الباحثين الى PDF
+       ==================================================================
+       يصدر ما هو معروض بعد البحث والفلاتر، لا القائمة كاملة، فيطابع
+       المطبوع ما يراه المدير على الشاشة.
+
+       عدد الصفوف في الصفحة اكبر من جدول الزيارات (35 مقابل 20)، لان
+       اعمدة الباحثين اقصر نصا فتقبل ارتفاع صف اصغر.
+       ================================================================== */
+    const RES_PDF_ROWS_PER_PAGE = 35;
+
+    window.exportResearchersPDF = function() {
+        if (!isManager()) return;
+
+        /* نستخرج المعروض حاليا من الجدول نفسه، فيكون المطبوع مطابقا
+           لما تراه العين بعد كل بحث وفلترة */
+        const rows = Array.prototype.slice.call(
+            document.querySelectorAll("#researchersTableBody tr")
+        );
+        if (!rows.length) { toast("لا توجد نتائج لتصديرها.", "warn"); return; }
+
+        /* نرجع من الصفوف الى بيانات الباحثين بمطابقة الاسم المستخدم */
+        const shown = [];
+        rows.forEach(function(tr) {
+            const uid = (tr.children[2] ? tr.children[2].textContent : "").trim();
+            const r = researchersList.find(function(x) { return String(x.empId) === uid; });
+            if (r) shown.push(r);
+        });
+        if (!shown.length) { toast("تعذر تجهيز البيانات للتصدير.", "error"); return; }
+
+        const win = window.open("", "_blank");
+        if (!win) { toast("منع المتصفح فتح نافذة الطباعة، اسمح بالنوافذ المنبثقة.", "warn"); return; }
+
+        const pages = [];
+        for (let i = 0; i < shown.length; i += RES_PDF_ROWS_PER_PAGE) {
+            pages.push(shown.slice(i, i + RES_PDF_ROWS_PER_PAGE));
+        }
+
+        /* وصف الفلاتر الفعالة ليظهر في الترويسة */
+        const scope = [];
+        const q = ((document.getElementById("resSearchBox") || {}).value || "").trim();
+        const rg = (document.getElementById("resRegionFilter") || {}).value || "";
+        const wk = (document.getElementById("resWorkFilter") || {}).value || "";
+        if (q) scope.push("بحث: " + q);
+        if (rg) scope.push("المنطقة: " + rg);
+        if (wk) scope.push("نوع العمل: " + wk);
+        if (!scope.length) scope.push("كل الباحثين");
+
+        const esc2 = function(s) {
+            return String(s == null ? "" : s)
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        };
+
+        const statusText = function(st) {
+            if (st === "suspended") return "ايقاف مؤقت";
+            if (st === "excluded") return "مستبعد";
+            return "على رأس العمل";
+        };
+
+        let body = "";
+        pages.forEach(function(list, pi) {
+            body += '<div class="page">';
+            body += '<div class="doc-head">' +
+                        '<div class="doc-title">قائمة الباحثين</div>' +
+                        '<div class="doc-sub">ادارة فريق الباحث الاجتماعي - جمعية التنمية الاسرية بالاحساء</div>' +
+                        '<div class="doc-scope">' + esc2(scope.join("   |   ")) + '</div>' +
+                    '</div>';
+
+            body += '<table><thead><tr>' +
+                        '<th class="c-num">م</th>' +
+                        '<th class="c-name">اسم الباحث</th>' +
+                        '<th class="c-user">الاسم المستخدم</th>' +
+                        '<th class="c-region">المنطقة</th>' +
+                        '<th class="c-work">نوع العمل</th>' +
+                        '<th class="c-phone">رقم الجوال</th>' +
+                        '<th class="c-act">التفعيل</th>' +
+                        '<th class="c-status">الحالة</th>' +
+                    '</tr></thead><tbody>';
+
+            list.forEach(function(r, ri) {
+                body += '<tr>' +
+                    '<td class="c-num">' + (pi * RES_PDF_ROWS_PER_PAGE + ri + 1) + '</td>' +
+                    '<td class="c-name">' + esc2(r.empName) + '</td>' +
+                    '<td class="c-user">' + esc2(r.empId) + '</td>' +
+                    '<td class="c-region">' + esc2(r.region || "غير محددة") + '</td>' +
+                    '<td class="c-work">' + esc2(r.workType || "غير محدد") + '</td>' +
+                    '<td class="c-phone">' + esc2(r.phone || "غير مسجل") + '</td>' +
+                    '<td class="c-act">' + (r.activated === true
+                        ? '<span class="chip on">مفعل</span>'
+                        : '<span class="chip off">غير مفعل</span>') + '</td>' +
+                    '<td class="c-status">' + esc2(statusText(r.status)) + '</td>' +
+                '</tr>';
+            });
+
+            body += '</tbody></table>';
+            body += '<div class="doc-foot">' +
+                        '<span>صفحة ' + (pi + 1) + ' من ' + pages.length + '</span>' +
+                        '<span>اجمالي المعروض: ' + shown.length + ' باحث</span>' +
+                        '<span>تاريخ الاصدار: ' + new Date().toLocaleDateString("ar-SA-u-nu-latn") + '</span>' +
+                    '</div>';
+            body += '</div>';
+        });
+
+        const printBar = '<div class="print-bar no-print">' +
+            '<div class="pb-row">' +
+              '<button onclick="window.print()">طباعة / حفظ بصيغة PDF</button>' +
+              '<span>' + shown.length + ' باحث في ' + pages.length + ' صفحة</span>' +
+            '</div>' +
+            '<div class="pb-tip">للحصول على ' + RES_PDF_ROWS_PER_PAGE + ' باحثا في كل صفحة: افتح ' +
+              '<strong>اعدادات اضافية</strong> في نافذة الطباعة واطفئ <strong>الترويسات والتذييلات</strong>.</div>' +
+            '</div>';
+
+        win.document.write(
+            '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
+            '<title>قائمة الباحثين</title>' +
+            '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">' +
+            '<style>' +
+            '@page { size: A4 landscape; margin: 5mm; }' +
+            '* { box-sizing: border-box; }' +
+            'html, body { margin: 0; padding: 0; }' +
+            'body { font-family: Tajawal, Tahoma, sans-serif; color: #000; background: #fff; }' +
+            '.page { page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }' +
+            '.page:last-child { page-break-after: auto; break-after: auto; }' +
+            'table, thead, tbody, tr, td, th { page-break-inside: avoid !important; break-inside: avoid !important; }' +
+            '.doc-head { text-align: center; margin-bottom: 2px; border-bottom: 1.5px solid #4a8794; padding-bottom: 2px; }' +
+            '.doc-title { font-size: 12px; font-weight: 800; color: #2c5f6a; line-height: 1.2; }' +
+            '.doc-sub { font-size: 8.5px; font-weight: 600; color: #555; line-height: 1.2; }' +
+            '.doc-scope { font-size: 8.5px; font-weight: 700; color: #a5601f; line-height: 1.2; }' +
+            'table { width: 100%; border-collapse: collapse; table-layout: fixed; }' +
+            /* ارتفاع اصغر: اعمدة الباحثين اقصر نصا من الزيارات */
+            'tbody tr { height: 4.6mm; }' +
+            'thead tr { height: 5mm; }' +
+            'th, td { border: 1px solid #666; padding: 0 3px; font-size: 8.5px; line-height: 1.15; ' +
+                     'text-align: center; vertical-align: middle; word-wrap: break-word; overflow: hidden; }' +
+            'th { background: #4a8794 !important; color: #fff !important; font-weight: 800; font-size: 9px; ' +
+                 '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+            'tbody tr:nth-child(even) td { background: #f4f7f8 !important; ' +
+                 '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+            '.c-num { width: 5%; font-weight: 800; }' +
+            '.c-name { width: 24%; }' +
+            '.c-user { width: 12%; font-weight: 700; }' +
+            '.c-region { width: 13%; }' +
+            '.c-work { width: 14%; }' +
+            '.c-phone { width: 14%; direction: ltr; }' +
+            '.c-act { width: 9%; }' +
+            '.c-status { width: 9%; }' +
+            '.chip { display: inline-block; padding: 0 5px; border-radius: 7px; font-size: 8px; font-weight: 800; color: #fff; ' +
+                    '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+            '.chip.on { background: #1e7a50 !important; }' +
+            '.chip.off { background: #a8402f !important; }' +
+            '.doc-foot { display: flex; justify-content: space-between; margin-top: 2px; padding-top: 1px; ' +
+                        'border-top: 1px solid #999; font-size: 7.5px; font-weight: 600; color: #555; }' +
+            '.print-bar { position: sticky; top: 0; z-index: 10; padding: 12px; margin-bottom: 10px; ' +
+                         'background: #4a8794; color: #fff; font-weight: 800; font-size: 14px; text-align: center; }' +
+            '.pb-row { display: flex; align-items: center; justify-content: center; gap: 16px; }' +
+            '.pb-tip { margin-top: 8px; font-size: 12.5px; font-weight: 600; opacity: 0.95; line-height: 1.7; }' +
+            '.print-bar button { padding: 10px 26px; font-size: 15px; font-weight: 800; border: none; ' +
+                                'border-radius: 8px; background: #fff; color: #2c5f6a; cursor: pointer; ' +
+                                'font-family: Tajawal, Tahoma, sans-serif; }' +
+            '@media print { .no-print { display: none !important; } }' +
+            '</style></head><body>' + printBar + body + '</body></html>'
+        );
+
+        win.document.close();
+        win.focus();
+
+        logAudit("تصدير بيانات", "تصدير قائمة الباحثين: " + shown.length + " باحث في " + pages.length + " صفحة");
+
+        const openPrint = function() { try { win.print(); } catch (e) {} };
+        if (win.document.fonts && win.document.fonts.ready) {
+            win.document.fonts.ready.then(function() { setTimeout(openPrint, 250); });
+        } else {
+            setTimeout(openPrint, 800);
+        }
+    };
+
     window.toggleAddResearcherForm = function() {
         const section = document.getElementById("addResearcherSection");
         const passInput = document.getElementById("newResPass");
@@ -10241,17 +10507,29 @@
             return;
         }
 
+        /* كلمة المرور اختيارية في الحالتين:
+             تعديل بلا كتابتها  -> تبقى القديمة كما هي
+             اضافة بلا كتابتها  -> يضاف الحساب غير مفعل
+           والتحقق من قوتها يجري ان كتبت فقط */
         const keepOldPass = editingResearcherId && pass === "";
-        if (!keepOldPass) {
-            if (!pass) {
-                showMsg("addResError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال كلمة المرور.");
-                return;
-            }
-            if (!validatePassword(pass)) {
-                showMsg("addResError", PASS_RULE_MSG);
-                return;
-            }
+        if (pass && !validatePassword(pass)) {
+            showMsg("addResError", PASS_RULE_MSG);
+            return;
         }
+
+        /* ------------------------------------------------------------------
+           حالة التفعيل
+           ------------------------------------------------------------------
+           الحساب الجديد بلا كلمة مرور يضاف "غير مفعل": بياناته مسجلة
+           ويظهر في القوائم، لكنه لا يستطيع الدخول. يفعل حين ترسل له
+           كلمة مرور مؤقتة من زر الواتساب.
+
+           الفائدة: يمكن ادخال بيانات الفريق كاملة دفعة واحدة، ثم تسليم
+           بيانات الدخول لكل باحث حين يجهز، بلا كلمات مرور معلقة بلا
+           صاحب ولا حسابات مفتوحة قبل اوانها.
+           ------------------------------------------------------------------ */
+        const isNewAccount = !editingResearcherId;
+        const activateNow = !!pass;   /* وجود كلمة مرور يعني التفعيل */
 
         document.getElementById("addResLoading").style.display = "block";
 
@@ -10274,20 +10552,34 @@
                 /* الجوال يحدث فقط ان كتب شيئا، فلا يمسح رقما مسجلا
                    لمجرد ترك الحقل فارغا اثناء تعديل بيانات اخرى */
                 if (rawPhone) payload.phone = phone;
-                if (!keepOldPass) payload.password = await hashPassword(pass);
+                if (!keepOldPass) {
+                    payload.password = await hashPassword(pass);
+                    payload.activated = true;   /* تعيين كلمة مرور يفعل الحساب */
+                }
                 await updateDoc(doc(db, "researchers", editingResearcherId), payload);
                 logAudit("تعديل بيانات باحث", name + " (" + id + ") | المنطقة: " + region + " | نوع العمل: " + workType + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
                 showMsg("addResSuccess", "<i class='fas fa-check-circle'></i> تم تحديث بيانات الباحث بنجاح!" +
                     (keepOldPass ? "" : "<br><span class='pass-once'>كلمة المرور الجديدة: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>"));
             } else {
                 await addDoc(collection(db, "researchers"), {
-                    empName: name, empId: id, password: await hashPassword(pass),
+                    empName: name, empId: id,
+                    /* بلا كلمة مرور: يخزن الحقل فارغا فلا يمكن الدخول به */
+                    password: activateNow ? await hashPassword(pass) : "",
+                    activated: activateNow,
                     phone: phone, region: region, workType: workType,
                     status: 'active', createdAt: new Date().toISOString()
                 });
-                logAudit("اضافة باحث", name + " (" + id + ") | المنطقة: " + region + " | نوع العمل: " + workType);
-                showMsg("addResSuccess", "<i class='fas fa-check-circle'></i> تمت اضافة الباحث الى قائمة النظام بنجاح!" +
-                    "<br><span class='pass-once'>كلمة المرور: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>");
+
+                logAudit("اضافة باحث", name + " (" + id + ") | المنطقة: " + region +
+                    " | نوع العمل: " + workType + (activateNow ? " | مفعل" : " | غير مفعل"));
+
+                if (activateNow) {
+                    showMsg("addResSuccess", "<i class='fas fa-check-circle'></i> تمت اضافة الباحث وتفعيل حسابه!" +
+                        "<br><span class='pass-once'>كلمة المرور: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>");
+                } else {
+                    showMsg("addResSuccess", "<i class='fas fa-check-circle'></i> تمت اضافة الباحث بحساب <strong>غير مفعل</strong>." +
+                        "<br>لتفعيله: اضغط زر الواتساب بجانبه في القائمة واختر <strong>مع اعادة تعيين كلمة المرور</strong>.");
+                }
             }
 
             document.getElementById("addResLoading").style.display = "none";
@@ -10693,6 +10985,19 @@
 
         /* نافذة الخيار: بيانات فقط، ام بيانات مع كلمة مرور جديدة */
         document.getElementById("waChoiceName").textContent = r.empName + " (" + r.empId + ")";
+
+        /* الحساب غير المفعل: نوضح ان الخيار الثاني هو ما يفعله */
+        const inactiveNote = document.getElementById("waInactiveNote");
+        const infoBtn = document.getElementById("btnWaInfoOnly");
+        if (r.activated !== true) {
+            if (inactiveNote) inactiveNote.style.display = "block";
+            /* البيانات وحدها بلا فائدة لحساب لا يمكن الدخول به */
+            if (infoBtn) { infoBtn.disabled = true; infoBtn.style.opacity = "0.5"; infoBtn.style.cursor = "not-allowed"; }
+        } else {
+            if (inactiveNote) inactiveNote.style.display = "none";
+            if (infoBtn) { infoBtn.disabled = false; infoBtn.style.opacity = ""; infoBtn.style.cursor = ""; }
+        }
+
         document.getElementById("waChoiceModal").style.display = "flex";
     };
 
@@ -10739,17 +11044,27 @@
         try {
             const tempPass = generateTempPassword();
 
+            /* التفعيل يتم هنا: ارسال كلمة المرور هو لحظة جاهزية الحساب */
+            const wasInactive = (r.activated !== true);
+
             await updateDoc(doc(db, "researchers", r.id), {
                 password: await hashPassword(tempPass),
-                mustChangePassword: true
+                mustChangePassword: true,
+                activated: true
             });
 
-            logAudit("اعادة تعيين كلمة مرور باحث",
+            /* تحديث النسخة المحلية فورا فتظهر الحالة الجديدة بلا اعادة تحميل */
+            r.activated = true;
+
+            logAudit(wasInactive ? "تفعيل حساب باحث" : "اعادة تعيين كلمة مرور باحث",
                 (r.empName || "") + " (" + r.empId + ") | ارسلت عبر الواتساب");
 
             closeWaChoice();
             openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region, tempPass, r.workType);
-            toast("تم تعيين كلمة مرور جديدة وفتح الواتساب.", "success");
+            toast(wasInactive ? "تم تفعيل الحساب وارسال كلمة المرور." : "تم تعيين كلمة مرور جديدة وفتح الواتساب.", "success");
+
+            /* اعادة رسم الجدول لتظهر حالة التفعيل الجديدة */
+            renderResearchersTable(currentFilterStatus || 'all');
         } catch (e) {
             toast("تعذر تعيين كلمة المرور: " + ((e && e.code) || "خطأ غير معروف"), "error");
         }
@@ -14962,6 +15277,17 @@
         document.getElementById("accName").textContent = session.name || "-";
         document.getElementById("accId").textContent = session.empId || "-";
         document.getElementById("accRole").textContent = accountRoleLabel();
+
+        /* المنطقة ونوع العمل يخصان الباحثين، فتخفى صفوفهما للمدراء */
+        const isRes = (session.type === "researcher");
+        const regionRow = document.getElementById("accRegionRow");
+        const workRow = document.getElementById("accWorkRow");
+        if (regionRow) regionRow.style.display = isRes ? "flex" : "none";
+        if (workRow) workRow.style.display = isRes ? "flex" : "none";
+        if (isRes) {
+            document.getElementById("accRegion").textContent = session.region || "غير محددة";
+            document.getElementById("accWorkType").textContent = session.workType || "غير محدد";
+        }
 
         document.getElementById("accPhone").value = session.phone || "";
         updatePhoneStatus();
