@@ -2647,6 +2647,26 @@
             .ds-count-num { font-size: 23px; }
         }
 
+        /* ---------------- خيارات نافذة الواتساب ---------------- */
+        .wa-choice-opt {
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            border-radius: 11px;
+            background: rgba(74, 135, 148, 0.08);
+            border: 1px solid rgba(74, 135, 148, 0.22);
+            text-align: right;
+        }
+        body.dark-mode .wa-choice-opt { background: rgba(74, 135, 148, 0.15); }
+        .wa-choice-opt strong { display: block; font-size: 15px; margin-bottom: 4px; }
+        .wa-choice-opt span { display: block; font-size: 12.5px; font-weight: 600; color: #6c757d; line-height: 1.8; }
+        body.dark-mode .wa-choice-opt span { color: #9aabae; }
+
+        .wa-choice-warn {
+            background: rgba(192, 57, 43, 0.07);
+            border-color: rgba(192, 57, 43, 0.35);
+        }
+        body.dark-mode .wa-choice-warn { background: rgba(192, 57, 43, 0.14); }
+
         /* ---------------- صندوق كلمة المرور المولدة ---------------- */
         .gen-pass-box {
             margin-top: 12px;
@@ -3500,6 +3520,41 @@
     </button>
     <div class="offline-hint">
         لن تفقد شيئا مما ادخلته. بمجرد عودة الاتصال ستعود الى حيث كنت.
+    </div>
+</div>
+
+<!-- ==============================================================
+     نافذة خيار ارسال بيانات الباحث عبر الواتساب
+     --------------------------------------------------------------
+     خياران: ارسال البيانات كما هي، او ارسالها مع تعيين كلمة مرور
+     مؤقتة جديدة تلزم الباحث بتغييرها عند اول دخول.
+     ============================================================== -->
+<div id="waChoiceModal" class="install-modal" onclick="if(event.target===this) closeWaChoice()">
+    <div class="install-modal-box">
+        <h3><i class="fab fa-whatsapp"></i> ارسال بيانات الحساب</h3>
+
+        <div class="current-info" id="waChoiceName"></div>
+
+        <p style="font-size:14.5px; line-height:1.9; margin:16px 0 8px 0;">
+            اختر ما تريد ارساله للباحث:
+        </p>
+
+        <div class="wa-choice-opt">
+            <strong>البيانات فقط</strong>
+            <span>الاسم والاسم المستخدم والصفة والمنطقة، بلا اي تغيير على كلمة مروره الحالية.</span>
+        </div>
+
+        <div class="wa-choice-opt wa-choice-warn">
+            <strong>مع اعادة تعيين كلمة المرور</strong>
+            <span>تعين له كلمة مرور مؤقتة جديدة وترسل معه، <strong>وتلغى كلمة مروره الحالية فورا</strong>،
+            ويلزم بتغيير المؤقتة عند اول دخول.</span>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-manager btn-icon-watermark icon-whatsapp" onclick="waSendInfoOnly()">البيانات فقط</button>
+            <button id="btnWaReset" class="btn-alert-red btn-icon-watermark icon-key" onclick="waSendWithReset()">مع اعادة تعيين كلمة المرور</button>
+            <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeWaChoice()">الغاء</button>
+        </div>
     </div>
 </div>
 
@@ -6439,18 +6494,45 @@
        فالخلط بينها سبب شائع لفشل الدخول.
        ------------------------------------------------------------------ */
     function generateTempPassword() {
-        const upper  = "ABCDEFGHJKLMNPQRSTUVWXYZ";   /* بلا I و O */
-        const lower  = "abcdefghijkmnpqrstuvwxyz";   /* بلا l و o */
-        const digits = "23456789";                   /* بلا 0 و 1 */
+        /* ------------------------------------------------------------
+           كلمة مرور مؤقتة: ارقام وحروف ورموز
+           ------------------------------------------------------------
+           تحديثان مهمان على النسخة السابقة:
 
-        const pick = function(set, n) {
-            let out = "";
-            for (let i = 0; i < n; i++) out += set.charAt(Math.floor(Math.random() * set.length));
-            return out;
+           1) العشوائية من crypto لا من Math.random. الثانية متوقعة
+              رياضيا ولا تصلح لتوليد كلمات مرور.
+
+           2) اضيفت الرموز لزيادة قوتها، مع اقتصارها على رموز واضحة
+              في لوحة مفاتيح الجوال العربية والانجليزية، وتجنب ما قد
+              يلتبس او يفسد نسخ النص في الرسائل.
+
+           والاحرف والارقام المتشابهة بصريا مستبعدة (O و 0، l و 1 و I)
+           لان الباحث يقرأها من رسالة ويكتبها يدويا.
+           ------------------------------------------------------------ */
+        const upper   = "ABCDEFGHJKLMNPQRSTUVWXYZ";   /* بلا I و O */
+        const lower   = "abcdefghijkmnpqrstuvwxyz";   /* بلا l و o */
+        const digits  = "23456789";                   /* بلا 0 و 1 */
+        const symbols = "@#%&*+=?!";                  /* رموز واضحة وسهلة الكتابة */
+        const all = upper + lower + digits + symbols;
+
+        const pickOne = function(set) {
+            const buf = new Uint32Array(1);
+            crypto.getRandomValues(buf);
+            return set.charAt(buf[0] % set.length);
         };
 
-        /* النمط: حرف كبير + ثلاثة صغيرة + اربعة ارقام */
-        return pick(upper, 1) + pick(lower, 3) + pick(digits, 4);
+        /* نضمن كل نوع بحرف واحد على الاقل ثم نكمل الباقي عشوائيا */
+        const chars = [pickOne(upper), pickOne(lower), pickOne(digits), pickOne(symbols)];
+        while (chars.length < 10) chars.push(pickOne(all));
+
+        /* خلط امن حتى لا تقع الانواع في مواضع ثابتة متوقعة */
+        for (let i = chars.length - 1; i > 0; i--) {
+            const buf = new Uint32Array(1);
+            crypto.getRandomValues(buf);
+            const j = buf[0] % (i + 1);
+            const t = chars[i]; chars[i] = chars[j]; chars[j] = t;
+        }
+        return chars.join("");
     }
     function isHashed(v) { return typeof v === "string" && /^sha256\$[a-f0-9]{64}$/.test(v); }
 
@@ -10490,7 +10572,7 @@
        اطلاقا لا نصا ولا خانة فارغة، لان النظام لا يحتفظ بها اصلا الا
        مشفرة، ولان ارسالها في رسالة نصية ممارسة غير امنة.
        ------------------------------------------------------------------ */
-    function openWhatsAppCard(phone, name, username, title, region) {
+    function openWhatsAppCard(phone, name, username, title, region, tempPass) {
         const lines = [
             "الاسم: " + (name || ""),
             "",
@@ -10503,6 +10585,13 @@
             lines.push("");
             lines.push("المنطقة: " + region);
         }
+        /* كلمة المرور المؤقتة عند اعادة التعيين فقط */
+        if (tempPass) {
+            lines.push("");
+            lines.push("كلمة المرور المؤقتة: " + tempPass);
+            lines.push("");
+            lines.push("يلزمك تغييرها عند اول تسجيل دخول من شاشة حسابي.");
+        }
         const wa = String(phone).replace(/^\+/, "");
         window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
     }
@@ -10513,6 +10602,9 @@
        متاح لكل مدير يملك صلاحية "قائمة الباحثين"، بخلاف زر المدراء
        المقصور على المبرمج والمدير العام.
        ------------------------------------------------------------------ */
+    /* الباحث المختار حاليا لارسال بياناته */
+    let waTargetResearcher = null;
+
     window.sendResearcherCard = function(docId) {
         if (!hasPerm("قائمة الباحثين")) { denyAccess(); return; }
 
@@ -10524,8 +10616,73 @@
             return;
         }
 
+        waTargetResearcher = r;
+
+        /* نافذة الخيار: بيانات فقط، ام بيانات مع كلمة مرور جديدة */
+        document.getElementById("waChoiceName").textContent = r.empName + " (" + r.empId + ")";
+        document.getElementById("waChoiceModal").style.display = "flex";
+    };
+
+    window.closeWaChoice = function() {
+        document.getElementById("waChoiceModal").style.display = "none";
+        waTargetResearcher = null;
+    };
+
+    /* ------------------------------------------------------------------
+       ارسال البيانات بلا اعادة تعيين
+       ------------------------------------------------------------------
+       الرسالة المعتادة: الاسم والاسم المستخدم والصفة والمنطقة، بلا اي
+       ذكر لكلمة المرور، فهي مخزنة مشفرة ولا يمكن استرجاعها اصلا.
+       ------------------------------------------------------------------ */
+    window.waSendInfoOnly = function() {
+        const r = waTargetResearcher;
+        if (!r) return;
+        closeWaChoice();
+
         openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region);
         logAudit("فتح محادثة بيانات حساب", (r.empName || "") + " (" + r.empId + ")");
+    };
+
+    /* ------------------------------------------------------------------
+       ارسال البيانات مع اعادة تعيين كلمة المرور
+       ------------------------------------------------------------------
+       يولد كلمة مرور مؤقتة، يحفظها مشفرة، ويضع على الحساب علامة
+       mustChangePassword فيلزم الباحث بتغييرها عند اول دخول. ثم يفتح
+       الواتساب برسالة تحوي البيانات وكلمة المرور المؤقتة.
+
+       ترتيب مقصود: نحفظ اولا ثم نفتح الرسالة. فلو فشل الحفظ لم ترسل
+       للباحث كلمة مرور لا تعمل.
+       ------------------------------------------------------------------ */
+    window.waSendWithReset = async function() {
+        const r = waTargetResearcher;
+        if (!r) return;
+        if (!hasPerm("قائمة الباحثين")) { denyAccess(); return; }
+        if (!requireOnline()) return;
+
+        const btn = document.getElementById("btnWaReset");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التعيين...';
+
+        try {
+            const tempPass = generateTempPassword();
+
+            await updateDoc(doc(db, "researchers", r.id), {
+                password: await hashPassword(tempPass),
+                mustChangePassword: true
+            });
+
+            logAudit("اعادة تعيين كلمة مرور باحث",
+                (r.empName || "") + " (" + r.empId + ") | ارسلت عبر الواتساب");
+
+            closeWaChoice();
+            openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region, tempPass);
+            toast("تم تعيين كلمة مرور جديدة وفتح الواتساب.", "success");
+        } catch (e) {
+            toast("تعذر تعيين كلمة المرور: " + ((e && e.code) || "خطأ غير معروف"), "error");
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = "مع اعادة تعيين كلمة المرور";
     };
 
     /* ==================================================================
