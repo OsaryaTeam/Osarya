@@ -3989,8 +3989,8 @@
             <button class="btn-manager btn-icon-watermark icon-leave" data-action-badge="leave" onclick="checkPermissionAndGo('loadLeaveRequests')">طلبات الاجازات</button>
             <button class="btn-manager btn-icon-watermark icon-bell" onclick="checkPermissionAndGo('openNoticeAdmin')">إنشاء تنبيه | إنذار</button>
             <button class="btn-manager btn-icon-watermark icon-user-shield" onclick="loadManagersList()">الادارة العامة</button>
+            <button class="btn-manager btn-icon-watermark icon-key" data-action-badge="password" onclick="checkPermissionAndGo('openPasswordRequests')">طلبات استعادة كلمة المرور</button>
 
-            <button class="btn-manager btn-icon-watermark icon-key btn-logout-full" data-action-badge="password" onclick="checkPermissionAndGo('openPasswordRequests')">طلبات استعادة كلمة المرور</button>
 
             <!-- زر سجل التدقيق: للمبرمج وحده لا يشاركه فيه احد.
                  موضعه بين طلبات استعادة كلمة المرور وتسجيل الخروج،
@@ -4426,9 +4426,15 @@
             </div>
 
             <!-- تصفية بالمنطقة: تعمل مع تصفية الحالة اعلاه في ان واحد -->
-            <div class="input-group" style="margin-top: 12px;">
-                <label for="resRegionFilter">تصفية بالمنطقة:</label>
-                <select id="resRegionFilter" class="year-select" style="width:100%;" onchange="applyRegionFilter()"></select>
+            <div class="form-grid" style="margin-top: 12px;">
+                <div class="input-group">
+                    <label for="resRegionFilter">تصفية بالمنطقة:</label>
+                    <select id="resRegionFilter" class="year-select" style="width:100%;" onchange="applyRegionFilter()"></select>
+                </div>
+                <div class="input-group">
+                    <label for="resWorkFilter">تصفية بنوع العمل:</label>
+                    <select id="resWorkFilter" class="year-select" style="width:100%;" onchange="applyRegionFilter()"></select>
+                </div>
             </div>
         </div>
 
@@ -4472,6 +4478,11 @@
                     <select id="newResRegion" class="year-select" style="width:100%;"></select>
                 </div>
 
+                <div class="input-group">
+                    <label for="newResWorkType">نوع العمل:</label>
+                    <select id="newResWorkType" class="year-select" style="width:100%;"></select>
+                </div>
+
                 <div class="input-group full-width">
                     <label for="newResPass">كلمة المرور:</label>
                     <div class="password-wrapper">
@@ -4511,6 +4522,7 @@
                         <th>اسم الباحث</th>
                         <th>الاسم المستخدم</th>
                         <th>المنطقة</th>
+                        <th>نوع العمل</th>
                         <th>رقم الجوال</th>
                         <th>كلمة المرور</th>
                         <th>حالة الباحث</th>
@@ -6036,6 +6048,17 @@
        تبنى من هذا المصدر الواحد.
        ------------------------------------------------------------------ */
     const REGIONS = ["الشرقية", "عسير", "جازان", "المدينة المنورة"];
+
+    /* ------------------------------------------------------------------
+       انواع عمل الباحثين
+       ------------------------------------------------------------------
+       يحدد لكل باحث عند انشائه. يعرف بالبرنامج الذي يعمل ضمنه، وتفيد
+       معرفته في توزيع المهام ومتابعة العمل وتصفية القوائم.
+
+       كالمناطق، تبنى كل القوائم في النظام من هذا المصدر الواحد،
+       فاضافة نوع مستقبلا لا تحتاج الا سطرا هنا.
+       ------------------------------------------------------------------ */
+    const WORK_TYPES = ["ضمان اجتماعي", "حساب المواطن"];
 
     /* هل نحن على النطاق الرسمي؟ */
     function isOfficialOrigin() {
@@ -9723,6 +9746,12 @@
             filteredList = filteredList.filter(function(r) { return (r.region || "") === regionFilter; });
         }
 
+        /* نوع العمل: يجتمع مع الحالة والمنطقة في تصفية واحدة */
+        const workFilter = (document.getElementById("resWorkFilter") || {}).value || "";
+        if (workFilter) {
+            filteredList = filteredList.filter(function(r) { return (r.workType || "") === workFilter; });
+        }
+
         /* البناء في الذاكرة ثم الادراج دفعة واحدة لتقليل اعادة الرسم */
         const frag = document.createDocumentFragment();
 
@@ -9750,6 +9779,18 @@
                 tdRegion.style.color = "#a5601f";
                 tdRegion.style.fontSize = "12.5px";
                 tdRegion.style.fontWeight = "700";
+            }
+
+            /* نوع العمل: الباحثون القدامى قبل هذه الميزة بلا نوع */
+            const tdWork = document.createElement("td");
+            if (r.workType) {
+                tdWork.textContent = r.workType;
+                tdWork.style.fontWeight = "700";
+            } else {
+                tdWork.textContent = "غير محدد";
+                tdWork.style.color = "#a5601f";
+                tdWork.style.fontSize = "12.5px";
+                tdWork.style.fontWeight = "700";
             }
 
             /* رقم الجوال: يوضح من يمكن مراسلته ومن ينقصه الرقم */
@@ -9847,6 +9888,7 @@
             tr.appendChild(tdName);
             tr.appendChild(tdId);
             tr.appendChild(tdRegion);
+            tr.appendChild(tdWork);
             tr.appendChild(tdPhone);
             tr.appendChild(tdPass);
             tr.appendChild(tdStatus);
@@ -10044,6 +10086,8 @@
             /* قائمة التصفية تبنى مرة واحدة عند التحميل */
             const rf = document.getElementById("resRegionFilter");
             if (rf && !rf.options.length) fillRegionSelect(rf, "كل المناطق");
+            const wf = document.getElementById("resWorkFilter");
+            if (wf && !wf.options.length) fillWorkTypeSelect(wf, "كل الانواع");
 
             renderResearchersTable('all');
             rLoading.style.display = "none";
@@ -10054,16 +10098,26 @@
         }
     };
 
-    /* تعبئة اي قائمة مناطق من المصدر الواحد REGIONS */
-    function fillRegionSelect(el, placeholder) {
+    /* تعبئة اي قائمة من مصفوفة خيارات معطاة */
+    function fillOptionsSelect(el, options, placeholder) {
         if (!el) return;
-        el.innerHTML = '<option value="">' + (placeholder || "-- اختر المنطقة --") + '</option>';
-        REGIONS.forEach(function(r) {
+        el.innerHTML = '<option value="">' + (placeholder || "-- اختر --") + '</option>';
+        options.forEach(function(v) {
             const o = document.createElement("option");
-            o.value = r;
-            o.textContent = r;
+            o.value = v;
+            o.textContent = v;
             el.appendChild(o);
         });
+    }
+
+    /* تعبئة قائمة المناطق من المصدر الواحد REGIONS */
+    function fillRegionSelect(el, placeholder) {
+        fillOptionsSelect(el, REGIONS, placeholder || "-- اختر المنطقة --");
+    }
+
+    /* تعبئة قائمة انواع العمل من المصدر الواحد WORK_TYPES */
+    function fillWorkTypeSelect(el, placeholder) {
+        fillOptionsSelect(el, WORK_TYPES, placeholder || "-- اختر نوع العمل --");
     }
 
     window.toggleAddResearcherForm = function() {
@@ -10078,6 +10132,7 @@
 
             document.getElementById("newResPhone").value = "";
             fillRegionSelect(document.getElementById("newResRegion"));
+            fillWorkTypeSelect(document.getElementById("newResWorkType"));
             const gp0 = document.getElementById("genPassPreview");
             if (gp0) gp0.style.display = "none";
 
@@ -10095,6 +10150,7 @@
             document.getElementById("newResId").value = "";
             document.getElementById("newResPhone").value = "";
             document.getElementById("newResRegion").value = "";
+            document.getElementById("newResWorkType").value = "";
             const gp1 = document.getElementById("genPassPreview");
             if (gp1) gp1.style.display = "none";
             const rHint0 = document.getElementById("resIdHint");
@@ -10119,6 +10175,8 @@
         document.getElementById("newResPhone").value = researcher.phone || "";
         fillRegionSelect(document.getElementById("newResRegion"));
         document.getElementById("newResRegion").value = researcher.region || "";
+        fillWorkTypeSelect(document.getElementById("newResWorkType"));
+        document.getElementById("newResWorkType").value = researcher.workType || "";
         const rHintE = document.getElementById("resIdHint");
         if (rHintE) rHintE.style.display = "none";
 
@@ -10147,6 +10205,7 @@
         const rawPhone = document.getElementById("newResPhone").value.trim();
         const phone = rawPhone ? normalizeSaudiPhone(rawPhone) : "";
         const region = document.getElementById("newResRegion").value;
+        const workType = document.getElementById("newResWorkType").value;
 
         hideMsg("addResError");
         hideMsg("addResSuccess");
@@ -10164,6 +10223,16 @@
         }
         if (REGIONS.indexOf(region) === -1) {
             showMsg("addResError", "<i class='fas fa-times-circle'></i> المنطقة المختارة غير معتمدة.");
+            return;
+        }
+
+        /* نوع العمل الزامي كالمنطقة، فكلاهما اساس توزيع المهام */
+        if (!workType) {
+            showMsg("addResError", "<i class='fas fa-exclamation-circle'></i> الرجاء تحديد نوع عمل الباحث.");
+            return;
+        }
+        if (WORK_TYPES.indexOf(workType) === -1) {
+            showMsg("addResError", "<i class='fas fa-times-circle'></i> نوع العمل المختار غير معتمد.");
             return;
         }
 
@@ -10201,22 +10270,22 @@
             }
 
             if (editingResearcherId) {
-                const payload = { empName: name, empId: id, region: region };
+                const payload = { empName: name, empId: id, region: region, workType: workType };
                 /* الجوال يحدث فقط ان كتب شيئا، فلا يمسح رقما مسجلا
                    لمجرد ترك الحقل فارغا اثناء تعديل بيانات اخرى */
                 if (rawPhone) payload.phone = phone;
                 if (!keepOldPass) payload.password = await hashPassword(pass);
                 await updateDoc(doc(db, "researchers", editingResearcherId), payload);
-                logAudit("تعديل بيانات باحث", name + " (" + id + ") | المنطقة: " + region + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
+                logAudit("تعديل بيانات باحث", name + " (" + id + ") | المنطقة: " + region + " | نوع العمل: " + workType + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
                 showMsg("addResSuccess", "<i class='fas fa-check-circle'></i> تم تحديث بيانات الباحث بنجاح!" +
                     (keepOldPass ? "" : "<br><span class='pass-once'>كلمة المرور الجديدة: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>"));
             } else {
                 await addDoc(collection(db, "researchers"), {
                     empName: name, empId: id, password: await hashPassword(pass),
-                    phone: phone, region: region,
+                    phone: phone, region: region, workType: workType,
                     status: 'active', createdAt: new Date().toISOString()
                 });
-                logAudit("اضافة باحث", name + " (" + id + ") | المنطقة: " + region);
+                logAudit("اضافة باحث", name + " (" + id + ") | المنطقة: " + region + " | نوع العمل: " + workType);
                 showMsg("addResSuccess", "<i class='fas fa-check-circle'></i> تمت اضافة الباحث الى قائمة النظام بنجاح!" +
                     "<br><span class='pass-once'>كلمة المرور: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>");
             }
@@ -10572,7 +10641,7 @@
        اطلاقا لا نصا ولا خانة فارغة، لان النظام لا يحتفظ بها اصلا الا
        مشفرة، ولان ارسالها في رسالة نصية ممارسة غير امنة.
        ------------------------------------------------------------------ */
-    function openWhatsAppCard(phone, name, username, title, region, tempPass) {
+    function openWhatsAppCard(phone, name, username, title, region, tempPass, workType) {
         const lines = [
             "الاسم: " + (name || ""),
             "",
@@ -10584,6 +10653,10 @@
         if (region) {
             lines.push("");
             lines.push("المنطقة: " + region);
+        }
+        if (workType) {
+            lines.push("");
+            lines.push("نوع العمل: " + workType);
         }
         /* كلمة المرور المؤقتة عند اعادة التعيين فقط */
         if (tempPass) {
@@ -10639,7 +10712,7 @@
         if (!r) return;
         closeWaChoice();
 
-        openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region);
+        openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region, null, r.workType);
         logAudit("فتح محادثة بيانات حساب", (r.empName || "") + " (" + r.empId + ")");
     };
 
@@ -10675,7 +10748,7 @@
                 (r.empName || "") + " (" + r.empId + ") | ارسلت عبر الواتساب");
 
             closeWaChoice();
-            openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region, tempPass);
+            openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region, tempPass, r.workType);
             toast("تم تعيين كلمة مرور جديدة وفتح الواتساب.", "success");
         } catch (e) {
             toast("تعذر تعيين كلمة المرور: " + ((e && e.code) || "خطأ غير معروف"), "error");
