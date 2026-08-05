@@ -2647,6 +2647,44 @@
             .ds-count-num { font-size: 23px; }
         }
 
+        /* ---------------- صندوق كلمة المرور المولدة ---------------- */
+        .gen-pass-box {
+            margin-top: 12px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            background: rgba(15, 81, 50, 0.08);
+            border: 1px solid rgba(15, 81, 50, 0.3);
+        }
+        body.dark-mode .gen-pass-box { background: rgba(15, 81, 50, 0.16); }
+
+        .gen-pass-label { font-size: 13px; font-weight: 800; color: #0f5132; margin-bottom: 8px; }
+        body.dark-mode .gen-pass-label { color: #75d1a1; }
+
+        /* كلمة المرور بخط ثابت العرض: يمنع الخلط بين الاحرف المتشابهة */
+        .gen-pass-value {
+            font-family: 'Courier New', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-align: center;
+            padding: 12px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.85);
+            color: #1a1a1a;
+            user-select: all;      /* نقرة واحدة تحدد الكلمة كاملة */
+            word-break: break-all;
+        }
+        body.dark-mode .gen-pass-value { background: rgba(255, 255, 255, 0.92); }
+
+        .gen-pass-hint {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #6c757d;
+            line-height: 1.8;
+            margin: 9px 0;
+        }
+        body.dark-mode .gen-pass-hint { color: #9aabae; }
+
         /* ---------------- نتيجة فحص الاتصال ---------------- */
         .conn-test-box {
             margin-top: 12px;
@@ -4388,6 +4426,12 @@
                             <i id="toggleResPassIcon" class="fas fa-eye"></i>
                         </button>
                     </div>
+
+                    <div class="btn-group" style="margin-top: 10px;">
+                        <button type="button" class="btn-neutral btn-small btn-icon-watermark icon-key" onclick="generateResearcherPassword()">توليد كلمة مرور عشوائية</button>
+                    </div>
+
+                    <div id="genPassPreview" class="gen-pass-box" style="display:none;"></div>
                 </div>
             </div>
             
@@ -7374,6 +7418,107 @@
     }
 
     window.togglePasswordVisibility        = function() { togglePass("managerPass", "togglePassIcon"); };
+    /* ==================================================================
+       توليد كلمة مرور عشوائية
+       ==================================================================
+       تتبع نفس معايير النظام بالضبط (validatePassword):
+         * ست خانات على الاقل
+         * رقم واحد على الاقل
+         * حرف انجليزي كبير واحد على الاقل
+         * حروف وارقام
+
+       ملاحظتان في التصميم:
+       -------------------
+       1) العشوائية من crypto لا من Math.random. الثانية متوقعة رياضيا
+          ويمكن التنبؤ بمخرجاتها، وهي لا تصلح لتوليد كلمات مرور.
+
+       2) استبعدنا الحروف والارقام المتشابهة بصريا (O و 0، l و I و 1)
+          لان كلمة المرور تسلم للباحث عبر رسالة، فالخلط بينها يسبب
+          محاولات دخول فاشلة ومراجعات لا داعي لها.
+       ================================================================== */
+    const GEN_UPPER  = "ABCDEFGHJKLMNPQRSTUVWXYZ";   /* بلا I و O */
+    const GEN_LOWER  = "abcdefghijkmnpqrstuvwxyz";   /* بلا l و o */
+    const GEN_DIGITS = "23456789";                   /* بلا 0 و 1 */
+    const GEN_LENGTH = 10;
+
+    /* اختيار عشوائي امن من نص معطى */
+    function securePick(chars) {
+        const buf = new Uint32Array(1);
+        crypto.getRandomValues(buf);
+        return chars[buf[0] % chars.length];
+    }
+
+    /* خلط المصفوفة بخوارزمية فيشر-ييتس بعشوائية امنة، حتى لا تقع
+       الاحرف المضمونة في مواضع ثابتة يمكن توقعها */
+    function secureShuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const buf = new Uint32Array(1);
+            crypto.getRandomValues(buf);
+            const j = buf[0] % (i + 1);
+            const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+        }
+        return arr;
+    }
+
+    function generateStrongPassword() {
+        const all = GEN_UPPER + GEN_LOWER + GEN_DIGITS;
+
+        /* نضمن تحقق كل شرط بحرف واحد على الاقل، ثم نكمل الباقي عشوائيا */
+        const chars = [
+            securePick(GEN_UPPER),
+            securePick(GEN_LOWER),
+            securePick(GEN_DIGITS)
+        ];
+        while (chars.length < GEN_LENGTH) chars.push(securePick(all));
+
+        return secureShuffle(chars).join("");
+    }
+
+    window.generateResearcherPassword = function() {
+        const input = document.getElementById("newResPass");
+        const icon = document.getElementById("toggleResPassIcon");
+        const box = document.getElementById("genPassPreview");
+        if (!input) return;
+
+        let pass = generateStrongPassword();
+
+        /* حزام امان: لو خالفت المعايير لاي سبب نعيد التوليد.
+           لن يقع عمليا لان البناء يضمنها، لكنه يمنع اي مفاجأة */
+        let guard = 0;
+        while (!validatePassword(pass) && guard < 20) {
+            pass = generateStrongPassword();
+            guard++;
+        }
+
+        input.value = pass;
+
+        /* نظهرها فورا: المدير يحتاج قراءتها ليسلمها للباحث */
+        input.type = "text";
+        if (icon) icon.className = "fas fa-eye-slash";
+
+        if (box) {
+            box.style.display = "block";
+            box.innerHTML = '<div class="gen-pass-label"><i class="fas fa-circle-info"></i> كلمة المرور المولدة:</div>' +
+                            '<div class="gen-pass-value" dir="ltr">' + esc(pass) + '</div>' +
+                            '<div class="gen-pass-hint">انسخها الان وسلمها للباحث، فلن تظهر مرة اخرى بعد الحفظ. ' +
+                            'ويمكنه تغييرها بنفسه من شاشة حسابي.</div>' +
+                            '<button type="button" class="notif-mini-btn" onclick="copyGeneratedPassword()">نسخ كلمة المرور</button>';
+        }
+    };
+
+    window.copyGeneratedPassword = async function() {
+        const input = document.getElementById("newResPass");
+        if (!input || !input.value) return;
+        try {
+            await navigator.clipboard.writeText(input.value);
+            toast("تم نسخ كلمة المرور.", "success");
+        } catch (e) {
+            input.select();
+            try { document.execCommand("copy"); toast("تم نسخ كلمة المرور.", "success"); }
+            catch (e2) { toast("تعذر النسخ، حددها وانسخها يدويا.", "warn"); }
+        }
+    };
+
     window.toggleResPasswordVisibility     = function() { togglePass("newResPass", "toggleResPassIcon"); };
     window.toggleManPasswordVisibility     = function() { togglePass("newManPass", "toggleManPassIcon"); };
     window.toggleResLoginPasswordVisibility= function() { togglePass("resPassLogin", "toggleResLoginPassIcon"); };
@@ -9851,6 +9996,8 @@
 
             document.getElementById("newResPhone").value = "";
             fillRegionSelect(document.getElementById("newResRegion"));
+            const gp0 = document.getElementById("genPassPreview");
+            if (gp0) gp0.style.display = "none";
 
             /* اسم مستخدم مقترح تلقائيا بصيغة OSB#### وقابل للتعديل */
             document.getElementById("newResId").value = suggestResearcherId();
@@ -9866,6 +10013,8 @@
             document.getElementById("newResId").value = "";
             document.getElementById("newResPhone").value = "";
             document.getElementById("newResRegion").value = "";
+            const gp1 = document.getElementById("genPassPreview");
+            if (gp1) gp1.style.display = "none";
             const rHint0 = document.getElementById("resIdHint");
             if (rHint0) rHint0.style.display = "none";
             passInput.value = "";
