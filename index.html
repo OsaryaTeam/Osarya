@@ -2619,6 +2619,34 @@
         body.dark-mode .must-change-banner { color: #f0b473; background: rgba(222,140,67,0.2); }
         .must-change-banner i { margin-left: 7px; }
 
+        /* ---------------- بطاقات عدادات الملخص اليومي ---------------- */
+        .ds-counts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .ds-count-card {
+            padding: 14px 10px;
+            border-radius: 13px;
+            text-align: center;
+            color: #fff;
+        }
+        .ds-count-num { font-size: 26px; font-weight: 900; line-height: 1.2; }
+        .ds-count-label { font-size: 12px; font-weight: 700; margin-top: 5px; line-height: 1.5; opacity: 0.95; }
+
+        .ds-count-card.ds-total   { background: linear-gradient(135deg, #4a8794, #396d78); }
+        .ds-count-card.vt-done    { background: linear-gradient(135deg, #2e9e6b, #1e7a50); }
+        .ds-count-card.vt-transfer{ background: linear-gradient(135deg, #3d8bc4, #2a6a9c); }
+        .ds-count-card.vt-failed  { background: linear-gradient(135deg, #d15a4a, #a8402f); }
+        .ds-count-card.vt-outside { background: linear-gradient(135deg, #b06fc4, #8a4a9e); }
+        .ds-count-card.vt-other   { background: linear-gradient(135deg, #7a8a99, #5a6a77); }
+
+        @media (max-width: 768px) {
+            .ds-counts { grid-template-columns: repeat(2, 1fr); }
+            .ds-count-num { font-size: 23px; }
+        }
+
         /* ---------------- نتيجة فحص الاتصال ---------------- */
         .conn-test-box {
             margin-top: 12px;
@@ -3666,7 +3694,7 @@
 
             <button class="btn-researcher btn-icon-watermark icon-calendar-plus" onclick="openLeaveRequest()">طلب اجازة</button>
             <button class="btn-researcher btn-icon-watermark icon-bell" onclick="openMyNotices()">تنبيهاتي | إنذاراتي</button>
-            <button class="btn-researcher btn-icon-watermark icon-daily-report" onclick="openDailyReportCreate('create')">إنشاء تقرير يومي</button>
+            <button class="btn-researcher btn-icon-watermark icon-daily-report" onclick="openDailySummary()">الملخص اليومي</button>
 
             <button class="btn-logout-red btn-icon-watermark icon-logout btn-logout-full" onclick="exitResearcherArea()">تسجيل خروج</button>
         </div>
@@ -3694,6 +3722,8 @@
         <button class="btn-visit-failed btn-icon-watermark icon-times" onclick="openVisitForm('failed')">التعذر</button>
         <button class="btn-visit-outside btn-icon-watermark icon-map-pin" onclick="openVisitForm('outside')">خارج النطاق</button>
         <button class="btn-visit-other btn-icon-watermark icon-list" onclick="openVisitForm('other')">أخرى</button>
+
+        <div id="visitTypeError" class="error-message"></div>
 
         <div class="btn-group bottom-return">
             <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
@@ -5309,91 +5339,64 @@
          منسدلة من 0 الى 20، والملاحظات نص حر بلا حد.
          المعاينة تتحدث تلقائيا مع كل تغيير.
          ============================================================== -->
-    <div id="dailyReportScreen" class="container screen" style="max-width: 950px;">
+    <div id="dailyReportScreen" class="container screen" style="max-width: 1000px;">
         <div style="text-align: left; margin-bottom: 10px;">
             <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
         </div>
-        <h2 id="drTitle">إنشاء تقرير يومي</h2>
+        <h2>الملخص اليومي</h2>
 
-        <div id="drLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري تجهيز بيانات اليوم...</div>
-
-        <div id="drAlreadySent" class="rule-note" style="display:none;">
-            <i class="fas fa-circle-exclamation"></i>
-            ارسلت تقرير هذا اليوم مسبقا. لتعديله استخدم زر <strong>الإبلاغ عن مشاكل تقنية</strong>
-            ثم <strong>الإبلاغ عن تقديم تقرير يومي خاطئ</strong>.
+        <div class="rule-note">
+            <i class="fas fa-circle-info"></i>
+            يعرض هذا الملخص زياراتك الموثقة في يوم تختاره، بارقامها ومواقعها ودقة تحديد الموقع.
+            وهو للاطلاع الشخصي فقط ولا يرسل الى الادارة.
         </div>
 
-        <!-- الحقول المحسوبة تلقائيا -->
-        <div class="dr-auto-box">
-            <div class="dr-auto-row">
-                <span class="dr-auto-label">اليوم والتاريخ</span>
-                <span class="dr-auto-value" id="drDayLabel">-</span>
-            </div>
-            <div class="dr-auto-row">
-                <span class="dr-auto-label">عدد الزيارات المنفذة</span>
-                <span class="dr-auto-value dr-auto-num" id="drExecuted">0</span>
-            </div>
-            <div class="dr-auto-row">
-                <span class="dr-auto-label">عدد الزيارات المتعذرة</span>
-                <span class="dr-auto-value dr-auto-num" id="drAuto_failed">0</span>
-            </div>
-            <div class="dr-auto-row">
-                <span class="dr-auto-label">عدد الزيارات المحولة</span>
-                <span class="dr-auto-value dr-auto-num" id="drAuto_transferred">0</span>
-            </div>
-            <div class="dr-auto-row">
-                <span class="dr-auto-label">عدد الزيارات خارج النطاق</span>
-                <span class="dr-auto-value dr-auto-num" id="drAuto_outOfScope">0</span>
-            </div>
-            <div class="dr-auto-note">
-                <i class="fas fa-lock"></i>
-                هذه الاعداد تحسب تلقائيا من الزيارات التي وثقتها بتاريخ اليوم بحسب نوع كل زيارة،
-                ولا يمكن تعديلها يدويا فهي مطابقة لسجلك الفعلي.
+        <div class="input-group" style="margin-top: 18px;">
+            <label for="dsDate">اختر اليوم:</label>
+            <div class="input-with-icon">
+                <input type="text" id="dsDate" class="custom-date-picker" placeholder="يوم / شهر / سنة" onchange="loadDailySummary()">
+                <i class="fas fa-calendar-alt right-icon"></i>
             </div>
         </div>
 
-        <!-- القوائم المنسدلة -->
-        <div class="form-grid" style="margin-top: 22px;">
-            <div class="input-group">
-                <label for="dr_remaining">عدد المتبقي في السلة من إسناد اليوم:</label>
-                <select id="dr_remaining" class="year-select" style="width:100%;" onchange="renderDailyPreview()"></select>
-            </div>
-            <div class="input-group">
-                <label for="dr_technical">عدد المشاكل التقنية:</label>
-                <select id="dr_technical" class="year-select" style="width:100%;" onchange="renderDailyPreview()"></select>
-            </div>
-            <div class="input-group">
-                <label for="dr_other">أخرى:</label>
-                <select id="dr_other" class="year-select" style="width:100%;" onchange="renderDailyPreview()"></select>
-            </div>
+        <div id="dsDayLabel" class="dr-day-title"></div>
 
-            <div class="input-group full-width">
-                <label for="drNotes">ملاحظات:</label>
-                <textarea id="drNotes" class="leave-notes" rows="4" placeholder="اكتب الملاحظات عند الحاجة" oninput="renderDailyPreview()"></textarea>
-            </div>
+        <!-- عدادات الانواع -->
+        <div id="dsCounts" class="ds-counts"></div>
+
+        <div id="dsLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري تحميل زيارات اليوم...</div>
+        <div id="dsError" class="error-message"></div>
+
+        <div id="dsEmpty" class="empty-state" style="display:none;">
+            <i class="fas fa-calendar-xmark"></i>
+            لا توجد زيارات موثقة في هذا اليوم
         </div>
 
-        <!-- المعاينة -->
-        <div class="dr-preview-wrap">
-            <h3><i class="fas fa-file-lines"></i> معاينة التقرير</h3>
-            <pre id="drPreviewBox" class="dr-preview"></pre>
+        <div class="table-container">
+            <table id="dsTable">
+                <thead>
+                    <tr>
+                        <th>م</th>
+                        <th>رقم الزيارة</th>
+                        <th>نوع الزيارة</th>
+                        <th>الموقع</th>
+                        <th>دقة الموقع</th>
+                        <th>وقت التوثيق</th>
+                        <th>التفاصيل</th>
+                    </tr>
+                </thead>
+                <tbody id="dsBody"></tbody>
+            </table>
         </div>
-
-        <div id="drError" class="error-message"></div>
-        <div id="drSuccess" class="success-message"></div>
 
         <div class="btn-group">
-            <button class="btn-neutral btn-icon-watermark icon-copy" onclick="copyDailyReport()">نسخ</button>
-            <button class="btn-neutral btn-icon-watermark icon-pdf" onclick="printDailyReport()">طباعة</button>
-            <button id="drSendBtn" class="btn-researcher btn-icon-watermark icon-send" onclick="sendDailyReport()">ارسال التقرير للادارة</button>
+            <button class="btn-neutral btn-icon-watermark icon-copy" onclick="copyDailySummary()">نسخ الملخص</button>
         </div>
-    
-        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
-             فلا يضطر للتمرير الى الاعلى -->
+
         <div class="btn-group bottom-return">
             <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
         </div>
-</div>
+    </div>
 
     <!-- ==============================================================
          شاشة الادارة: التقارير اليومية
@@ -5456,7 +5459,10 @@
 
         <button class="btn-researcher btn-icon-watermark icon-search" onclick="openVisitReport()">الإبلاغ عن تسجيل زيارة خاطئة</button>
         <button class="btn-researcher btn-icon-watermark icon-calendar-plus" onclick="openLeaveReport()">الإبلاغ عن تقديم طلب اجازة بالخطأ وتم قبوله</button>
-        <button class="btn-researcher btn-icon-watermark icon-daily-report" onclick="openDailyReportCreate('correction')">الإبلاغ عن تقديم تقرير يومي خاطئ</button>
+        <!-- ملاحظة: حذف من هنا زر "الإبلاغ عن تقديم تقرير يومي خاطئ".
+             بعد تحول التقرير اليومي الى ملخص شخصي يعرض الزيارات الموثقة
+             ولا يرسل للادارة، لم يعد هناك تقرير مرسل ليصحح. وتصحيح
+             الزيارة نفسها متاح عبر زر "الإبلاغ عن تسجيل زيارة خاطئة". -->
 
         <!-- متابعة كل ما سبق تقديمه من بلاغات وردود الادارة عليها -->
         <button class="btn-neutral btn-icon-watermark icon-history" onclick="openMyReports()">متابعة البلاغات</button>
@@ -8311,6 +8317,22 @@
 
         const cfg = VISIT_TYPES[type];
         if (!cfg) return;
+
+        /* ------------------------------------------------------------------
+           التوثيق من الجوال حصرا
+           ------------------------------------------------------------------
+           الزيارة الميدانية توثق من الميدان، والحاسب لا يستقبل الاقمار
+           الصناعية فيحدد موقعه من الشبكة بدقة كيلومترات، فلا يثبت تواجدا
+           في موقع بعينه. والسماح بالتوثيق منه يفرغ توثيق الموقع من مقصده.
+           ------------------------------------------------------------------ */
+        if (!isMobileDevice()) {
+            toast("توثيق الزيارات متاح من الجوال فقط.", "warn");
+            showMsg("visitTypeError", "<i class='fas fa-mobile-screen'></i> <strong>التوثيق من الجوال فقط</strong>" +
+                "<br>الزيارات الميدانية توثق من الميدان عبر جوالك، لان الحاسب لا يحدد الموقع بدقة كافية لاثبات تواجدك في موقع الزيارة." +
+                "<br>افتح النظام من جوالك لتوثيق زياراتك.");
+            return;
+        }
+
         currentVisitType = type;
 
         /* الاسم والاسم المستخدم من الجلسة لا من ادخال المستخدم */
@@ -8995,7 +9017,7 @@
             const thead = document.getElementById("tableHead");
             thead.innerHTML = "";
             const trHead = document.createElement("tr");
-            ["م", "اسم الباحث", "الاسم المستخدم", "رقم الزيارة", "نوع الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق", "موقع التوثيق"].forEach(function(h) {
+            ["م", "اسم الباحث", "الاسم المستخدم", "رقم الزيارة", "نوع الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق", "موقع التوثيق", "دقة الموقع"].forEach(function(h) {
                 const th = document.createElement("th");
                 th.textContent = h;
                 trHead.appendChild(th);
@@ -9101,6 +9123,26 @@
                 tdLoc.style.fontSize = "12.5px";
             }
             trRow.appendChild(tdLoc);
+
+            /* دقة تحديد الموقع بالمتر: تبين للادارة مدى دقة اثبات التواجد */
+            const tdAcc = document.createElement("td");
+            if (v.location && v.location.status === "ok") {
+                tdAcc.textContent = v.location.accuracy + " م";
+                tdAcc.style.fontWeight = "700";
+                /* الدقة الضعيفة تلون تنبيها للادارة */
+                if (v.location.accuracyPoor) {
+                    tdAcc.textContent += " (تقريبي)";
+                    tdAcc.style.color = "#a5601f";
+                }
+            } else if (v.location && v.location.status === "not_required") {
+                tdAcc.textContent = "لا ينطبق";
+                tdAcc.style.color = "#8a9a9d";
+                tdAcc.style.fontSize = "12.5px";
+            } else {
+                tdAcc.textContent = "-";
+                tdAcc.style.color = "#8a9a9d";
+            }
+            trRow.appendChild(tdAcc);
 
             frag.appendChild(trRow);
         });
@@ -10954,6 +10996,7 @@
                         '<th class="c-type">حالة الزيارة</th>' +
                         '<th class="c-date">تاريخ التنفيذ</th>' +
                         '<th class="c-reg">تاريخ التوثيق</th>' +
+                        '<th class="c-acc">دقة الموقع</th>' +
                         '<th class="c-note">التفاصيل</th>' +
                     '</tr></thead><tbody>';
 
@@ -10967,6 +11010,17 @@
                     extra = "حولت الى: " + v.transferToName + (extra ? " — " + extra : "");
                 }
 
+                /* دقة الموقع: رقم صريح ان سجل، والا سبب عدم تسجيله */
+                let accText;
+                if (v.location && v.location.status === "ok") {
+                    accText = v.location.accuracy + " م";
+                    if (v.location.accuracyPoor) accText += " (تقريبي)";
+                } else if (v.location && v.location.status === "not_required") {
+                    accText = "لا ينطبق";
+                } else {
+                    accText = locationStatusText(v.location);
+                }
+
                 body += '<tr>' +
                     '<td class="c-num">' + (pi * PDF_ROWS_PER_PAGE + ri + 1) + '</td>' +
                     '<td class="c-name">' + esc2(v.empName) + '</td>' +
@@ -10975,6 +11029,7 @@
                     '<td class="c-type"><span class="chip ' + cfg.cls + '">' + esc2(cfg.label) + '</span></td>' +
                     '<td class="c-date">' + esc2(fmtDate(v.execDate)) + '</td>' +
                     '<td class="c-reg">' + esc2(window.formatDateTimeToEnglish(v.regDate)) + '</td>' +
+                    '<td class="c-acc">' + esc2(accText) + '</td>' +
                     '<td class="c-note">' + esc2(extra || "-") + '</td>' +
                 '</tr>';
             });
@@ -10988,44 +11043,77 @@
             body += '</div>';
         });
 
+        /* زر طباعة ثابت داخل المستند، يخفى عند الطباعة نفسها */
+        const printBar = '<div class="print-bar no-print">' +
+            '<button onclick="window.print()">طباعة / حفظ بصيغة PDF</button>' +
+            '<span>' + fetchedVisits.length + ' زيارة في ' + pages.length + ' صفحة</span>' +
+            '</div>';
+
         win.document.write(
             '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
             '<title>تقرير الزيارات الميدانية</title>' +
             '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">' +
             '<style>' +
-            /* الصفحة افقية مع هوامش مريحة */
-            '@page { size: A4 landscape; margin: 10mm; }' +
+            /* ------------------------------------------------------------
+               ضبط الصفحة والترقيم
+               ------------------------------------------------------------
+               المشكلة التي عولجت هنا:
+               كان المتصفح يقسم الصفحات بحسب الارتفاع الفعلي لا بحسب عدد
+               الصفوف، فتطبع سبعة عشر صفا في الصفحة الاولى ويدفع الباقي
+               الى صفحة تالية، رغم ان المستند مقسم اصلا الى عشرين صفا.
+
+               السبب ان مجموع ارتفاعات (الترويسة + عشرين صفا + التذييل)
+               يتجاوز ارتفاع الصفحة المطبوعة قليلا.
+
+               المعالجة على ثلاثة محاور:
+                 1) تصغير الهوامش والحشو والخطوط بقدر محسوب، حتى يدخل
+                    المحتوى كاملا في ارتفاع الصفحة.
+                 2) تثبيت ارتفاع كل صف بالمليمترات لا تركه للمحتوى،
+                    فيصبح مجموع الارتفاعات معلوما لا مفاجئا.
+                 3) منع كسر الصفوف والجداول عبر الصفحات صراحة.
+               ------------------------------------------------------------ */
+            '@page { size: A4 landscape; margin: 6mm; }' +
             '* { box-sizing: border-box; }' +
-            'body { font-family: Tajawal, Tahoma, sans-serif; margin: 0; color: #000; background: #fff; }' +
+            'html, body { margin: 0; padding: 0; }' +
+            'body { font-family: Tajawal, Tahoma, sans-serif; color: #000; background: #fff; }' +
 
-            /* كل جدول في صفحة مستقلة */
-            '.page { page-break-after: always; }' +
-            '.page:last-child { page-break-after: auto; }' +
+            /* كل جدول في صفحة مستقلة، مع منع اي كسر داخلي */
+            '.page { page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }' +
+            '.page:last-child { page-break-after: auto; break-after: auto; }' +
+            'table, thead, tbody, tr, td, th { page-break-inside: avoid !important; break-inside: avoid !important; }' +
+            'tr { page-break-after: auto; }' +
 
-            '.doc-head { text-align: center; margin-bottom: 10px; border-bottom: 3px solid #4a8794; padding-bottom: 8px; }' +
-            '.doc-title { font-size: 20px; font-weight: 800; color: #2c5f6a; }' +
-            '.doc-sub { font-size: 12px; font-weight: 600; color: #555; margin-top: 3px; }' +
-            '.doc-scope { font-size: 12px; font-weight: 700; color: #a5601f; margin-top: 6px; }' +
+            /* ترويسة مضغوطة: كل مليمتر يوفر مكانا لصف اضافي */
+            '.doc-head { text-align: center; margin-bottom: 4px; border-bottom: 2px solid #4a8794; padding-bottom: 3px; }' +
+            '.doc-title { font-size: 14px; font-weight: 800; color: #2c5f6a; line-height: 1.3; }' +
+            '.doc-sub { font-size: 9.5px; font-weight: 600; color: #555; margin-top: 1px; line-height: 1.3; }' +
+            '.doc-scope { font-size: 9.5px; font-weight: 700; color: #a5601f; margin-top: 2px; line-height: 1.3; }' +
 
             'table { width: 100%; border-collapse: collapse; table-layout: fixed; }' +
-            'th, td { border: 1px solid #666; padding: 6px 5px; font-size: 11px; text-align: center; vertical-align: middle; word-wrap: break-word; }' +
-            'th { background: #4a8794 !important; color: #fff !important; font-weight: 800; font-size: 11.5px; ' +
+            /* ارتفاع ثابت لكل صف: هو مفتاح دخول العشرين صفا في الصفحة */
+            'tbody tr { height: 7.2mm; }' +
+            'thead tr { height: 7mm; }' +
+            'th, td { border: 1px solid #666; padding: 1px 4px; font-size: 10px; line-height: 1.25; ' +
+                     'text-align: center; vertical-align: middle; word-wrap: break-word; overflow: hidden; }' +
+            'th { background: #4a8794 !important; color: #fff !important; font-weight: 800; font-size: 10.5px; ' +
                  '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
             'tbody tr:nth-child(even) td { background: #f4f7f8 !important; ' +
                  '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
 
             /* عرض الاعمدة: مجموعها 100 بالمئة */
+            /* عرض الاعمدة: مجموعها 100 بالمئة */
             '.c-num { width: 4%; font-weight: 800; }' +
-            '.c-name { width: 17%; }' +
-            '.c-user { width: 10%; }' +
-            '.c-vid { width: 9%; font-weight: 700; }' +
-            '.c-type { width: 12%; }' +
-            '.c-date { width: 11%; }' +
-            '.c-reg { width: 15%; font-size: 10px; }' +
-            '.c-note { width: 22%; text-align: right; font-size: 10px; }' +
+            '.c-name { width: 16%; }' +
+            '.c-user { width: 9%; }' +
+            '.c-vid { width: 8%; font-weight: 700; }' +
+            '.c-type { width: 11%; }' +
+            '.c-date { width: 10%; }' +
+            '.c-reg { width: 14%; font-size: 9px; }' +
+            '.c-acc { width: 9%; font-size: 9.5px; }' +
+            '.c-note { width: 19%; text-align: right; font-size: 9px; }' +
 
             /* شارات حالة الزيارة بالوانها */
-            '.chip { display: inline-block; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 800; color: #fff; ' +
+            '.chip { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 800; color: #fff; ' +
                     '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
             '.vt-done { background: #1e7a50 !important; }' +
             '.vt-transfer { background: #2a6a9c !important; }' +
@@ -11033,9 +11121,18 @@
             '.vt-outside { background: #8a4a9e !important; }' +
             '.vt-other { background: #5a6a77 !important; }' +
 
-            '.doc-foot { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 6px; ' +
-                        'border-top: 1px solid #999; font-size: 10.5px; font-weight: 600; color: #555; }' +
-            '</style></head><body>' + body + '</body></html>'
+            '.doc-foot { display: flex; justify-content: space-between; margin-top: 3px; padding-top: 2px; ' +
+                        'border-top: 1px solid #999; font-size: 8.5px; font-weight: 600; color: #555; }' +
+            /* شريط الطباعة: يظهر على الشاشة ويختفي في الورق */
+            '.print-bar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; ' +
+                         'justify-content: center; gap: 16px; padding: 12px; margin-bottom: 10px; ' +
+                         'background: #4a8794; color: #fff; font-weight: 800; font-size: 14px; }' +
+            '.print-bar button { padding: 10px 26px; font-size: 15px; font-weight: 800; border: none; ' +
+                                'border-radius: 8px; background: #fff; color: #2c5f6a; cursor: pointer; ' +
+                                'font-family: Tajawal, Tahoma, sans-serif; }' +
+            '.print-bar button:hover { background: #e8f1f3; }' +
+            '@media print { .no-print { display: none !important; } }' +
+            '</style></head><body>' + printBar + body + '</body></html>'
         );
 
         win.document.close();
@@ -11043,8 +11140,24 @@
 
         logAudit("تصدير بيانات", "تصدير PDF لعدد " + fetchedVisits.length + " سجل في " + pages.length + " صفحة");
 
-        /* مهلة قصيرة ليكتمل تحميل الخط قبل فتح نافذة الطباعة */
-        setTimeout(function() { win.print(); }, 700);
+        /* ------------------------------------------------------------------
+           فتح نافذة الطباعة
+           ------------------------------------------------------------------
+           ننتظر اكتمال تحميل الخط قبل الفتح، فلو فتحت النافذة والخط لم
+           يحمل بعد لتغيرت ابعاد النص بعدها واختل توزيع الصفوف.
+
+           ونضع زر طباعة ثابتا في اعلى المستند ايضا، فلو اغلق المستخدم
+           نافذة الطباعة او اراد اعادتها لم يحتج اختصار لوحة المفاتيح.
+           ------------------------------------------------------------------ */
+        const openPrint = function() {
+            try { win.print(); } catch (e) {}
+        };
+
+        if (win.document.fonts && win.document.fonts.ready) {
+            win.document.fonts.ready.then(function() { setTimeout(openPrint, 250); });
+        } else {
+            setTimeout(openPrint, 800);
+        }
     };
 
     /* ==================================================================
@@ -14792,275 +14905,239 @@
 
     /* ---------------- جانب الباحث ---------------- */
 
-    window.openDailyReportCreate = async function(mode) {
+    /* ==================================================================
+       الملخص اليومي (جانب الباحث)
+       ==================================================================
+       تغيرت فكرة الشاشة: كانت نموذج تقرير يرسل للادارة، وصارت شاشة
+       اطلاع شخصي يستعرض فيها الباحث زيارات يوم يختاره.
+
+       لماذا؟ لان الزيارات صارت توثق بانواعها وتفاصيلها ومواقعها، فما
+       كان يكتبه الباحث يدويا صار مسجلا بدقة اكبر. فالاولى ان يرى ما
+       سجله فعلا بدل ان يعيد كتابته.
+       ================================================================== */
+
+    let dsVisits = [];
+
+    window.openDailySummary = async function() {
         if (!isResearcher()) { window.switchScreen('researcherLoginScreen'); return; }
 
-        drEditMode = (mode === "correction") ? "correction" : "create";
-        drTodayISO = todayISO();
-
-        document.getElementById("drTitle").textContent =
-            (drEditMode === "correction") ? "تصحيح التقرير اليومي" : "إنشاء تقرير يومي";
-        document.getElementById("drSendBtn").textContent =
-            (drEditMode === "correction") ? "ارسال بلاغ التصحيح" : "ارسال التقرير للادارة";
-
-        buildDailyDropdowns();
-        document.getElementById("drNotes").value = "";
-        document.getElementById("drPreviewBox").textContent = "";
-        hideMsg("drError"); hideMsg("drSuccess");
+        const dEl = document.getElementById("dsDate");
+        if (dEl) {
+            if (dEl._flatpickr) dEl._flatpickr.setDate(todayISO(), false);
+            else dEl.value = todayISO();
+        }
 
         window.switchScreen('dailyReportScreen');
+        await loadDailySummary();
+    };
 
-        const loading = document.getElementById("drLoading");
-        loading.style.display = "block";
+    window.loadDailySummary = async function() {
+        if (!isResearcher()) return;
+
+        const day = window.toEnglishDigits((document.getElementById("dsDate") || {}).value || "");
+        const loading = document.getElementById("dsLoading");
+        const empty = document.getElementById("dsEmpty");
+        const tbody = document.getElementById("dsBody");
+        const counts = document.getElementById("dsCounts");
+
+        hideMsg("dsError");
+        if (tbody) tbody.innerHTML = "";
+        if (empty) empty.style.display = "none";
+        if (counts) counts.innerHTML = "";
+
+        const dayLabel = document.getElementById("dsDayLabel");
+        if (dayLabel) dayLabel.textContent = day ? arabicDayLabel(day) : "";
+
+        if (!day) return;
+
+        if (loading) loading.style.display = "block";
         try {
-            await computeExecutedVisits();
-            await loadTodayReport();
-            renderDailyPreview();
-        } catch (e) {
-            showMsg("drError", "<i class='fas fa-wifi'></i> تعذر تحميل بيانات اليوم.");
-        }
-        loading.style.display = "none";
-    };
-
-    /* بناء القوائم المنسدلة من 0 الى 20 */
-    function buildDailyDropdowns() {
-        DR_FIELDS.forEach(function(f) {
-            const sel = document.getElementById("dr_" + f.key);
-            if (!sel || sel.options.length) return;
-            for (let i = 0; i <= DR_MAX_OPTION; i++) {
-                const o = document.createElement("option");
-                o.value = i;
-                o.textContent = i;
-                sel.appendChild(o);
-            }
-            sel.value = "0";
-        });
-    }
-
-    /* ------------------------------------------------------------------
-       حساب عدد الزيارات التي وثقها الباحث بتاريخ اليوم
-       ------------------------------------------------------------------
-       تحسين جوهري في الاستهلاك:
-       كانت الدالة تجلب كل زيارات الباحث منذ بدء عمله ثم تعد ما يوافق
-       تاريخ اليوم. بعد سنة يعني ذلك قراءة الفي سجل لمعرفة رقم واحد،
-       ومع خمسين باحثا يستهلك ذلك حصة القراءة اليومية كلها قبل الظهر.
-
-       الان نستعلم بتاريخ اليوم فقط، فيرجع عدد زيارات اليوم لكل
-       الباحثين (عشرات لا الاف)، ثم نصفي على الاسم المستخدم محليا.
-       استعلام بحقل واحد فلا يحتاج فهرسا مركبا.
-
-       الاثر: من الاف القراءات الى عشرات، اي توفير يتجاوز 95 بالمئة.
-       ------------------------------------------------------------------ */
-    let drAutoCounts = { done: 0, failed: 0, transferred: 0, outOfScope: 0 };
-
-    async function computeExecutedVisits() {
-        const snap = await getDocs(query(collection(db, "visits"), where("execDate", "==", drTodayISO)));
-
-        drAutoCounts = { done: 0, failed: 0, transferred: 0, outOfScope: 0 };
-
-        snap.forEach(function(d) {
-            const v = d.data();
-            if (String(v.empId) !== session.empId) return;
-
-            /* الزيارات القديمة بلا حقل نوع تعامل كمنفذة، فهي كانت
-               النوع الوحيد وقت تسجيلها */
-            const t = v.visitType || "done";
-            const f = DR_AUTO_FIELDS.find(function(x) { return x.type === t; });
-            if (f) drAutoCounts[f.key]++;
-        });
-
-        drExecutedCount = drAutoCounts.done;
-
-        /* عرض كل الاعداد المحسوبة */
-        DR_AUTO_FIELDS.forEach(function(f) {
-            const el = document.getElementById("drAuto_" + f.key);
-            if (el) el.textContent = drAutoCounts[f.key];
-        });
-
-        const box = document.getElementById("drExecuted");
-        if (box) box.textContent = drAutoCounts.done;
-        const dayBox = document.getElementById("drDayLabel");
-        if (dayBox) dayBox.textContent = arabicDayLabel(drTodayISO);
-    }
-
-    /* هل ارسل الباحث تقرير اليوم مسبقا؟ */
-    async function loadTodayReport() {
-        drExistingId = null;
-        const snap = await getDocs(query(collection(db, "daily_reports"), where("empId", "==", session.empId)));
-        let found = null;
-        snap.forEach(function(d) {
-            if (String(d.data().reportDate) === drTodayISO) found = Object.assign({ id: d.id }, d.data());
-        });
-
-        const warn = document.getElementById("drAlreadySent");
-        if (found) {
-            drExistingId = found.id;
-            /* نعبئ النموذج بالقيم المرسلة سابقا */
-            /* المحسوبة لا تعبأ، فهي تحسب من الزيارات في كل مرة */
-            DR_FIELDS.forEach(function(f) {
-                const sel = document.getElementById("dr_" + f.key);
-                if (sel) sel.value = String(found[f.key] || 0);
+            /* استعلام بتاريخ اليوم ثم تصفية على الباحث محليا، فلا يحتاج
+               فهرسا مركبا، وعدد زيارات اليوم محدود على كل حال */
+            const snap = await getDocs(query(collection(db, "visits"), where("execDate", "==", day)));
+            dsVisits = [];
+            snap.forEach(function(d) {
+                const v = Object.assign({ id: d.id }, d.data());
+                if (String(v.empId) === session.empId) dsVisits.push(v);
             });
-            document.getElementById("drNotes").value = found.notes || "";
 
-            if (warn) {
-                warn.style.display = (drEditMode === "correction") ? "none" : "block";
-            }
-        } else if (warn) {
-            warn.style.display = "none";
+            /* الاحدث توثيقا اولا */
+            dsVisits.sort(function(a, b) {
+                return String(b.regDate || "").localeCompare(String(a.regDate || ""));
+            });
+
+            renderDailySummary();
+        } catch (e) {
+            showMsg("dsError", dbErrorMessage(e, "جلب زيارات اليوم"));
         }
-    }
-
-    /* جمع مدخلات النموذج */
-    function collectDailyData() {
-        const data = {
-            executed: drExecutedCount,
-            notes: document.getElementById("drNotes").value.trim()
-        };
-
-        /* المحسوبة تلقائيا من الزيارات الموثقة */
-        DR_AUTO_FIELDS.forEach(function(f) {
-            data[f.key] = drAutoCounts[f.key] || 0;
-        });
-
-        /* المدخلة يدويا */
-        DR_FIELDS.forEach(function(f) {
-            const sel = document.getElementById("dr_" + f.key);
-            data[f.key] = sel ? Number(sel.value || 0) : 0;
-        });
-        return data;
-    }
-
-    /* بناء نص التقرير الجاهز للنسخ والطباعة والارسال */
-    function buildReportText(data, empName, iso) {
-        const lines = [];
-        lines.push("اسم الباحث: " + empName);
-        lines.push("اليوم والتاريخ: " + arabicDayLabel(iso));
-        /* المحسوبة تلقائيا اولا، فهي جوهر التقرير ومطابقة للسجل */
-        DR_AUTO_FIELDS.forEach(function(f) { lines.push(f.label + ": " + (data[f.key] || 0)); });
-        /* ثم ما ادخله الباحث بنفسه */
-        DR_FIELDS.forEach(function(f) { lines.push(f.label + ": " + (data[f.key] || 0)); });
-        lines.push("ملاحظات: " + (data.notes ? data.notes : "لا يوجد"));
-        return lines.join("\n");
-    }
-
-    /* المعاينة تتحدث تلقائيا مع كل تغيير في النموذج */
-    window.renderDailyPreview = function() {
-        const box = document.getElementById("drPreviewBox");
-        if (!box || !session) return;
-        box.textContent = buildReportText(collectDailyData(), session.name, drTodayISO);
+        if (loading) loading.style.display = "none";
     };
 
-    window.copyDailyReport = async function() {
-        const text = document.getElementById("drPreviewBox").textContent;
-        if (!text) return;
+    function renderDailySummary() {
+        const tbody = document.getElementById("dsBody");
+        const empty = document.getElementById("dsEmpty");
+        const countsBox = document.getElementById("dsCounts");
+        if (!tbody) return;
+
+        /* عدادات الانواع */
+        const c = {};
+        dsVisits.forEach(function(v) {
+            const t = v.visitType || "done";
+            c[t] = (c[t] || 0) + 1;
+        });
+
+        countsBox.innerHTML = "";
+        const total = document.createElement("div");
+        total.className = "ds-count-card ds-total";
+        total.innerHTML = '<div class="ds-count-num">' + dsVisits.length + '</div>' +
+                          '<div class="ds-count-label">اجمالي الزيارات</div>';
+        countsBox.appendChild(total);
+
+        Object.keys(VISIT_TYPES).forEach(function(t) {
+            const n = c[t] || 0;
+            if (n === 0) return;              /* لا نزحم الشاشة بالاصفار */
+            const cfg = VISIT_TYPES[t];
+            const card = document.createElement("div");
+            card.className = "ds-count-card " + cfg.cls;
+            card.innerHTML = '<div class="ds-count-num">' + n + '</div>' +
+                             '<div class="ds-count-label">' + esc(cfg.label) + '</div>';
+            countsBox.appendChild(card);
+        });
+
+        if (dsVisits.length === 0) {
+            if (empty) empty.style.display = "block";
+            return;
+        }
+        if (empty) empty.style.display = "none";
+
+        const frag = document.createDocumentFragment();
+        dsVisits.forEach(function(v, idx) {
+            const tr = document.createElement("tr");
+
+            const tdNum = document.createElement("td");
+            tdNum.textContent = idx + 1;
+            tdNum.style.fontWeight = "900";
+            tdNum.style.backgroundColor = "rgba(222, 140, 67, 0.1)";
+            tr.appendChild(tdNum);
+
+            const tdVid = document.createElement("td");
+            tdVid.textContent = v.visitId;
+            tdVid.style.fontWeight = "700";
+            tr.appendChild(tdVid);
+
+            const tdType = document.createElement("td");
+            tdType.appendChild(visitTypeChip(v));
+            tr.appendChild(tdType);
+
+            /* الموقع: رابط خريطة ان سجل */
+            const tdLoc = document.createElement("td");
+            if (v.location && v.location.status === "ok") {
+                const a = document.createElement("a");
+                a.href = locationMapsUrl(v.location);
+                a.target = "_blank";
+                a.rel = "noopener";
+                a.className = "file-link";
+                a.innerHTML = '<i class="fas fa-map-location-dot"></i> <span>الخريطة</span>';
+                tdLoc.appendChild(a);
+            } else {
+                tdLoc.textContent = (v.location && v.location.status === "not_required") ? "لا ينطبق" : locationStatusText(v.location);
+                tdLoc.style.color = "#8a9a9d";
+                tdLoc.style.fontSize = "12.5px";
+            }
+            tr.appendChild(tdLoc);
+
+            /* دقة الموقع بالمتر */
+            const tdAcc = document.createElement("td");
+            if (v.location && v.location.status === "ok") {
+                tdAcc.textContent = v.location.accuracy + " م";
+                tdAcc.style.fontWeight = "700";
+                if (v.location.accuracyPoor) {
+                    tdAcc.textContent += " (تقريبي)";
+                    tdAcc.style.color = "#a5601f";
+                }
+            } else {
+                tdAcc.textContent = "-";
+                tdAcc.style.color = "#8a9a9d";
+            }
+            tr.appendChild(tdAcc);
+
+            const tdTime = document.createElement("td");
+            tdTime.textContent = window.formatDateTimeToEnglish(v.regDate);
+            tr.appendChild(tdTime);
+
+            const tdNote = document.createElement("td");
+            tdNote.className = "reason-cell";
+            let extra = v.note || "";
+            if (v.transferToName) extra = "حولت الى: " + v.transferToName + (extra ? " — " + extra : "");
+            tdNote.textContent = extra || "-";
+            tr.appendChild(tdNote);
+
+            frag.appendChild(tr);
+        });
+
+        tbody.appendChild(frag);
+        window.applyCardLabels("dsTable");
+    }
+
+    /* نسخ الملخص نصا، ليرسله الباحث في محادثة او يحتفظ به */
+    window.copyDailySummary = async function() {
+        const day = window.toEnglishDigits((document.getElementById("dsDate") || {}).value || "");
+        if (!day) { toast("حدد اليوم اولا.", "warn"); return; }
+
+        const lines = [];
+        lines.push("الملخص اليومي");
+        lines.push("اسم الباحث: " + session.name);
+        lines.push("اليوم والتاريخ: " + arabicDayLabel(day));
+        lines.push("");
+
+        const c = {};
+        dsVisits.forEach(function(v) {
+            const t = v.visitType || "done";
+            c[t] = (c[t] || 0) + 1;
+        });
+        lines.push("اجمالي الزيارات: " + dsVisits.length);
+        Object.keys(VISIT_TYPES).forEach(function(t) {
+            if (c[t]) lines.push(VISIT_TYPES[t].label + ": " + c[t]);
+        });
+
+        if (dsVisits.length) {
+            lines.push("");
+            lines.push("تفاصيل الزيارات:");
+            dsVisits.forEach(function(v, i) {
+                const cfg = VISIT_TYPES[v.visitType || "done"] || VISIT_TYPES.done;
+                let line = (i + 1) + ") رقم " + v.visitId + " - " + cfg.label;
+                if (v.location && v.location.status === "ok") line += " - دقة الموقع: " + v.location.accuracy + " م";
+                if (v.transferToName) line += " - حولت الى: " + v.transferToName;
+                if (v.note) line += " - " + v.note;
+                lines.push(line);
+            });
+        }
+
+        const text = lines.join("\n");
         try {
             await navigator.clipboard.writeText(text);
-            toast("تم نسخ التقرير، يمكنك لصقه في اي مكان.", "success");
+            toast("تم نسخ الملخص.", "success");
         } catch (e) {
-            /* بديل للمتصفحات التي لا تدعم الحافظة الحديثة */
             const ta = document.createElement("textarea");
             ta.value = text;
-            ta.style.position = "fixed";
-            ta.style.opacity = "0";
+            ta.style.cssText = "position:fixed;opacity:0;";
             document.body.appendChild(ta);
             ta.select();
-            try { document.execCommand("copy"); toast("تم نسخ التقرير.", "success"); }
-            catch (e2) { toast("تعذر النسخ تلقائيا، حدد النص وانسخه يدويا.", "warn"); }
+            try { document.execCommand("copy"); toast("تم نسخ الملخص.", "success"); }
+            catch (e2) { toast("تعذر النسخ تلقائيا.", "warn"); }
             document.body.removeChild(ta);
         }
     };
 
-    /* الطباعة في نافذة مستقلة حتى لا تتعارض مع تنسيق طباعة الجداول */
-    window.printDailyReport = function() {
-        const text = document.getElementById("drPreviewBox").textContent;
-        if (!text) return;
+    /* ------------------------------------------------------------------
+       ملاحظة: حذف من هنا نظام "التقرير اليومي" القديم
+       ------------------------------------------------------------------
+       كان الباحث يعبئ ارقاما في قوائم منسدلة ويرسلها للادارة. استبدل
+       بشاشة "الملخص اليومي" التي تعرض زياراته الموثقة فعلا بانواعها
+       ومواقعها ودقتها، وهي اصدق واغنى مما كان يكتبه يدويا.
 
-        const win = window.open("", "_blank", "width=800,height=900");
-        if (!win) { toast("منع المتصفح فتح نافذة الطباعة، اسمح بالنوافذ المنبثقة.", "warn"); return; }
-
-        win.document.write(
-            '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">' +
-            '<title>التقرير اليومي</title>' +
-            '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">' +
-            '<style>body{font-family:Tajawal,Tahoma,sans-serif;padding:40px;line-height:2.2;font-size:16px;color:#2c3e50}' +
-            'h1{color:#4a8794;font-size:22px;border-bottom:3px solid #de8c43;padding-bottom:12px;margin-bottom:25px}' +
-            'pre{font-family:Tajawal,Tahoma,sans-serif;white-space:pre-wrap;font-size:16px;line-height:2.4;margin:0}' +
-            '</style></head><body><h1>التقرير اليومي - جمعية التنمية الاسرية بالاحساء</h1><pre></pre></body></html>'
-        );
-        win.document.querySelector("pre").textContent = text;
-        win.document.close();
-        win.focus();
-        setTimeout(function() { win.print(); }, 400);
-    };
-
-    window.sendDailyReport = async function() {
-        if (!isResearcher()) { window.switchScreen('researcherLoginScreen'); return; }
-
-        const btn = document.getElementById("drSendBtn");
-        const data = collectDailyData();
-
-        hideMsg("drError"); hideMsg("drSuccess");
-
-        if (!requireOnline("drError")) return;
-
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الارسال...';
-
-        try {
-            /* وضع التصحيح: يرسل بلاغا للادارة ولا يعدل التقرير مباشرة */
-            if (drEditMode === "correction") {
-                if (!drExistingId) {
-                    showMsg("drError", "<i class='fas fa-circle-info'></i> لا يوجد تقرير مرسل لهذا اليوم لتصححه. ارسل تقريرك اولا.");
-                    btn.disabled = false;
-                    btn.innerHTML = "ارسال بلاغ التصحيح";
-                    return;
-                }
-                /* منع بلاغ تصحيح جديد ما دام لديه بلاغ سابق قيد المراجعة
-                   في هذا المجال، بغض النظر عن تاريخ التقرير المعني */
-                try {
-                    if (await hasPendingReportIn("report_reports", session.empId)) {
-                        showMsg("drError", "<i class='fas fa-hourglass-half'></i> لديك بلاغ تصحيح سابق قيد المراجعة، ولا يمكنك تقديم بلاغ جديد في هذا المجال حتى يُبت فيه.");
-                        btn.disabled = false;
-                        btn.innerHTML = "ارسال بلاغ التصحيح";
-                        return;
-                    }
-                } catch (e) { /* فشل الفحص لا يوقف المحاولة */ }
-
-                await submitDailyCorrection(data);
-                btn.disabled = false;
-                btn.innerHTML = "ارسال بلاغ التصحيح";
-                return;
-            }
-
-            /* تقرير جديد: لا يقبل التكرار في نفس اليوم */
-            if (drExistingId) {
-                showMsg("drError", "<i class='fas fa-circle-exclamation'></i> ارسلت تقرير هذا اليوم مسبقا. " +
-                    "للتعديل عليه استخدم زر الإبلاغ عن مشاكل تقنية ثم الإبلاغ عن تقديم تقرير يومي خاطئ.");
-                btn.disabled = false;
-                btn.innerHTML = "ارسال التقرير للادارة";
-                return;
-            }
-
-            const now = new Date().toISOString();
-            await addDoc(collection(db, "daily_reports"), Object.assign({
-                empId: session.empId,
-                empName: session.name,
-                reportDate: drTodayISO,
-                createdAt: now,
-                updatedAt: now
-            }, data));
-
-            logAudit("ارسال تقرير يومي", "تاريخ " + drTodayISO + " | منفذة: " + data.executed);
-            showMsg("drSuccess", "<i class='fas fa-check-circle'></i> تم ارسال تقريرك اليومي للادارة بنجاح.");
-            await loadTodayReport();
-        } catch (e) {
-            showMsg("drError", "<i class='fas fa-wifi'></i> تعذر ارسال التقرير، حاول مرة اخرى.");
-        }
-
-        btn.disabled = false;
-        btn.innerHTML = (drEditMode === "correction") ? "ارسال بلاغ التصحيح" : "ارسال التقرير للادارة";
-    };
+       ما حذف: نموذج التقرير، ارساله، معاينته، وبلاغ تصحيحه.
+       ------------------------------------------------------------------ */
 
     /* ---------------- جانب الادارة: استعراض تقارير يوم محدد ---------------- */
 
@@ -15802,40 +15879,15 @@
         }
     };
 
-    /* ==================================================================
-       (29-ج) بلاغ تقرير يومي خاطئ
+    /* ------------------------------------------------------------------
+       ملاحظة: حذف من هنا مسار "بلاغ تقرير يومي خاطئ"
        ------------------------------------------------------------------
-       يفتح نموذج التقرير اليومي في وضع التصحيح، والارسال يمر عبر
-       الدالة submitDailyCorrection ادناه بدل التعديل المباشر.
-       ================================================================== */
+       كان الباحث يرسل نسخة مصححة من تقريره اليومي لتعتمدها الادارة.
+       سقط هذا المسار بعد تحول التقرير الى ملخص شخصي لا يرسل اصلا.
 
-    async function submitDailyCorrection(data) {
-        try {
-            const ref = await addDoc(collection(db, "report_reports"), {
-                empId: session.empId,
-                empName: session.name,
-                reportId: drExistingId,
-                reportDate: drTodayISO,
-                newData: data,
-                status: "pending",
-                createdAt: new Date().toISOString(),
-                decidedById: "", decidedByName: "", decidedAt: "", rejectReason: ""
-            });
-
-            await pushNotification({
-                title: "بلاغ تصحيح تقرير يومي",
-                body: "الباحث " + session.name + " (" + session.empId + ") يطلب تصحيح تقريره اليومي بتاريخ " +
-                      fmtDate(drTodayISO) + ". راجع البلاغ لاعتماد النسخة الجديدة.",
-                to: "all", audience: "manager", perm: "التقارير اليومية",
-                type: "report_correction", refId: ref.id
-            });
-
-            logAudit("بلاغ تصحيح تقرير يومي", "تاريخ " + drTodayISO);
-            showMsg("drSuccess", "<i class='fas fa-check-circle'></i> تم ارسال بلاغ التصحيح، وسيصلك اشعار فور اتخاذ القرار.");
-        } catch (e) {
-            showMsg("drError", "<i class='fas fa-wifi'></i> تعذر ارسال البلاغ، حاول مرة اخرى.");
-        }
-    }
+       مجموعة report_reports وشاشة "بلاغات التقارير اليومية" في بوابة
+       الادارة تركتا للاطلاع على البلاغات القديمة المسجلة قبل التغيير.
+       ------------------------------------------------------------------ */
 
     /* ==================================================================
        (30) صناديق البلاغات لدى الادارة
