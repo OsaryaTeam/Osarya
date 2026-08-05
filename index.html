@@ -3012,7 +3012,7 @@
         }
 
         /* ==================================================================
-           (جديد) التقارير اليومية
+           بطاقات الملخص اليومي (كانت للتقارير اليومية قبل الغائها)
            ================================================================== */
         .dr-auto-box {
             background: rgba(74,135,148,0.08);
@@ -3895,7 +3895,6 @@
             
             <button class="btn-manager btn-icon-watermark icon-leave" data-action-badge="leave" onclick="checkPermissionAndGo('loadLeaveRequests')">طلبات الاجازات</button>
             <button class="btn-manager btn-icon-watermark icon-bell" onclick="checkPermissionAndGo('openNoticeAdmin')">إنشاء تنبيه | إنذار</button>
-            <button class="btn-manager btn-icon-watermark icon-daily-report" data-action-badge="report" onclick="checkPermissionAndGo('openDailyReports')">التقارير اليومية</button>
             <button class="btn-manager btn-icon-watermark icon-user-shield" onclick="loadManagersList()">الادارة العامة</button>
 
             <button class="btn-manager btn-icon-watermark icon-key btn-logout-full" data-action-badge="password" onclick="checkPermissionAndGo('openPasswordRequests')">طلبات استعادة كلمة المرور</button>
@@ -4089,7 +4088,6 @@
                         <label class="perm-item"><input type="checkbox" value="قائمة الباحثين" class="perm-checkbox"> قائمة الباحثين</label>
                         <label class="perm-item"><input type="checkbox" value="طلبات الاجازات" class="perm-checkbox"> طلبات الاجازات</label>
                         <label class="perm-item"><input type="checkbox" value="التنبيهات والانذارات" class="perm-checkbox"> التنبيهات والانذارات</label>
-                        <label class="perm-item"><input type="checkbox" value="التقارير اليومية" class="perm-checkbox"> التقارير اليومية</label>
                         <label class="perm-item"><input type="checkbox" value="استعادة كلمة المرور" class="perm-checkbox"> استعادة كلمة المرور</label>
                     </div>
                 </div>
@@ -5398,47 +5396,9 @@
         </div>
     </div>
 
-    <!-- ==============================================================
-         شاشة الادارة: التقارير اليومية
-         --------------------------------------------------------------
-         تقويم يحدد فيه المدير يوما، فتظهر كل تقارير ذلك اليوم كبطاقات.
-         مفتوحة لكل المدراء للاطلاع، وبلاغات التصحيح محروسة بالصلاحية.
-         ============================================================== -->
-    <div id="dailyReportsAdminScreen" class="container screen" style="max-width: 1100px;">
-        <div style="text-align: left; margin-bottom: 10px;">
-            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
-        </div>
-        <h2>التقارير اليومية</h2>
-
-        <button class="btn-reports-navy btn-icon-watermark icon-flag" data-action-badge="report-report" onclick="openRequests('report')">بلاغات التقارير اليومية</button>
-
-        <div class="input-group" style="margin-top: 18px;">
-            <label for="drAdminDate">اختر اليوم المراد عرض تقاريره:</label>
-            <div class="input-with-icon">
-                <input type="text" id="drAdminDate" class="custom-date-picker" placeholder="يوم / شهر / سنة" onchange="loadDailyReportsByDate()">
-                <i class="fas fa-calendar-alt right-icon"></i>
-            </div>
-        </div>
-
-        <div id="drAdminDayLabel" class="dr-day-title"></div>
-        <div id="drAdminCount" class="records-info"></div>
-
-        <div id="drAdminLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري تحميل التقارير...</div>
-        <div id="drAdminError" class="error-message"></div>
-
-        <div id="drAdminEmpty" class="empty-state" style="display:none;">
-            <i class="fas fa-file-circle-xmark"></i>
-            لا توجد تقارير مرسلة في هذا اليوم
-        </div>
-
-        <div id="drAdminList"></div>
-    
-        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
-             فلا يضطر للتمرير الى الاعلى -->
-        <div class="btn-group bottom-return">
-            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
-        </div>
-</div>
+    <!-- ملاحظة: حذفت من هنا شاشة "التقارير اليومية" في بوابة الادارة.
+         سقطت بعد تحول التقرير اليومي الى ملخص شخصي للباحث لا يرسل
+         الى الادارة، فلم يعد هناك ما يستعرض. -->
 
     <!-- ==============================================================
          شاشة الباحث: الإبلاغ عن مشاكل تقنية
@@ -7630,7 +7590,7 @@
        بدل ان يحتار من اين اتت.
        ================================================================== */
 
-    let actionBadgeCounts = { leavePending: 0, leaveReportPending: 0, visitReportPending: 0, reportReportPending: 0, passwordPending: 0 };
+    let actionBadgeCounts = { leavePending: 0, leaveReportPending: 0, visitReportPending: 0, passwordPending: 0 };
 
     /* ------------------------------------------------------------------
        معرفات السجلات المعلقة حاليا (وليس عددها فقط)
@@ -7640,7 +7600,7 @@
        بعد"، فتفرق بين "لا يوجد شيء معلق" و"لم نتحقق بعد" - هذا الفرق
        مهم لدالة reconcileResolvedNotifications في قسم الجرس، حتى لا
        تعتبر خطأ اي اشعار وارد "محلولا" فقط لان بياناته لم تصل بعد. */
-    let pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, report_reports: null, password_requests: null };
+    let pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, password_requests: null };
     let actionBadgeUnsubs = [];   /* دوال الغاء الاشتراك في المستمعين الاربعة */
 
     function idSetSize(s) { return s ? s.size : 0; }
@@ -7679,9 +7639,7 @@
         setActionBadge("visit", c.visitReportPending);
         setActionBadge("visit-report", c.visitReportPending);
 
-        /* التقارير اليومية: كذلك مصدر واحد فقط (بلاغات التصحيح) */
-        setActionBadge("report", c.reportReportPending);
-        setActionBadge("report-report", c.reportReportPending);
+
 
         /* طلبات استعادة كلمة المرور */
         setActionBadge("password", c.passwordPending);
@@ -7709,7 +7667,6 @@
             { coll: "leaves",            key: "leaves" },
             { coll: "leave_reports",     key: "leave_reports" },
             { coll: "visit_reports",     key: "visit_reports" },
-            { coll: "report_reports",    key: "report_reports" },
             { coll: "password_requests", key: "password_requests" }
         ];
 
@@ -7724,7 +7681,6 @@
                     leavePending:        idSetSize(pendingIdSets.leaves),
                     leaveReportPending:  idSetSize(pendingIdSets.leave_reports),
                     visitReportPending:  idSetSize(pendingIdSets.visit_reports),
-                    reportReportPending: idSetSize(pendingIdSets.report_reports),
                     passwordPending:     idSetSize(pendingIdSets.password_requests)
                 };
                 applyActionBadges();
@@ -7745,8 +7701,8 @@
     window.stopActionBadgeListeners = function() {
         actionBadgeUnsubs.forEach(function(u) { try { u(); } catch (e) {} });
         actionBadgeUnsubs = [];
-        actionBadgeCounts = { leavePending: 0, leaveReportPending: 0, visitReportPending: 0, reportReportPending: 0, passwordPending: 0 };
-        pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, report_reports: null, password_requests: null };
+        actionBadgeCounts = { leavePending: 0, leaveReportPending: 0, visitReportPending: 0, passwordPending: 0 };
+        pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, password_requests: null };
         applyActionBadges();
     };
 
@@ -7788,7 +7744,6 @@
             leaveManageScreen:       function() { window.loadLeaveRequests(); },
             noticeLogScreen:         function() { window.openNoticeLog(); },
             requestsScreen:          function() { window.openRequests(reqType); },
-            dailyReportsAdminScreen: function() { window.loadDailyReportsByDate(); },
             myVisitsScreen:          function() { window.openMyVisits(); },
             leaveHistoryScreen:      function() { window.openLeaveHistory(); },
             leaveRequestScreen:      function() { window.openLeaveRequest(); },
@@ -7854,7 +7809,7 @@
         dailyReportScreen: 'researcher', techReportScreen: 'researcher',
         visitReportScreen: 'researcher', leaveReportScreen: 'researcher',
         myReportsScreen: 'researcher',
-        dailyReportsAdminScreen: 'manager', requestsScreen: 'manager',
+        requestsScreen: 'manager',
         passwordRequestsScreen: 'manager', auditLogScreen: 'manager'
     };
 
@@ -8220,7 +8175,6 @@
         else if (action === 'loadManagersList') window.loadManagersList();
         else if (action === 'loadLeaveRequests') window.loadLeaveRequests();
         else if (action === 'openNoticeAdmin') window.openNoticeAdmin();
-        else if (action === 'openDailyReports') window.openDailyReports();
         else if (action === 'openPasswordRequests') window.openPasswordRequests();
 
         window.updateReadOnlyBadges();
@@ -11045,8 +10999,12 @@
 
         /* زر طباعة ثابت داخل المستند، يخفى عند الطباعة نفسها */
         const printBar = '<div class="print-bar no-print">' +
-            '<button onclick="window.print()">طباعة / حفظ بصيغة PDF</button>' +
-            '<span>' + fetchedVisits.length + ' زيارة في ' + pages.length + ' صفحة</span>' +
+            '<div class="pb-row">' +
+              '<button onclick="window.print()">طباعة / حفظ بصيغة PDF</button>' +
+              '<span>' + fetchedVisits.length + ' زيارة في ' + pages.length + ' صفحة</span>' +
+            '</div>' +
+            '<div class="pb-tip">للحصول على ' + PDF_ROWS_PER_PAGE + ' زيارة في كل صفحة: افتح ' +
+              '<strong>اعدادات اضافية</strong> في نافذة الطباعة واطفئ <strong>الترويسات والتذييلات</strong>.</div>' +
             '</div>';
 
         win.document.write(
@@ -11072,7 +11030,21 @@
                     فيصبح مجموع الارتفاعات معلوما لا مفاجئا.
                  3) منع كسر الصفوف والجداول عبر الصفحات صراحة.
                ------------------------------------------------------------ */
-            '@page { size: A4 landscape; margin: 6mm; }' +
+            /* ------------------------------------------------------------
+               سبب اضافي لم يكن محسوبا: ترويسة المتصفح وتذييله
+               ------------------------------------------------------------
+               يطبع المتصفح افتراضيا عنوان الصفحة وتاريخها في الاعلى،
+               ورابطها ورقم الصفحة في الاسفل. وهذه تاكل نحو عشرين
+               مليمترا من ارتفاع الورقة، وهو ما لم يكن محسوبا فاختل
+               التوزيع رغم ضبط ارتفاع الصفوف.
+
+               عولج بامرين معا:
+                 1) تصغير كل الابعاد بهامش امان يستوعب ترويسة المتصفح
+                    حتى لو بقيت مفعلة.
+                 2) تنبيه المستخدم في شريط الطباعة الى اطفائها من
+                    "اعدادات اضافية" للحصول على افضل نتيجة.
+               ------------------------------------------------------------ */
+            '@page { size: A4 landscape; margin: 5mm; }' +
             '* { box-sizing: border-box; }' +
             'html, body { margin: 0; padding: 0; }' +
             'body { font-family: Tajawal, Tahoma, sans-serif; color: #000; background: #fff; }' +
@@ -11084,18 +11056,19 @@
             'tr { page-break-after: auto; }' +
 
             /* ترويسة مضغوطة: كل مليمتر يوفر مكانا لصف اضافي */
-            '.doc-head { text-align: center; margin-bottom: 4px; border-bottom: 2px solid #4a8794; padding-bottom: 3px; }' +
-            '.doc-title { font-size: 14px; font-weight: 800; color: #2c5f6a; line-height: 1.3; }' +
-            '.doc-sub { font-size: 9.5px; font-weight: 600; color: #555; margin-top: 1px; line-height: 1.3; }' +
-            '.doc-scope { font-size: 9.5px; font-weight: 700; color: #a5601f; margin-top: 2px; line-height: 1.3; }' +
+            '.doc-head { text-align: center; margin-bottom: 2px; border-bottom: 1.5px solid #4a8794; padding-bottom: 2px; }' +
+            '.doc-title { font-size: 12px; font-weight: 800; color: #2c5f6a; line-height: 1.2; }' +
+            '.doc-sub { font-size: 8.5px; font-weight: 600; color: #555; line-height: 1.2; }' +
+            '.doc-scope { font-size: 8.5px; font-weight: 700; color: #a5601f; line-height: 1.2; }' +
 
             'table { width: 100%; border-collapse: collapse; table-layout: fixed; }' +
             /* ارتفاع ثابت لكل صف: هو مفتاح دخول العشرين صفا في الصفحة */
-            'tbody tr { height: 7.2mm; }' +
-            'thead tr { height: 7mm; }' +
-            'th, td { border: 1px solid #666; padding: 1px 4px; font-size: 10px; line-height: 1.25; ' +
+            /* ارتفاعات مضغوطة تترك هامشا لترويسة المتصفح ان بقيت */
+            'tbody tr { height: 6.2mm; }' +
+            'thead tr { height: 6.5mm; }' +
+            'th, td { border: 1px solid #666; padding: 0 3px; font-size: 9px; line-height: 1.2; ' +
                      'text-align: center; vertical-align: middle; word-wrap: break-word; overflow: hidden; }' +
-            'th { background: #4a8794 !important; color: #fff !important; font-weight: 800; font-size: 10.5px; ' +
+            'th { background: #4a8794 !important; color: #fff !important; font-weight: 800; font-size: 9.5px; ' +
                  '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
             'tbody tr:nth-child(even) td { background: #f4f7f8 !important; ' +
                  '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
@@ -11113,7 +11086,7 @@
             '.c-note { width: 19%; text-align: right; font-size: 9px; }' +
 
             /* شارات حالة الزيارة بالوانها */
-            '.chip { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 800; color: #fff; ' +
+            '.chip { display: inline-block; padding: 0 5px; border-radius: 7px; font-size: 8px; font-weight: 800; color: #fff; ' +
                     '-webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
             '.vt-done { background: #1e7a50 !important; }' +
             '.vt-transfer { background: #2a6a9c !important; }' +
@@ -11121,12 +11094,13 @@
             '.vt-outside { background: #8a4a9e !important; }' +
             '.vt-other { background: #5a6a77 !important; }' +
 
-            '.doc-foot { display: flex; justify-content: space-between; margin-top: 3px; padding-top: 2px; ' +
-                        'border-top: 1px solid #999; font-size: 8.5px; font-weight: 600; color: #555; }' +
+            '.doc-foot { display: flex; justify-content: space-between; margin-top: 2px; padding-top: 1px; ' +
+                        'border-top: 1px solid #999; font-size: 7.5px; font-weight: 600; color: #555; }' +
             /* شريط الطباعة: يظهر على الشاشة ويختفي في الورق */
-            '.print-bar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; ' +
-                         'justify-content: center; gap: 16px; padding: 12px; margin-bottom: 10px; ' +
-                         'background: #4a8794; color: #fff; font-weight: 800; font-size: 14px; }' +
+            '.print-bar { position: sticky; top: 0; z-index: 10; padding: 12px; margin-bottom: 10px; ' +
+                         'background: #4a8794; color: #fff; font-weight: 800; font-size: 14px; text-align: center; }' +
+            '.pb-row { display: flex; align-items: center; justify-content: center; gap: 16px; }' +
+            '.pb-tip { margin-top: 8px; font-size: 12.5px; font-weight: 600; opacity: 0.95; line-height: 1.7; }' +
             '.print-bar button { padding: 10px 26px; font-size: 15px; font-weight: 800; border: none; ' +
                                 'border-radius: 8px; background: #fff; color: #2c5f6a; cursor: pointer; ' +
                                 'font-family: Tajawal, Tahoma, sans-serif; }' +
@@ -11487,7 +11461,7 @@
         sick_request:      "leaves",
         visit_report:      "visit_reports",
         leave_report:       "leave_reports",
-        report_correction: "report_reports"
+        password_request: "password_requests"
     };
 
     function reconcileResolvedNotifications() {
@@ -14855,35 +14829,9 @@
     const DR_MAX_OPTION = 20;   /* اقصى قيمة في القوائم المنسدلة */
 
     /* حقول التقرير مرتبة كما تظهر في النموذج وفي المعاينة */
-    /* ------------------------------------------------------------------
-       حقول التقرير اليومي
-       ------------------------------------------------------------------
-       بعد تقسيم الزيارات الى انواع، صارت اربعة حقول تحسب تلقائيا من
-       الزيارات الموثقة فعلا بتاريخ اليوم بدل ادخالها يدويا:
-
-         المنفذة · المتعذرة · المحولة · خارج النطاق
-
-       فائدة ذلك ان التقرير يطابق السجل الفعلي بلا خطأ ولا سهو، ولا
-       يمكن للباحث ان يذكر رقما يخالف ما وثقه.
-
-       ويبقى ادخال ما لا يستنتج من الزيارات:
-         المتبقي في السلة · المشاكل التقنية · اخرى
-       ------------------------------------------------------------------ */
-
-    /* تحسب من الزيارات: المفتاح هنا هو نوع الزيارة نفسه */
-    const DR_AUTO_FIELDS = [
-        { key: "done",        type: "done",        label: "عدد الزيارات المنفذة" },
-        { key: "failed",      type: "failed",      label: "عدد الزيارات المتعذرة" },
-        { key: "transferred", type: "transferred", label: "عدد الزيارات المحولة" },
-        { key: "outOfScope",  type: "outside",     label: "عدد الزيارات خارج النطاق" }
-    ];
-
-    /* يدخلها الباحث بنفسه، فلا سبيل لاستنتاجها من الزيارات */
-    const DR_FIELDS = [
-        { key: "remaining",   label: "عدد المتبقي في السلة من إسناد اليوم" },
-        { key: "technical",   label: "عدد المشاكل التقنية" },
-        { key: "other",       label: "أخرى" }
-    ];
+    /* ملاحظة: حذفت من هنا حقول التقرير اليومي وثوابته، بعد الغاء
+       النظام كاملا واستبداله بشاشة الملخص اليومي التي تقرأ من
+       الزيارات مباشرة. */
 
     const AR_DAYS = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
     const AR_MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
@@ -14898,9 +14846,6 @@
                " | " + d.getFullYear() + "/" + p(d.getMonth() + 1) + "/" + p(d.getDate());
     }
 
-    let drExecutedCount = 0;      /* عدد الزيارات المنفذة المحسوب تلقائيا */
-    let drTodayISO = "";          /* تاريخ اليوم المستخدم في التقرير */
-    let drExistingId = null;      /* معرف تقرير اليوم ان كان مرسلا مسبقا */
     let drEditMode = "create";    /* create = تقرير جديد | correction = بلاغ تصحيح */
 
     /* ---------------- جانب الباحث ---------------- */
@@ -15139,112 +15084,16 @@
        ما حذف: نموذج التقرير، ارساله، معاينته، وبلاغ تصحيحه.
        ------------------------------------------------------------------ */
 
-    /* ---------------- جانب الادارة: استعراض تقارير يوم محدد ---------------- */
+    /* ------------------------------------------------------------------
+       ملاحظة: حذف من هنا منطق شاشة "التقارير اليومية" في بوابة الادارة
+       ------------------------------------------------------------------
+       كان يستعرض التقارير التي يرسلها الباحثون. سقط بعد تحول التقرير
+       الى ملخص شخصي يعرض للباحث زياراته الموثقة ولا يرسل الى احد.
 
-    let dailyReportsList = [];
-
-    window.openDailyReports = async function() {
-        if (!isManager()) { window.switchScreen('managerScreen'); return; }
-
-        const dEl = document.getElementById("drAdminDate");
-        if (dEl && !dEl.value) {
-            const t = todayISO();
-            if (dEl._flatpickr) dEl._flatpickr.setDate(t, false); else dEl.value = t;
-        }
-
-        window.switchScreen('dailyReportsAdminScreen');
-        window.updateReadOnlyBadges();
-        await loadDailyReportsByDate();
-    };
-
-    window.loadDailyReportsByDate = async function() {
-        if (!isManager()) return;
-
-        const dateVal = window.toEnglishDigits(document.getElementById("drAdminDate").value);
-        const loading = document.getElementById("drAdminLoading");
-        const empty = document.getElementById("drAdminEmpty");
-        const box = document.getElementById("drAdminList");
-        const count = document.getElementById("drAdminCount");
-
-        hideMsg("drAdminError");
-        box.innerHTML = "";
-        empty.style.display = "none";
-        if (!dateVal) { count.textContent = ""; return; }
-
-        loading.style.display = "block";
-        try {
-            const snap = await getDocs(query(collection(db, "daily_reports"), where("reportDate", "==", dateVal)));
-            dailyReportsList = [];
-            snap.forEach(function(d) { dailyReportsList.push(Object.assign({ id: d.id }, d.data())); });
-            dailyReportsList.sort(function(a, b) { return String(a.empName).localeCompare(String(b.empName), 'ar'); });
-
-            document.getElementById("drAdminDayLabel").textContent = arabicDayLabel(dateVal);
-            count.textContent = "عدد التقارير: " + dailyReportsList.length;
-
-            if (dailyReportsList.length === 0) {
-                empty.style.display = "block";
-            } else {
-                renderDailyReportsAdmin();
-            }
-        } catch (e) {
-            showMsg("drAdminError", "<i class='fas fa-wifi'></i> تعذر جلب التقارير.");
-        }
-        loading.style.display = "none";
-    };
-
-    function renderDailyReportsAdmin() {
-        const box = document.getElementById("drAdminList");
-        box.innerHTML = "";
-        const frag = document.createDocumentFragment();
-
-        dailyReportsList.forEach(function(r) {
-            const card = document.createElement("div");
-            card.className = "report-card";
-
-            const head = document.createElement("div");
-            head.className = "report-card-head";
-            head.textContent = r.empName + " (" + r.empId + ")";
-            card.appendChild(head);
-
-            const grid = document.createElement("div");
-            grid.className = "report-grid";
-
-            const items = [];
-            DR_AUTO_FIELDS.forEach(function(f) { items.push({ label: f.label, value: r[f.key] || 0 }); });
-            DR_FIELDS.forEach(function(f) { items.push({ label: f.label, value: r[f.key] || 0 }); });
-
-            items.forEach(function(it) {
-                const cell = document.createElement("div");
-                cell.className = "report-cell";
-                const v = document.createElement("div");
-                v.className = "report-cell-value";
-                v.textContent = it.value;
-                const l = document.createElement("div");
-                l.className = "report-cell-label";
-                l.textContent = it.label;
-                cell.appendChild(v);
-                cell.appendChild(l);
-                grid.appendChild(cell);
-            });
-            card.appendChild(grid);
-
-            const notes = document.createElement("div");
-            notes.className = "report-notes";
-            notes.textContent = "ملاحظات: " + (r.notes ? r.notes : "لا يوجد");
-            card.appendChild(notes);
-
-            const meta = document.createElement("div");
-            meta.className = "report-meta";
-            meta.textContent = "ارسل في: " + window.formatDateTimeToEnglish(r.createdAt) +
-                (r.updatedAt && r.updatedAt !== r.createdAt ? (" | عدل في: " + window.formatDateTimeToEnglish(r.updatedAt)) : "");
-            card.appendChild(meta);
-
-            frag.appendChild(card);
-        });
-
-        box.appendChild(frag);
-    }
-
+       بديله الفعلي: شاشة "الاستعلام عن زيارات" في بوابة الادارة، فهي
+       تعرض الزيارات نفسها بانواعها ومواقعها ودقتها، وهي مصدر البيانات
+       الذي كان التقرير يلخصه اصلا.
+       ------------------------------------------------------------------ */
 
     /* ==================================================================
        (29) الإبلاغ عن مشاكل تقنية
@@ -15898,9 +15747,8 @@
        ================================================================== */
 
     const REQ_TYPES = {
-        visit:  { coll: "visit_reports",  perm: null,                  title: "بلاغات الزيارة الخاطئة" },
-        leave:  { coll: "leave_reports",  perm: "طلبات الاجازات",      title: "بلاغات طلبات الإجازات" },
-        report: { coll: "report_reports", perm: "التقارير اليومية",    title: "بلاغات التقارير اليومية" }
+        visit:  { coll: "visit_reports",  perm: null,             title: "بلاغات الزيارة الخاطئة" },
+        leave:  { coll: "leave_reports",  perm: "طلبات الاجازات", title: "بلاغات طلبات الإجازات" }
     };
 
     let reqType = "visit";
@@ -15988,16 +15836,8 @@
                 { l: "المطلوب", v: "تعديل التواريخ الى " + fmtDate(r.newStart) + " - " + fmtDate(r.newEnd) + " (" + r.newDays + " يوم)" }
             ];
         }
-        /* تقرير يومي */
-        const d = r.newData || {};
-        const parts = [];
-        DR_AUTO_FIELDS.forEach(function(f) { parts.push(f.label + ": " + (d[f.key] || 0)); });
-        DR_FIELDS.forEach(function(f) { parts.push(f.label + ": " + (d[f.key] || 0)); });
-        return [
-            { l: "تاريخ التقرير", v: arabicDayLabel(r.reportDate) },
-            { l: "النسخة المطلوبة", v: parts.join("  •  ") },
-            { l: "الملاحظات المطلوبة", v: d.notes || "لا يوجد" }
-        ];
+        /* لم يعد هناك نوع ثالث بعد الغاء التقارير اليومية */
+        return [];
     }
 
     function renderRequests() {
