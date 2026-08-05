@@ -4331,6 +4331,12 @@
                 <button type="button" class="btn-sort" onclick="filterResearchers('suspended', this)">ايقاف مؤقت (<span id="count_suspended">0</span>)</button>
                 <button type="button" class="btn-sort" onclick="filterResearchers('excluded', this)">مستبعد (<span id="count_excluded">0</span>)</button>
             </div>
+
+            <!-- تصفية بالمنطقة: تعمل مع تصفية الحالة اعلاه في ان واحد -->
+            <div class="input-group" style="margin-top: 12px;">
+                <label for="resRegionFilter">تصفية بالمنطقة:</label>
+                <select id="resRegionFilter" class="year-select" style="width:100%;" onchange="applyRegionFilter()"></select>
+            </div>
         </div>
 
         <button class="btn-manager btn-icon-watermark icon-user-plus" onclick="toggleAddResearcherForm()">اضافة باحث جديد</button>
@@ -4368,6 +4374,11 @@
                     </div>
                 </div>
 
+                <div class="input-group">
+                    <label for="newResRegion">المنطقة:</label>
+                    <select id="newResRegion" class="year-select" style="width:100%;"></select>
+                </div>
+
                 <div class="input-group full-width">
                     <label for="newResPass">كلمة المرور:</label>
                     <div class="password-wrapper">
@@ -4400,6 +4411,7 @@
                         <th>م</th>
                         <th>اسم الباحث</th>
                         <th>الاسم المستخدم</th>
+                        <th>المنطقة</th>
                         <th>رقم الجوال</th>
                         <th>كلمة المرور</th>
                         <th>حالة الباحث</th>
@@ -5913,6 +5925,18 @@
 
     /* الاسم المستخدم المحجوز لحساب المبرمج، يمنع اسناده لاي حساب اخر */
     const RESERVED_MASTER_USERNAME = "OSP0001";
+
+    /* ------------------------------------------------------------------
+       مناطق عمل الباحثين
+       ------------------------------------------------------------------
+       اربع مناطق معتمدة لا خامس لها. تحدد لكل باحث عند انشائه، وتظهر
+       في قائمة الباحثين وفي نتائج الاستعلام، فتستطيع الادارة تصفية
+       العمل ومتابعته بحسب المنطقة.
+
+       لاضافة منطقة مستقبلا يكفي اضافتها هنا، فكل القوائم في النظام
+       تبنى من هذا المصدر الواحد.
+       ------------------------------------------------------------------ */
+    const REGIONS = ["الشرقية", "عسير", "جازان", "المدينة المنورة"];
 
     /* هل نحن على النطاق الرسمي؟ */
     function isOfficialOrigin() {
@@ -9447,6 +9471,11 @@
         renderResearchersTable(status);
     };
 
+    /* اعادة الرسم عند تغيير المنطقة، مع بقاء تصفية الحالة كما هي */
+    window.applyRegionFilter = function() {
+        renderResearchersTable(currentFilterStatus || 'all');
+    };
+
     function renderResearchersTable(filterStatus) {
         const tbody = document.getElementById("researchersTableBody");
         tbody.innerHTML = "";
@@ -9458,6 +9487,13 @@
             } else {
                 filteredList = researchersList.filter(function(r) { return r.status === filterStatus; });
             }
+        }
+
+        /* تصفية المنطقة تطبق فوق تصفية الحالة، فيمكن الجمع بينهما:
+           مثلا "على رأس العمل" + "الشرقية" معا */
+        const regionFilter = (document.getElementById("resRegionFilter") || {}).value || "";
+        if (regionFilter) {
+            filteredList = filteredList.filter(function(r) { return (r.region || "") === regionFilter; });
         }
 
         /* البناء في الذاكرة ثم الادراج دفعة واحدة لتقليل اعادة الرسم */
@@ -9476,6 +9512,18 @@
 
             const tdId = document.createElement("td");
             tdId.textContent = r.empId;
+
+            /* المنطقة: الباحثون القدامى قبل هذه الميزة بلا منطقة */
+            const tdRegion = document.createElement("td");
+            if (r.region) {
+                tdRegion.textContent = r.region;
+                tdRegion.style.fontWeight = "700";
+            } else {
+                tdRegion.textContent = "غير محددة";
+                tdRegion.style.color = "#a5601f";
+                tdRegion.style.fontSize = "12.5px";
+                tdRegion.style.fontWeight = "700";
+            }
 
             /* رقم الجوال: يوضح من يمكن مراسلته ومن ينقصه الرقم */
             const tdPhone = document.createElement("td");
@@ -9571,6 +9619,7 @@
             tr.appendChild(tdM);
             tr.appendChild(tdName);
             tr.appendChild(tdId);
+            tr.appendChild(tdRegion);
             tr.appendChild(tdPhone);
             tr.appendChild(tdPass);
             tr.appendChild(tdStatus);
@@ -9765,6 +9814,10 @@
             const firstBtn = document.querySelector('#researchersListScreen .btn-sort');
             if (firstBtn) firstBtn.classList.add('active-sort');
 
+            /* قائمة التصفية تبنى مرة واحدة عند التحميل */
+            const rf = document.getElementById("resRegionFilter");
+            if (rf && !rf.options.length) fillRegionSelect(rf, "كل المناطق");
+
             renderResearchersTable('all');
             rLoading.style.display = "none";
             window.switchScreen('researchersListScreen');
@@ -9773,6 +9826,18 @@
             showMsg("resListError", "<i class='fas fa-wifi'></i> حدث خطأ في جلب بيانات الباحثين من السحابة.");
         }
     };
+
+    /* تعبئة اي قائمة مناطق من المصدر الواحد REGIONS */
+    function fillRegionSelect(el, placeholder) {
+        if (!el) return;
+        el.innerHTML = '<option value="">' + (placeholder || "-- اختر المنطقة --") + '</option>';
+        REGIONS.forEach(function(r) {
+            const o = document.createElement("option");
+            o.value = r;
+            o.textContent = r;
+            el.appendChild(o);
+        });
+    }
 
     window.toggleAddResearcherForm = function() {
         const section = document.getElementById("addResearcherSection");
@@ -9785,6 +9850,7 @@
             passInput.value = "";
 
             document.getElementById("newResPhone").value = "";
+            fillRegionSelect(document.getElementById("newResRegion"));
 
             /* اسم مستخدم مقترح تلقائيا بصيغة OSB#### وقابل للتعديل */
             document.getElementById("newResId").value = suggestResearcherId();
@@ -9799,6 +9865,7 @@
             document.getElementById("newResName").value = "";
             document.getElementById("newResId").value = "";
             document.getElementById("newResPhone").value = "";
+            document.getElementById("newResRegion").value = "";
             const rHint0 = document.getElementById("resIdHint");
             if (rHint0) rHint0.style.display = "none";
             passInput.value = "";
@@ -9819,6 +9886,8 @@
         document.getElementById("newResName").value = researcher.empName;
         document.getElementById("newResId").value = researcher.empId;
         document.getElementById("newResPhone").value = researcher.phone || "";
+        fillRegionSelect(document.getElementById("newResRegion"));
+        document.getElementById("newResRegion").value = researcher.region || "";
         const rHintE = document.getElementById("resIdHint");
         if (rHintE) rHintE.style.display = "none";
 
@@ -9846,6 +9915,7 @@
            يوحد الى الصيغة الدولية قبل الحفظ كبقية ارقام النظام */
         const rawPhone = document.getElementById("newResPhone").value.trim();
         const phone = rawPhone ? normalizeSaudiPhone(rawPhone) : "";
+        const region = document.getElementById("newResRegion").value;
 
         hideMsg("addResError");
         hideMsg("addResSuccess");
@@ -9853,6 +9923,16 @@
         if (rawPhone && !validSaudiPhone(phone)) {
             showMsg("addResError", "<i class='fas fa-times-circle'></i> رقم الجوال غير صحيح. " +
                 "اكتبه بصيغة 05xxxxxxxx او +966xxxxxxxxx، او اتركه فارغا.");
+            return;
+        }
+
+        /* المنطقة الزامية: هي اساس توزيع العمل ومتابعته */
+        if (!region) {
+            showMsg("addResError", "<i class='fas fa-exclamation-circle'></i> الرجاء تحديد منطقة الباحث.");
+            return;
+        }
+        if (REGIONS.indexOf(region) === -1) {
+            showMsg("addResError", "<i class='fas fa-times-circle'></i> المنطقة المختارة غير معتمدة.");
             return;
         }
 
@@ -9890,22 +9970,22 @@
             }
 
             if (editingResearcherId) {
-                const payload = { empName: name, empId: id };
+                const payload = { empName: name, empId: id, region: region };
                 /* الجوال يحدث فقط ان كتب شيئا، فلا يمسح رقما مسجلا
                    لمجرد ترك الحقل فارغا اثناء تعديل بيانات اخرى */
                 if (rawPhone) payload.phone = phone;
                 if (!keepOldPass) payload.password = await hashPassword(pass);
                 await updateDoc(doc(db, "researchers", editingResearcherId), payload);
-                logAudit("تعديل بيانات باحث", name + " (" + id + ")" + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
+                logAudit("تعديل بيانات باحث", name + " (" + id + ") | المنطقة: " + region + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
                 showMsg("addResSuccess", "<i class='fas fa-check-circle'></i> تم تحديث بيانات الباحث بنجاح!" +
                     (keepOldPass ? "" : "<br><span class='pass-once'>كلمة المرور الجديدة: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>"));
             } else {
                 await addDoc(collection(db, "researchers"), {
                     empName: name, empId: id, password: await hashPassword(pass),
-                    phone: phone,
+                    phone: phone, region: region,
                     status: 'active', createdAt: new Date().toISOString()
                 });
-                logAudit("اضافة باحث", name + " (" + id + ")");
+                logAudit("اضافة باحث", name + " (" + id + ") | المنطقة: " + region);
                 showMsg("addResSuccess", "<i class='fas fa-check-circle'></i> تمت اضافة الباحث الى قائمة النظام بنجاح!" +
                     "<br><span class='pass-once'>كلمة المرور: " + esc(pass) + " — احفظها الان فلن تظهر مرة اخرى.</span>");
             }
@@ -10261,7 +10341,7 @@
        اطلاقا لا نصا ولا خانة فارغة، لان النظام لا يحتفظ بها اصلا الا
        مشفرة، ولان ارسالها في رسالة نصية ممارسة غير امنة.
        ------------------------------------------------------------------ */
-    function openWhatsAppCard(phone, name, username, title) {
+    function openWhatsAppCard(phone, name, username, title, region) {
         const lines = [
             "الاسم: " + (name || ""),
             "",
@@ -10269,6 +10349,11 @@
             "",
             "الصفة: " + (title || "")
         ];
+        /* المنطقة تضاف للباحثين فقط، فالمدراء لا منطقة لهم */
+        if (region) {
+            lines.push("");
+            lines.push("المنطقة: " + region);
+        }
         const wa = String(phone).replace(/^\+/, "");
         window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
     }
@@ -10290,7 +10375,7 @@
             return;
         }
 
-        openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE);
+        openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region);
         logAudit("فتح محادثة بيانات حساب", (r.empName || "") + " (" + r.empId + ")");
     };
 
