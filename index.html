@@ -10467,13 +10467,20 @@
             '<title>قائمة الباحثين</title>' +
             '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">' +
             '<style>' +
-            /* الاتجاه الافقي: نصرح به بكل الصيغ المدعومة ونثبت الابعاد،
-               فلا يعتمد الامر على اعدادات الطابعة المحفوظة */
-            '@page { size: 297mm 210mm; size: A4 landscape; margin: 5mm; }' +
+            /* الاتجاه الافقي: تصريح واحد بسيط.
+               تجنبنا الجمع بين ابعاد صريحة و A4 landscape معا، فهو
+               يربك بعض المتصفحات فتتجاهل القاعدة وتعود للعمودي. */
+            '@page { size: A4 landscape; margin: 5mm; }' +
             '* { box-sizing: border-box; }' +
+            /* حزام امان: يمنع تجاوز عرض الصفحة مهما كان اتجاهها،
+               فلا يدور المحتوى لو تجاهل المتصفح قاعدة @page */
+            'html, body { max-width: 100%; overflow-x: hidden; }' +
+            'table { max-width: 100%; }' +
             'html, body { margin: 0; padding: 0; }' +
             'body { font-family: Tajawal, Tahoma, sans-serif; color: #000; background: #fff; }' +
-            '.page { width: 287mm; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }' +
+            /* العرض بالنسبة المئوية لا بالمليمترات: العرض الثابت اوسع من
+               الصفحة العمودية فيفيض ويدور المحتوى ليلائمها */
+            '.page { width: 100%; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }' +
             '.page:last-child { page-break-after: auto; break-after: auto; }' +
             'table, thead, tbody, tr, td, th { page-break-inside: avoid !important; break-inside: avoid !important; }' +
             '.doc-head { text-align: center; margin-bottom: 2px; border-bottom: 1.5px solid #4a8794; padding-bottom: 2px; }' +
@@ -11994,15 +12001,22 @@
                  2) تنبيه المستخدم في شريط الطباعة الى اطفائها من
                     "اعدادات اضافية" للحصول على افضل نتيجة.
                ------------------------------------------------------------ */
-            /* الاتجاه الافقي: نصرح به بكل الصيغ المدعومة ونثبت الابعاد،
-               فلا يعتمد الامر على اعدادات الطابعة المحفوظة */
-            '@page { size: 297mm 210mm; size: A4 landscape; margin: 5mm; }' +
+            /* الاتجاه الافقي: تصريح واحد بسيط.
+               تجنبنا الجمع بين ابعاد صريحة و A4 landscape معا، فهو
+               يربك بعض المتصفحات فتتجاهل القاعدة وتعود للعمودي. */
+            '@page { size: A4 landscape; margin: 5mm; }' +
             '* { box-sizing: border-box; }' +
+            /* حزام امان: يمنع تجاوز عرض الصفحة مهما كان اتجاهها،
+               فلا يدور المحتوى لو تجاهل المتصفح قاعدة @page */
+            'html, body { max-width: 100%; overflow-x: hidden; }' +
+            'table { max-width: 100%; }' +
             'html, body { margin: 0; padding: 0; }' +
             'body { font-family: Tajawal, Tahoma, sans-serif; color: #000; background: #fff; }' +
 
             /* كل جدول في صفحة مستقلة، مع منع اي كسر داخلي */
-            '.page { width: 287mm; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }' +
+            /* العرض بالنسبة المئوية لا بالمليمترات: العرض الثابت اوسع من
+               الصفحة العمودية فيفيض ويدور المحتوى ليلائمها */
+            '.page { width: 100%; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }' +
             '.page:last-child { page-break-after: auto; break-after: auto; }' +
             'table, thead, tbody, tr, td, th { page-break-inside: avoid !important; break-inside: avoid !important; }' +
             'tr { page-break-after: auto; }' +
