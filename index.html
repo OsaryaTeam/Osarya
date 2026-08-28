@@ -663,6 +663,23 @@
             box-shadow: 0 10px 25px rgba(90, 106, 119, 0.3) !important;
         }
 
+        /* زر الزيارة المنفذة على الحاسب: يبقى ظاهرا لكن يوضح انه للجوال */
+        .mobile-only-visit.is-mobile-only { opacity: 0.6; }
+        .mobile-only-visit.is-mobile-only::after {
+            content: "الجوال فقط";
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.35);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            opacity: 1;
+            transform: none;
+        }
+
         /* شارة النوع اعلى نموذج التوثيق */
         .visit-type-banner {
             margin-top: 18px;
@@ -3931,13 +3948,21 @@
             اختر نوع الزيارة التي تريد توثيقها.
         </p>
 
-        <button class="btn-visit-done btn-icon-watermark icon-register" onclick="openVisitForm('done')">المنفذة</button>
+        <!-- شارة الجوال تظهر على الحاسب فقط، عبر قاعدة CSS ادناه -->
+        <button class="btn-visit-done btn-icon-watermark icon-register mobile-only-visit" onclick="openVisitForm('done')">المنفذة</button>
         <button class="btn-visit-transfer btn-icon-watermark icon-exchange" onclick="openVisitForm('transferred')">المحولة</button>
         <button class="btn-visit-failed btn-icon-watermark icon-times" onclick="openVisitForm('failed')">التعذر</button>
         <button class="btn-visit-outside btn-icon-watermark icon-map-pin" onclick="openVisitForm('outside')">خارج النطاق</button>
         <button class="btn-visit-other btn-icon-watermark icon-list" onclick="openVisitForm('other')">أخرى</button>
 
         <div id="visitTypeError" class="error-message"></div>
+
+        <!-- تنبيه يظهر على الحاسب وحده -->
+        <div id="visitDesktopNote" class="rule-note" style="display:none;">
+            <i class="fas fa-desktop"></i>
+            انت على جهاز حاسب: يمكنك توثيق <strong>المحولة والمتعذرة وخارج النطاق واخرى</strong>.
+            اما <strong>المنفذة</strong> فمن الجوال وحده، لانها تتطلب اثبات تواجدك في موقع الزيارة.
+        </div>
 
         <div class="btn-group bottom-return">
             <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
@@ -8290,6 +8315,15 @@
            حالة الصلاحيات اللحظية في اي شاشة يفتحها المستخدم */
         if (typeof window.updateReadOnlyBadges === "function") window.updateReadOnlyBadges();
 
+        /* تنبيه الحاسب في شاشة اختيار نوع الزيارة */
+        if (screenId === 'visitTypeScreen') {
+            const dn = document.getElementById("visitDesktopNote");
+            if (dn) dn.style.display = isMobileDevice() ? "none" : "block";
+            /* شارة على زر المنفذة توضح انه للجوال */
+            const mo = document.querySelector(".mobile-only-visit");
+            if (mo) mo.classList.toggle("is-mobile-only", !isMobileDevice());
+        }
+
         /* اعادة فحص تذكير الجوال عند العودة للبوابة */
         if ((screenId === 'managerPortal' || screenId === 'researcherPortal') &&
             typeof checkPhoneReminder === "function") {
@@ -8727,17 +8761,21 @@
         if (!cfg) return;
 
         /* ------------------------------------------------------------------
-           التوثيق من الجوال حصرا
+           القيد على الجوال يخص الزيارة المنفذة وحدها
            ------------------------------------------------------------------
-           الزيارة الميدانية توثق من الميدان، والحاسب لا يستقبل الاقمار
-           الصناعية فيحدد موقعه من الشبكة بدقة كيلومترات، فلا يثبت تواجدا
-           في موقع بعينه. والسماح بالتوثيق منه يفرغ توثيق الموقع من مقصده.
+           الزيارة المنفذة تتطلب اثبات التواجد في موقعها، والحاسب لا
+           يستقبل الاقمار الصناعية فيحدد موقعه من الشبكة بدقة كيلومترات،
+           فلا يصلح لاثبات تواجد في موقع بعينه.
+
+           اما المحولة والمتعذرة وخارج النطاق واخرى، فلم تنفذ في موقعها
+           اصلا ولا تطلب موقعا، فلا معنى لحصرها في الجوال. والسماح
+           بتوثيقها من الحاسب يسهل على الباحث تسجيلها من مكتبه.
            ------------------------------------------------------------------ */
-        if (!isMobileDevice()) {
-            toast("توثيق الزيارات متاح من الجوال فقط.", "warn");
-            showMsg("visitTypeError", "<i class='fas fa-mobile-screen'></i> <strong>التوثيق من الجوال فقط</strong>" +
-                "<br>الزيارات الميدانية توثق من الميدان عبر جوالك، لان الحاسب لا يحدد الموقع بدقة كافية لاثبات تواجدك في موقع الزيارة." +
-                "<br>افتح النظام من جوالك لتوثيق زياراتك.");
+        if (cfg.geo && !isMobileDevice()) {
+            toast("توثيق الزيارات المنفذة متاح من الجوال فقط.", "warn");
+            showMsg("visitTypeError", "<i class='fas fa-mobile-screen'></i> <strong>الزيارة المنفذة توثق من الجوال فقط</strong>" +
+                "<br>لانها تتطلب اثبات تواجدك في موقع الزيارة، والحاسب لا يحدد الموقع بدقة كافية." +
+                "<br><strong>اما بقية الانواع</strong> (المحولة والمتعذرة وخارج النطاق واخرى) فيمكنك توثيقها من هذا الجهاز.");
             return;
         }
 
@@ -10429,11 +10467,13 @@
             '<title>قائمة الباحثين</title>' +
             '<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">' +
             '<style>' +
-            '@page { size: A4 landscape; margin: 5mm; }' +
+            /* الاتجاه الافقي: نصرح به بكل الصيغ المدعومة ونثبت الابعاد،
+               فلا يعتمد الامر على اعدادات الطابعة المحفوظة */
+            '@page { size: 297mm 210mm; size: A4 landscape; margin: 5mm; }' +
             '* { box-sizing: border-box; }' +
             'html, body { margin: 0; padding: 0; }' +
             'body { font-family: Tajawal, Tahoma, sans-serif; color: #000; background: #fff; }' +
-            '.page { page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }' +
+            '.page { width: 287mm; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }' +
             '.page:last-child { page-break-after: auto; break-after: auto; }' +
             'table, thead, tbody, tr, td, th { page-break-inside: avoid !important; break-inside: avoid !important; }' +
             '.doc-head { text-align: center; margin-bottom: 2px; border-bottom: 1.5px solid #4a8794; padding-bottom: 2px; }' +
@@ -10592,6 +10632,35 @@
         if (REGIONS.indexOf(region) === -1) {
             showMsg("addResError", "<i class='fas fa-times-circle'></i> المنطقة المختارة غير معتمدة.");
             return;
+        }
+
+        /* ------------------------------------------------------------------
+           منع تكرار رقم الجوال
+           ------------------------------------------------------------------
+           الرقم وسيلة تواصل وتحقق من الهوية في استعادة كلمة المرور،
+           فتكراره بين باحثين يعني وصول بيانات حساب الى غير صاحبه.
+
+           المقارنة بالصيغة الموحدة لا بالنص كما كتب، فالرقم نفسه قد
+           يكتب 0512345678 او +966512345678 وهما رقم واحد.
+           ------------------------------------------------------------------ */
+        if (phone) {
+            try {
+                const phoneSnap = await getDocs(query(collection(db, "researchers"), where("phone", "==", phone)));
+                let clash = null;
+                phoneSnap.forEach(function(d) {
+                    /* عند التعديل نستثني الباحث نفسه، فرقمه ليس تكرارا */
+                    if (editingResearcherId && d.id === editingResearcherId) return;
+                    if (!clash) clash = d.data();
+                });
+                if (clash) {
+                    showMsg("addResError", "<i class='fas fa-times-circle'></i> <strong>رقم الجوال مسجل مسبقا</strong>" +
+                        "<br>هذا الرقم مرتبط بالباحث: " + esc(clash.empName) + " (" + esc(clash.empId) + ")." +
+                        "<br>لكل باحث رقم جوال خاص به، فهو وسيلة التحقق من هويته عند استعادة كلمة المرور.");
+                    return;
+                }
+            } catch (e) {
+                /* تعذر الفحص لا يوقف الحفظ، فهو اجراء وقائي اضافي */
+            }
         }
 
         /* نوع العمل الزامي كالمنطقة، فكلاهما اساس توزيع المهام */
@@ -11925,13 +11994,15 @@
                  2) تنبيه المستخدم في شريط الطباعة الى اطفائها من
                     "اعدادات اضافية" للحصول على افضل نتيجة.
                ------------------------------------------------------------ */
-            '@page { size: A4 landscape; margin: 5mm; }' +
+            /* الاتجاه الافقي: نصرح به بكل الصيغ المدعومة ونثبت الابعاد،
+               فلا يعتمد الامر على اعدادات الطابعة المحفوظة */
+            '@page { size: 297mm 210mm; size: A4 landscape; margin: 5mm; }' +
             '* { box-sizing: border-box; }' +
             'html, body { margin: 0; padding: 0; }' +
             'body { font-family: Tajawal, Tahoma, sans-serif; color: #000; background: #fff; }' +
 
             /* كل جدول في صفحة مستقلة، مع منع اي كسر داخلي */
-            '.page { page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }' +
+            '.page { width: 287mm; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; }' +
             '.page:last-child { page-break-after: auto; break-after: auto; }' +
             'table, thead, tbody, tr, td, th { page-break-inside: avoid !important; break-inside: avoid !important; }' +
             'tr { page-break-after: auto; }' +
