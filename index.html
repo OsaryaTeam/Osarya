@@ -4598,6 +4598,7 @@
         </div>
 
         <button class="btn-manager btn-icon-watermark icon-user-plus" onclick="toggleAddResearcherForm()">اضافة باحث جديد</button>
+        <button class="btn-excel btn-icon-watermark icon-excel" onclick="exportResearchersExcel()">تصدير القائمة الى Excel</button>
         <button class="btn-pdf btn-icon-watermark icon-pdf" onclick="exportResearchersPDF()">تصدير القائمة الى PDF</button>
 
         <div id="addResearcherSection" class="add-form-section" style="display: none;">
@@ -10360,6 +10361,82 @@
        ================================================================== */
     const RES_PDF_ROWS_PER_PAGE = 35;
 
+    /* ==================================================================
+       تصدير قائمة الباحثين الى Excel
+       ==================================================================
+       يصدر ما هو معروض بعد البحث والفلاتر، لا القائمة كاملة، فيطابق
+       الملف ما يراه المدير على الشاشة تماما.
+
+       لماذا نبني الصفوف من بيانات الباحثين لا من خلايا الجدول؟
+       ---------------------------------------------------------
+       التصدير من الجدول ينسخ ما فيه من عناصر تحكم (قوائم الحالة
+       المنسدلة وازرار الاجراءات)، فتخرج قيم مشوهة. والبناء من المصدر
+       يعطي بيانات نظيفة ويسمح باختيار الاعمدة المفيدة وحدها.
+
+       ملاحظة على الترميز: نضيف BOM في اول الملف ليفتح اكسل الحروف
+       العربية بشكل صحيح، وبدونه تظهر رموزا غير مفهومة.
+       ================================================================== */
+    window.exportResearchersExcel = function() {
+        if (!isManager()) return;
+
+        /* نستخرج المعروض حاليا من الجدول لنطابق ما تراه العين */
+        const rows = Array.prototype.slice.call(
+            document.querySelectorAll("#researchersTableBody tr")
+        );
+        if (!rows.length) { toast("لا توجد نتائج لتصديرها.", "warn"); return; }
+
+        const shown = [];
+        rows.forEach(function(tr) {
+            const uid = (tr.children[2] ? tr.children[2].textContent : "").trim();
+            const r = researchersList.find(function(x) { return String(x.empId) === uid; });
+            if (r) shown.push(r);
+        });
+        if (!shown.length) { toast("تعذر تجهيز البيانات للتصدير.", "error"); return; }
+
+        const statusText = function(st) {
+            if (st === "suspended") return "ايقاف مؤقت";
+            if (st === "excluded") return "مستبعد";
+            return "على رأس العمل";
+        };
+
+        /* تغليف كل خلية باقتباس مزدوج، مع مضاعفة اي اقتباس بداخلها،
+           فلا تكسر الفواصل والاقتباسات بنية الملف */
+        const cell = function(v) {
+            return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+        };
+
+        const csv = [];
+        csv.push(["م", "اسم الباحث", "الاسم المستخدم", "المنطقة", "نوع العمل",
+                  "رقم الجوال", "التفعيل", "حالة الباحث"].map(cell).join(";"));
+
+        shown.forEach(function(r, i) {
+            csv.push([
+                i + 1,
+                r.empName || "",
+                r.empId || "",
+                r.region || "غير محددة",
+                r.workType || "غير محدد",
+                /* علامة الجدولة تمنع اكسل من تحويل الرقم الى صيغة علمية
+                   او حذف علامة الزائد في بداية الرقم الدولي */
+                r.phone ? ("\t" + r.phone) : "غير مسجل",
+                (r.activated === true) ? "مفعل" : "غير مفعل",
+                statusText(r.status)
+            ].map(cell).join(";"));
+        });
+
+        const blob = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", "قائمة_الباحثين.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function() { URL.revokeObjectURL(link.href); }, 2000);
+
+        logAudit("تصدير بيانات", "تصدير Excel لقائمة الباحثين: " + shown.length + " باحث");
+        toast("تم تصدير " + shown.length + " باحث الى ملف Excel.", "success");
+    };
+
     window.exportResearchersPDF = function() {
         if (!isManager()) return;
 
@@ -10458,8 +10535,9 @@
               '<button onclick="window.print()">طباعة / حفظ بصيغة PDF</button>' +
               '<span>' + shown.length + ' باحث في ' + pages.length + ' صفحة</span>' +
             '</div>' +
-            '<div class="pb-tip">للحصول على ' + RES_PDF_ROWS_PER_PAGE + ' باحثا في كل صفحة: افتح ' +
-              '<strong>اعدادات اضافية</strong> في نافذة الطباعة واطفئ <strong>الترويسات والتذييلات</strong>.</div>' +
+            '<div class="pb-warn">تحقق في نافذة الطباعة ان <strong>الاتجاه (Layout)</strong> = <strong>افقي / Landscape</strong></div>' +
+            '<div class="pb-tip">وللحصول على ' + RES_PDF_ROWS_PER_PAGE + ' باحثا في كل صفحة: افتح ' +
+              '<strong>اعدادات اضافية</strong> واطفئ <strong>الترويسات والتذييلات</strong>.</div>' +
             '</div>';
 
         win.document.write(
@@ -10514,7 +10592,9 @@
             '.print-bar { position: sticky; top: 0; z-index: 10; padding: 12px; margin-bottom: 10px; ' +
                          'background: #4a8794; color: #fff; font-weight: 800; font-size: 14px; text-align: center; }' +
             '.pb-row { display: flex; align-items: center; justify-content: center; gap: 16px; }' +
-            '.pb-tip { margin-top: 8px; font-size: 12.5px; font-weight: 600; opacity: 0.95; line-height: 1.7; }' +
+            '.pb-warn { margin-top: 10px; padding: 8px 14px; background: rgba(255,255,255,0.18); ' +
+                       'border-radius: 8px; font-size: 13.5px; font-weight: 800; line-height: 1.7; }' +
+            '.pb-tip { margin-top: 7px; font-size: 12px; font-weight: 600; opacity: 0.9; line-height: 1.7; }' +
             '.print-bar button { padding: 10px 26px; font-size: 15px; font-weight: 800; border: none; ' +
                                 'border-radius: 8px; background: #fff; color: #2c5f6a; cursor: pointer; ' +
                                 'font-family: Tajawal, Tahoma, sans-serif; }' +
@@ -11960,8 +12040,9 @@
               '<button onclick="window.print()">طباعة / حفظ بصيغة PDF</button>' +
               '<span>' + fetchedVisits.length + ' زيارة في ' + pages.length + ' صفحة</span>' +
             '</div>' +
-            '<div class="pb-tip">للحصول على ' + PDF_ROWS_PER_PAGE + ' زيارة في كل صفحة: افتح ' +
-              '<strong>اعدادات اضافية</strong> في نافذة الطباعة واطفئ <strong>الترويسات والتذييلات</strong>.</div>' +
+            '<div class="pb-warn">تحقق في نافذة الطباعة ان <strong>الاتجاه (Layout)</strong> = <strong>افقي / Landscape</strong></div>' +
+            '<div class="pb-tip">وللحصول على ' + PDF_ROWS_PER_PAGE + ' زيارة في كل صفحة: افتح ' +
+              '<strong>اعدادات اضافية</strong> واطفئ <strong>الترويسات والتذييلات</strong>.</div>' +
             '</div>';
 
         win.document.write(
@@ -12066,7 +12147,9 @@
             '.print-bar { position: sticky; top: 0; z-index: 10; padding: 12px; margin-bottom: 10px; ' +
                          'background: #4a8794; color: #fff; font-weight: 800; font-size: 14px; text-align: center; }' +
             '.pb-row { display: flex; align-items: center; justify-content: center; gap: 16px; }' +
-            '.pb-tip { margin-top: 8px; font-size: 12.5px; font-weight: 600; opacity: 0.95; line-height: 1.7; }' +
+            '.pb-warn { margin-top: 10px; padding: 8px 14px; background: rgba(255,255,255,0.18); ' +
+                       'border-radius: 8px; font-size: 13.5px; font-weight: 800; line-height: 1.7; }' +
+            '.pb-tip { margin-top: 7px; font-size: 12px; font-weight: 600; opacity: 0.9; line-height: 1.7; }' +
             '.print-bar button { padding: 10px 26px; font-size: 15px; font-weight: 800; border: none; ' +
                                 'border-radius: 8px; background: #fff; color: #2c5f6a; cursor: pointer; ' +
                                 'font-family: Tajawal, Tahoma, sans-serif; }' +
