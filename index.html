@@ -9971,68 +9971,48 @@
 
             if (hasPerm('قائمة الباحثين')) {
                 /* ------------------------------------------------------------
-                   زرا التفعيل والغاء التفعيل
+                   زر واحد يتبدل بحسب حالة الحساب
                    ------------------------------------------------------------
-                   حالة الحساب تحدد ايهما يعمل: لا يمكن تفعيل حساب مفعل
-                   ولا الغاء تفعيل حساب غير مفعل. فيرى المدير حالة الحساب
-                   من الزر النشط بلا حاجة لقراءة العمود.
+                   غير مفعل  -> زر "تفعيل" الاخضر
+                   مفعل      -> زر "البيانات" لارسالها بلا تغيير كلمة المرور
+
+                   دمجهما في موضع واحد يوفر مساحة الصف، ولان الحالتين
+                   متنافيتان اصلا: لا معنى لزر تفعيل بجانب حساب مفعل،
+                   ولا لزر بيانات بجانب حساب لا يمكن الدخول به.
                    ------------------------------------------------------------ */
                 const isActive = (r.activated === true);
+                const hasPhone = validSaudiPhone(r.phone);
 
-                /* زر التفعيل: يولد كلمة مؤقتة ويرسلها عبر الواتساب */
-                const btnAct = document.createElement("button");
-                btnAct.type = "button";
-                btnAct.className = "btn-icon-watermark icon-whatsapp btn-table btn-activate-row";
-                btnAct.textContent = "تفعيل";
+                const btnMain = document.createElement("button");
+                btnMain.type = "button";
+                btnMain.className = "btn-icon-watermark icon-whatsapp btn-table " +
+                                    (isActive ? "btn-whatsapp-row" : "btn-activate-row");
+                btnMain.textContent = isActive ? "البيانات" : "تفعيل";
 
-                if (isActive) {
-                    btnAct.disabled = true;
-                    btnAct.style.opacity = "0.45";
-                    btnAct.style.cursor = "not-allowed";
-                    btnAct.title = "الحساب مفعل بالفعل";
-                } else if (!validSaudiPhone(r.phone)) {
-                    btnAct.disabled = true;
-                    btnAct.style.opacity = "0.45";
-                    btnAct.style.cursor = "not-allowed";
-                    btnAct.title = "لا يوجد رقم جوال مسجل، ولا يمكن ارسال كلمة المرور بدونه";
+                if (!hasPhone) {
+                    btnMain.disabled = true;
+                    btnMain.style.opacity = "0.45";
+                    btnMain.style.cursor = "not-allowed";
+                    btnMain.title = "لا يوجد رقم جوال مسجل لهذا الباحث";
+                } else if (isActive) {
+                    btnMain.title = "ارسال بيانات الحساب الى " + r.empName + " بلا تغيير كلمة المرور";
+                    btnMain.onclick = function() { window.sendResearcherCard(r.id); };
                 } else {
-                    btnAct.title = "تفعيل الحساب وارسال كلمة مرور مؤقتة الى " + r.empName;
-                    btnAct.onclick = function() { window.activateResearcher(r.id); };
+                    btnMain.title = "تفعيل الحساب وارسال كلمة مرور مؤقتة الى " + r.empName;
+                    btnMain.onclick = function() { window.activateResearcher(r.id); };
                 }
-                divActions.appendChild(btnAct);
+                divActions.appendChild(btnMain);
 
-                /* زر الغاء التفعيل: يمحو كلمة المرور ويمنع الدخول */
-                const btnDeact = document.createElement("button");
-                btnDeact.type = "button";
-                btnDeact.className = "btn-icon-watermark icon-user-lock btn-table btn-deactivate-row";
-                btnDeact.textContent = "الغاء تفعيل";
-
-                if (!isActive) {
-                    btnDeact.disabled = true;
-                    btnDeact.style.opacity = "0.45";
-                    btnDeact.style.cursor = "not-allowed";
-                    btnDeact.title = "الحساب غير مفعل اصلا";
-                } else {
+                /* زر الغاء التفعيل: للحسابات المفعلة وحدها */
+                if (isActive) {
+                    const btnDeact = document.createElement("button");
+                    btnDeact.type = "button";
+                    btnDeact.className = "btn-icon-watermark icon-user-lock btn-table btn-deactivate-row";
+                    btnDeact.textContent = "الغاء تفعيل";
                     btnDeact.title = "الغاء تفعيل حساب " + r.empName + " ومنعه من الدخول";
                     btnDeact.onclick = function() { window.confirmDeactivateResearcher(r.id); };
+                    divActions.appendChild(btnDeact);
                 }
-                divActions.appendChild(btnDeact);
-
-                /* زر ارسال البيانات بلا تغيير كلمة المرور */
-                const btnWa = document.createElement("button");
-                btnWa.type = "button";
-                btnWa.className = "btn-icon-watermark icon-whatsapp btn-table btn-whatsapp-row";
-                btnWa.textContent = "البيانات";
-                if (validSaudiPhone(r.phone) && isActive) {
-                    btnWa.title = "ارسال بيانات الحساب الى " + r.empName + " بلا تغيير كلمة المرور";
-                    btnWa.onclick = function() { window.sendResearcherCard(r.id); };
-                } else {
-                    btnWa.disabled = true;
-                    btnWa.style.opacity = "0.45";
-                    btnWa.style.cursor = "not-allowed";
-                    btnWa.title = isActive ? "لا يوجد رقم جوال مسجل" : "الحساب غير مفعل";
-                }
-                divActions.appendChild(btnWa);
 
                 const btnEdit = document.createElement("button");
                 btnEdit.type = "button";
@@ -11145,6 +11125,52 @@
         const wa = String(phone).replace(/^\+/, "");
         window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
     }
+
+    /* ==================================================================
+       تفعيل حساب الباحث
+       ==================================================================
+       يولد كلمة مرور مؤقتة، يحفظها مشفرة، يفعل الحساب، ثم يفتح الواتساب
+       برسالة تحوي البيانات وكلمة المرور.
+
+       الترتيب مقصود: نحفظ اولا ثم نفتح الرسالة. فلو فشل الحفظ لم ترسل
+       للباحث كلمة مرور لا تعمل.
+       ================================================================== */
+    window.activateResearcher = async function(docId) {
+        if (!hasPerm("قائمة الباحثين")) { denyAccess(); return; }
+        if (!requireOnline()) return;
+
+        const r = researchersList.find(function(x) { return x.id === docId; });
+        if (!r) { toast("لم يعد هذا الباحث موجودا في القائمة.", "error"); return; }
+        if (r.activated === true) { toast("الحساب مفعل بالفعل.", "warn"); return; }
+        if (!validSaudiPhone(r.phone)) {
+            toast("لا يوجد رقم جوال مسجل لهذا الباحث، فلا يمكن ارسال كلمة المرور.", "warn");
+            return;
+        }
+
+        try {
+            const tempPass = generateTempPassword();
+
+            await updateDoc(doc(db, "researchers", r.id), {
+                password: await hashPassword(tempPass),
+                activated: true,
+                mustChangePassword: true   /* يلزم بتغييرها عند اول دخول */
+            });
+
+            /* تحديث النسخة المحلية فتظهر الحالة الجديدة بلا اعادة تحميل */
+            r.activated = true;
+
+            logAudit("تفعيل حساب باحث",
+                (r.empName || "") + " (" + r.empId + ") | ارسلت كلمة المرور عبر الواتساب");
+
+            openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region, tempPass, r.workType);
+            toast("تم تفعيل الحساب وفتح الواتساب لارسال البيانات.", "success");
+
+            renderResearchersTable(currentFilterStatus || 'all');
+        } catch (e) {
+            console.error("خطأ في تفعيل الحساب:", e);
+            toast("تعذر تفعيل الحساب: " + ((e && e.code) || "خطأ غير معروف"), "error");
+        }
+    };
 
     /* ==================================================================
        الغاء تفعيل حساب الباحث
