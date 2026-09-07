@@ -6617,8 +6617,9 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
-    import { getFirestore, collection, addDoc, getDocs, getDoc, onSnapshot, query, where, updateDoc, deleteDoc, doc, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, getDoc, setDoc, onSnapshot, query, where, updateDoc, deleteDoc, doc, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD1l2V8e7tHr1M3k5EzuLhf0b8tcaf3e90",
@@ -6830,6 +6831,91 @@
     }
 
     const db = getFirestore(app);
+
+    /* ==================================================================
+       المصادقة: جلسة مجهولة لكل جهاز
+       ==================================================================
+       لماذا الدخول المجهول لا دخول ببريد وكلمة مرور؟
+       ------------------------------------------------
+       نظامنا يتحقق من كلمة المرور بنفسه في Firestore، وهذا يبقي
+       بيدنا امرين مهمين: تفعيل الحساب والغاء تفعيله من زر الواتساب،
+       واعادة تعيين كلمة المرور من المدير مباشرة. ولو نقلنا التحقق الى
+       فايربيس لفقدنا الاثنين، ولاحتاج كل باحث بريدا الكترونيا.
+
+       فدور المصادقة هنا محصور في شيء واحد: اعطاء كل جهاز هوية ثابتة
+       (uid) تعرفها قواعد الحماية على الخادم، فتقرر بناء عليها من يقرأ
+       ماذا ومن يكتب ماذا.
+
+       والباحث لا يلاحظ شيئا: لا بريد ولا خطوة اضافية، ولا تتغير شاشة
+       الدخول اطلاقا.
+       ================================================================== */
+    const auth = getAuth(app);
+
+    /* هوية الجهاز الحالية، تملأ فور جاهزية المصادقة */
+    let authUid = null;
+    let authReadyResolve = null;
+    const authReady = new Promise(function(resolve) { authReadyResolve = resolve; });
+
+    onAuthStateChanged(auth, function(user) {
+        authUid = user ? user.uid : null;
+        if (authReadyResolve) { authReadyResolve(authUid); authReadyResolve = null; }
+    });
+
+    /* ------------------------------------------------------------------
+       ضمان وجود جلسة مصادقة قبل اي عملية تحتاجها
+       ------------------------------------------------------------------
+       تستدعى قبل تسجيل الدخول. وفشلها لا يعطل النظام: القواعد الحالية
+       متساهلة، فيكمل العمل بلا هوية حتى تشدد القواعد لاحقا.
+       ------------------------------------------------------------------ */
+    async function ensureAuth() {
+        if (authUid) return authUid;
+        try {
+            const cred = await signInAnonymously(auth);
+            authUid = cred.user.uid;
+            return authUid;
+        } catch (e) {
+            console.warn("تعذر انشاء جلسة المصادقة:", e && e.code);
+            return null;
+        }
+    }
+
+    /* ------------------------------------------------------------------
+       ربط الجلسة بصاحبها
+       ------------------------------------------------------------------
+       يكتب مستندا في user_sessions باسم هوية الجهاز، يحمل من هو
+       صاحبها ونوعه وصلاحياته. وقواعد الحماية تقرأه لتقرر ما يسمح به.
+
+       المستند يكتب مرة واحدة ولا يعدل (allow update: if false في
+       القواعد)، فمن يحاول تغيير ربطه ليدعي انه غيره يرفضه الخادم.
+
+       ولذلك ننشئ هوية جديدة عند كل تسجيل دخول: فلو دخل باحث اخر على
+       نفس الجهاز احتاج هوية خاصة به لا يمكن ان تتعارض مع سابقتها.
+       ------------------------------------------------------------------ */
+    async function linkAuthSession(profile) {
+        try {
+            /* جلسة جديدة لكل دخول، فلا يرث المستخدم الجديد ربط سابقه */
+            try { await signOut(auth); } catch (e) {}
+            authUid = null;
+
+            const uid = await ensureAuth();
+            if (!uid) return false;
+
+            await setDoc(doc(db, "user_sessions", uid), {
+                empId: profile.empId || "",
+                type: profile.type || "",
+                role: profile.role || "",
+                permissions: Array.isArray(profile.permissions) ? profile.permissions : [],
+                isMaster: profile.isMaster === true,
+                docId: profile.id || "",
+                at: new Date().toISOString()
+            });
+            return true;
+        } catch (e) {
+            /* الفشل لا يمنع الدخول في هذه المرحلة الانتقالية */
+            console.warn("تعذر ربط الجلسة:", e && e.code);
+            return false;
+        }
+    }
 
     /* ==================================================================
        (1) الاعدادات العامة للنظام
@@ -7921,6 +8007,12 @@
     }
 
     /* مسح الجلسة من المخزنين معا، يستدعى عند اي خروج */
+    /* انهاء جلسة المصادقة مع الخروج، فلا تبقى هوية معلقة على الجهاز */
+    async function clearAuthSession() {
+        try { await signOut(auth); } catch (e) {}
+        authUid = null;
+    }
+
     function clearStoredSession() {
         try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
         try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
@@ -7944,6 +8036,17 @@
 
             delete data.exp;
             session = data;
+
+            /* ------------------------------------------------------------
+               اعادة ربط الجلسة بعد تحديث الصفحة
+               ------------------------------------------------------------
+               جلسة المصادقة تبقى في المتصفح، لكن قد تنشأ هوية جديدة
+               بعد انقطاع طويل. نعيد الربط في الخلفية فلا يتأخر فتح
+               النظام على المستخدم.
+               ------------------------------------------------------------ */
+            ensureAuth().then(function(uid) {
+                if (uid) linkAuthSession(session);
+            });
 
             /* تجديد المهلة مع كل استخدام، فتبقى الجلسة المتذكرة حية
                ما دام صاحبها يستخدم النظام */
@@ -8334,6 +8437,7 @@
         const wasManager = isManager();
         session = null;
         clearStoredSession();
+        clearAuthSession();
         if (idleTimer) clearTimeout(idleTimer);
         if (permSyncTimer) { clearInterval(permSyncTimer); permSyncTimer = null; }
         hideTopBar();
@@ -8806,6 +8910,7 @@
         session = null;
         /* الخروج الصريح ينهي حتى الجلسة المحفوظة بخيار "تذكرني" */
         clearStoredSession();
+        clearAuthSession();
         if (idleTimer) clearTimeout(idleTimer);
 
         document.getElementById("managerIdLogin").value = "";
@@ -8828,6 +8933,7 @@
         session = null;
         /* الخروج الصريح ينهي حتى الجلسة المحفوظة بخيار "تذكرني" */
         clearStoredSession();
+        clearAuthSession();
         if (idleTimer) clearTimeout(idleTimer);
 
         document.getElementById("resIdLogin").value = "";
@@ -9058,6 +9164,9 @@
                 /* هل دخل بكلمة مرور مؤقتة اصدرتها الادارة؟ */
                 mustChangePassword: managerData.mustChangePassword === true
             };
+            /* ربط جلسة المصادقة بهوية المدير وصلاحياته */
+            await linkAuthSession(session);
+
             await saveSession();
             resetIdleTimer();
             logAudit("تسجيل دخول", "دخول مدير");
