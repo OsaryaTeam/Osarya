@@ -467,31 +467,66 @@
             opacity: 1; transform: scale(1.1); color: #de8c43;
         }
 
-        .password-wrapper { position: relative; width: 100%; display: flex; align-items: center; }
-        .password-wrapper input { padding-left: 60px; padding-right: 45px; }
-        
+                /* ------------------------------------------------------------------
+           حقل كلمة المرور وزر الاظهار
+           ------------------------------------------------------------------
+           كان الزر يخرج عن السطر عند الضغط لسببين:
+
+           1) الحاوية flex والزر بداخلها absolute، فكان يحسب موضعه من
+              الحاوية بينما يزيحه توسيط flex في الوقت نفسه.
+           2) كان يرث تنسيقات الازرار العامة (عرض 100 بالمئة وحشو كبير
+              وتحويل عند الضغط)، فيتمدد ويقفز لحظة النقر.
+
+           المعالجة: نلغي flex من الحاوية فيصبح الموضع المطلق محسوبا
+           منها وحدها، ونلغي صراحة كل ما يرثه الزر من قواعد الازرار.
+           ------------------------------------------------------------------ */
+        .password-wrapper { position: relative; width: 100%; display: block; }
+        .password-wrapper input { padding-left: 52px !important; padding-right: 45px; }
+
         .toggle-password-btn {
             position: absolute;
-            left: 8px;
+            left: 6px;
             top: 50%;
-            transform: translateY(-50%);
-            background: rgba(74, 135, 148, 0.05);
+            transform: translateY(-50%) !important;
+            background: transparent;
             border: none;
             cursor: pointer;
-            font-size: 16px;
-            width: 40px;
+            font-size: 17px;
+            width: 40px !important;
             height: 40px;
-            border-radius: 10px;
+            min-height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border-radius: 9px;
             color: #4a8794;
-            transition: color 0.25s ease, opacity 0.25s ease;
+            box-shadow: none !important;
+            transition: color 0.2s ease, background-color 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 5;
-            margin: 0;
-            box-shadow: none;
         }
-        body.dark-mode .toggle-password-btn { background: rgba(255,255,255,0.05); color: #4a8794; }
+
+        /* الغاء التأثيرات الموروثة من قاعدة button العامة:
+           لمعة الضغط، والعلامة المائية، وحركة الرفع عند المرور */
+        .toggle-password-btn::after,
+        .toggle-password-btn::before { display: none !important; content: none !important; }
+        .toggle-password-btn:hover {
+            transform: translateY(-50%) !important;
+            background: rgba(74, 135, 148, 0.12);
+            color: #2c5f6a;
+        }
+        .toggle-password-btn:active { transform: translateY(-50%) !important; }
+        .toggle-password-btn:focus { outline: none; background: rgba(74, 135, 148, 0.12); }
+
+        body.dark-mode .toggle-password-btn { color: #8fc4cf; }
+        body.dark-mode .toggle-password-btn:hover { background: rgba(255,255,255,0.10); color: #cfe3e7; }
+
+        /* على الجوال: نفس المقاس تقريبا مع مساحة لمس مريحة */
+        @media (max-width: 768px) {
+            .toggle-password-btn { width: 38px !important; height: 38px; font-size: 16px; left: 5px; }
+            .password-wrapper input { padding-left: 48px !important; }
+        }
         
         .toggle-password-btn:hover { background: rgba(74, 135, 148, 0.15); color: #de8c43; }
         body.dark-mode .toggle-password-btn:hover { background: rgba(255,255,255,0.1); color: #de8c43; }
@@ -8142,15 +8177,34 @@
     };
 
     /* دالة واحدة موحدة بدل اربع دوال متكررة لاظهار واخفاء كلمة المرور */
+    /* ------------------------------------------------------------------
+       اظهار كلمة المرور واخفاؤها
+       ------------------------------------------------------------------
+       كان الخلل ان الدالة تغير شكل الايقونة فقط ولا تبدل نوع الحقل،
+       فيبدو الزر عاملا بينما كلمة المرور تبقى نقاطا مهما ضغط.
+
+       التبديل الفعلي بتغيير خاصية type بين password و text.
+       ------------------------------------------------------------------ */
     function togglePass(inputId, iconId) {
         const passInput = document.getElementById(inputId);
         const toggleIcon = document.getElementById(iconId);
         if (!passInput) return;
-        if (passInput.type === "password") {
-            if (toggleIcon) toggleIcon.className = "fas fa-eye-slash";
-        } else {
-            if (toggleIcon) toggleIcon.className = "fas fa-eye";
-        }
+
+        const willShow = (passInput.type === "password");
+
+        /* هذا هو السطر الذي كان ناقصا */
+        passInput.type = willShow ? "text" : "password";
+
+        /* الايقونة تعبر عن الحالة الجديدة: عين مشطوبة اثناء الاظهار
+           تعني "اضغط لتخفيها"، وعين مفتوحة تعني "اضغط لتظهرها" */
+        if (toggleIcon) toggleIcon.className = willShow ? "fas fa-eye-slash" : "fas fa-eye";
+
+        /* نبقي مؤشر الكتابة في مكانه فلا يقفز الى اول الحقل */
+        try {
+            const pos = passInput.value.length;
+            passInput.focus();
+            passInput.setSelectionRange(pos, pos);
+        } catch (e) { /* بعض المتصفحات تمنع هذا على حقول معينة */ }
     }
 
     window.togglePasswordVisibility        = function() { togglePass("managerPass", "togglePassIcon"); };
