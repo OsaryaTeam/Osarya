@@ -4175,7 +4175,7 @@
                 <i class="fas fa-lock right-icon"></i>
                 <input type="password" id="resPassLogin" autocomplete="current-password" placeholder="ادخل كلمة المرور">
                 <button type="button" class="toggle-password-btn" onclick="toggleResLoginPasswordVisibility()" title="اظهار/اخفاء">
-                    <i id="toggleResLoginPassIcon" class="fas fa-eye"></i>
+                    <i id="toggleResLoginPassIcon" class="fas fa-eye-slash"></i>
                 </button>
             </div>
         </div>
@@ -4400,7 +4400,7 @@
                     <i class="fas fa-lock right-icon"></i>
                     <input type="password" id="managerPass" autocomplete="current-password" placeholder="ادخل كلمة المرور الخاصة بالادارة">
                     <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="اظهار/اخفاء كلمة المرور">
-                        <i id="togglePassIcon" class="fas fa-eye"></i>
+                        <i id="togglePassIcon" class="fas fa-eye-slash"></i>
                     </button>
                 </div>
             </div>
@@ -4591,7 +4591,7 @@
                         <i class="fas fa-lock right-icon"></i>
                         <input type="password" id="newManPass" placeholder="يجب ان تتكون من 6 خانات، ارقام وحروف، وحرف انجليزي كبير">
                         <button type="button" class="toggle-password-btn" onclick="toggleManPasswordVisibility()" title="اظهار/اخفاء">
-                            <i id="toggleManPassIcon" class="fas fa-eye"></i>
+                            <i id="toggleManPassIcon" class="fas fa-eye-slash"></i>
                         </button>
                     </div>
                 </div>
@@ -6056,7 +6056,7 @@
                     <i class="fas fa-lock right-icon"></i>
                     <input type="password" id="accCurrentPass" autocomplete="current-password" placeholder="ادخل كلمة المرور الحالية">
                     <button type="button" class="toggle-password-btn" onclick="toggleAccPass('accCurrentPass','accCurIcon')" title="اظهار/اخفاء">
-                        <i id="accCurIcon" class="fas fa-eye"></i>
+                        <i id="accCurIcon" class="fas fa-eye-slash"></i>
                     </button>
                 </div>
             </div>
@@ -6067,7 +6067,7 @@
                     <i class="fas fa-key right-icon"></i>
                     <input type="password" id="accNewPass" autocomplete="new-password" placeholder="6 خانات على الاقل، ارقام وحروف وحرف كبير">
                     <button type="button" class="toggle-password-btn" onclick="toggleAccPass('accNewPass','accNewIcon')" title="اظهار/اخفاء">
-                        <i id="accNewIcon" class="fas fa-eye"></i>
+                        <i id="accNewIcon" class="fas fa-eye-slash"></i>
                     </button>
                 </div>
             </div>
@@ -6078,7 +6078,7 @@
                     <i class="fas fa-key right-icon"></i>
                     <input type="password" id="accNewPass2" autocomplete="new-password" placeholder="اعد كتابة كلمة المرور الجديدة">
                     <button type="button" class="toggle-password-btn" onclick="toggleAccPass('accNewPass2','accNew2Icon')" title="اظهار/اخفاء">
-                        <i id="accNew2Icon" class="fas fa-eye"></i>
+                        <i id="accNew2Icon" class="fas fa-eye-slash"></i>
                     </button>
                 </div>
             </div>
@@ -8216,9 +8216,9 @@
         /* هذا هو السطر الذي كان ناقصا */
         passInput.type = willShow ? "text" : "password";
 
-        /* الايقونة تعبر عن الحالة الجديدة: عين مشطوبة اثناء الاظهار
-           تعني "اضغط لتخفيها"، وعين مفتوحة تعني "اضغط لتظهرها" */
-        if (toggleIcon) toggleIcon.className = willShow ? "fas fa-eye-slash" : "fas fa-eye";
+        /* الايقونة تصف حالة كلمة المرور نفسها لا الفعل القادم:
+           عين مفتوحة = ظاهرة الان، وعين مشطوبة = مخفية الان */
+        if (toggleIcon) toggleIcon.className = willShow ? "fas fa-eye" : "fas fa-eye-slash";
 
         /* نبقي مؤشر الكتابة في مكانه فلا يقفز الى اول الحقل */
         try {
