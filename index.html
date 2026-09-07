@@ -2749,6 +2749,126 @@
             .ds-count-num { font-size: 23px; }
         }
 
+        /* ==================================================================
+           لوحة تحكم قائمة الباحثين
+           ------------------------------------------------------------------
+           ثلاثة صفوف مضغوطة تنتهي بخانة البحث ملاصقة للجدول، فتبقى
+           النتائج في مجال النظر اثناء الكتابة.
+           ================================================================== */
+        .res-controls {
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 14px;
+            background: rgba(74, 135, 148, 0.06);
+            border: 1px solid rgba(74, 135, 148, 0.18);
+        }
+        body.dark-mode .res-controls { background: rgba(74,135,148,0.12); border-color: rgba(255,255,255,0.07); }
+
+        .rc-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .rc-row + .rc-row { margin-top: 9px; }
+
+        /* ازرار الحالة مضغوطة */
+        .btn-sort-sm {
+            padding: 7px 13px !important;
+            font-size: 13px !important;
+            margin: 0 !important;
+            min-height: auto !important;
+            border-radius: 20px !important;
+            flex: 0 0 auto;
+        }
+
+        /* القوائم المنسدلة */
+        .rc-select {
+            flex: 1 1 150px;
+            min-width: 130px;
+            padding: 8px 12px;
+            font-size: 13.5px;
+            font-weight: 700;
+            font-family: 'Tajawal', sans-serif;
+            border-radius: 9px;
+            border: 1px solid rgba(74,135,148,0.3);
+            background: rgba(255,255,255,0.9);
+            color: #2c3e50;
+            cursor: pointer;
+        }
+        body.dark-mode .rc-select { background: rgba(20,35,40,0.9); color: #e8eef0; border-color: rgba(255,255,255,0.12); }
+
+        /* ازرار الادوات */
+        .rc-btn {
+            width: auto !important;
+            margin: 0 !important;
+            padding: 8px 14px !important;
+            font-size: 13px !important;
+            font-weight: 800 !important;
+            min-height: auto !important;
+            border-radius: 9px !important;
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            font-family: 'Tajawal', sans-serif;
+            flex: 0 0 auto;
+            box-shadow: none !important;
+        }
+        .rc-btn::after { display: none !important; }
+        .rc-btn:hover { transform: translateY(-1px); }
+        .rc-btn-excel { background: #1d6f42 !important; }
+        .rc-btn-pdf   { background: #a8402f !important; }
+        .rc-btn-clear { background: #6c7a80 !important; padding: 8px 12px !important; }
+
+        /* خانة البحث */
+        .rc-search { gap: 10px; }
+        .rc-search-wrap { position: relative; flex: 1 1 100%; display: flex; align-items: center; }
+        .rc-search-wrap input {
+            width: 100%;
+            padding: 12px 42px 12px 38px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Tajawal', sans-serif;
+            border-radius: 11px;
+            border: 2px solid rgba(74,135,148,0.35);
+            background: rgba(255,255,255,0.95);
+            color: #2c3e50;
+            margin: 0;
+        }
+        body.dark-mode .rc-search-wrap input { background: rgba(20,35,40,0.95); color: #e8eef0; }
+        .rc-search-wrap input:focus { border-color: #4a8794; outline: none; }
+
+        .rc-search-icon {
+            position: absolute; right: 14px;
+            font-size: 15px; opacity: 0.55; pointer-events: none;
+        }
+        .rc-search-clear {
+            position: absolute; left: 8px;
+            width: 26px !important; height: 26px;
+            padding: 0 !important; margin: 0 !important;
+            min-height: auto !important;
+            border: none; border-radius: 50%;
+            background: rgba(0,0,0,0.12); color: inherit;
+            cursor: pointer; font-size: 12px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: none !important;
+        }
+        .rc-search-clear::after { display: none !important; }
+
+        /* علامة المساعدة: الشرح في تلميح بدل مساحة دائمة */
+        .rc-help {
+            width: 26px; height: 26px; flex: 0 0 auto;
+            border-radius: 50%;
+            background: rgba(74,135,148,0.25);
+            color: #2c5f6a;
+            font-weight: 900; font-size: 14px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: help;
+        }
+        body.dark-mode .rc-help { color: #cfe3e7; }
+
+        @media (max-width: 768px) {
+            .res-controls { padding: 10px; }
+            .btn-sort-sm { padding: 6px 11px !important; font-size: 12px !important; }
+            .rc-select { flex: 1 1 100%; }
+            .rc-btn { flex: 1 1 auto; }
+        }
+
         /* ---------------- زرا التفعيل والغاء التفعيل ---------------- */
         .btn-activate-row {
             background: linear-gradient(135deg, #25D366, #1da851) !important;
@@ -4571,46 +4691,56 @@
             </div>
         </div>
 
-        <div class="sorting-controls">
-            <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-filter"></i> تصفية حسب حالة الباحث:</strong>
-            <div class="sorting-buttons-row">
-                <button type="button" class="btn-sort active-sort" onclick="filterResearchers('all', this)">الكل (<span id="count_all">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterResearchers('active', this)">على راس العمل (<span id="count_active">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterResearchers('suspended', this)">ايقاف مؤقت (<span id="count_suspended">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterResearchers('excluded', this)">مستبعد (<span id="count_excluded">0</span>)</button>
+        <!-- ==========================================================
+             لوحة تحكم مضغوطة
+             ----------------------------------------------------------
+             رتبت لتبقى النتائج قريبة من العين اثناء البحث:
+
+               صف 1: ازرار الحالة (مضغوطة)
+               صف 2: القوائم المنسدلة جنبا الى جنب
+               صف 3: خانة البحث ملاصقة للجدول مباشرة
+
+             وحذف الشرح الطويل تحت خانة البحث، ووضع مكانه في تلميح
+             يظهر عند المرور على علامة الاستفهام، فلا ياخذ مساحة دائمة.
+             ========================================================== */ -->
+        <div class="res-controls">
+            <!-- صف الحالة -->
+            <div class="rc-row rc-status">
+                <button type="button" class="btn-sort btn-sort-sm active-sort" onclick="filterResearchers('all', this)">الكل (<span id="count_all">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterResearchers('active', this)">على راس العمل (<span id="count_active">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterResearchers('suspended', this)">ايقاف مؤقت (<span id="count_suspended">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterResearchers('excluded', this)">مستبعد (<span id="count_excluded">0</span>)</button>
             </div>
 
-            <!-- تصفية بالمنطقة: تعمل مع تصفية الحالة اعلاه في ان واحد -->
-            <!-- بحث فوري: يتحدث مع كل حرف بلا زر -->
-            <div class="input-group" style="margin-top: 12px;">
-                <label for="resSearchBox">بحث شامل عن باحث:</label>
-                <div class="input-with-icon">
-                    <input type="text" id="resSearchBox" placeholder="اسم، اسم مستخدم، جوال، منطقة، نوع عمل..." oninput="applyRegionFilter()">
-                    <i class="fas fa-magnifying-glass right-icon"></i>
-                </div>
-                <div class="field-hint" style="display:block;">
-                    <i class="fas fa-lightbulb"></i>
-                    يبحث في كل بيانات الباحث. يمكنك كتابة جزء من الاسم، او رقم الجوال بأي صيغة
-                    (05xxxxxxxx او +966xxxxxxxxx)، او اسم منطقة، او عدة كلمات معا مثل
-                    <strong>فيصل الشرقية</strong> لتضييق النتائج.
-                </div>
+            <!-- صف القوائم والادوات -->
+            <div class="rc-row rc-selects">
+                <select id="resRegionFilter" class="rc-select" onchange="applyRegionFilter()" aria-label="تصفية بالمنطقة"></select>
+                <select id="resWorkFilter" class="rc-select" onchange="applyRegionFilter()" aria-label="تصفية بنوع العمل"></select>
+                <button type="button" class="rc-btn rc-btn-excel" onclick="exportResearchersExcel()" title="تصدير القائمة الى Excel">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+                <button type="button" class="rc-btn rc-btn-pdf" onclick="exportResearchersPDF()" title="تصدير القائمة الى PDF">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button type="button" class="rc-btn rc-btn-clear" onclick="clearResearcherFilters()" title="الغاء كل الفلاتر والبحث">
+                    <i class="fas fa-rotate-left"></i>
+                </button>
             </div>
 
-            <div class="form-grid" style="margin-top: 12px;">
-                <div class="input-group">
-                    <label for="resRegionFilter">تصفية بالمنطقة:</label>
-                    <select id="resRegionFilter" class="year-select" style="width:100%;" onchange="applyRegionFilter()"></select>
+            <!-- صف البحث: ملاصق للنتائج -->
+            <div class="rc-row rc-search">
+                <div class="rc-search-wrap">
+                    <i class="fas fa-magnifying-glass rc-search-icon"></i>
+                    <input type="text" id="resSearchBox" placeholder="ابحث بالاسم او الاسم المستخدم او الجوال او المنطقة..." oninput="applyRegionFilter()">
+                    <button type="button" class="rc-search-clear" onclick="clearResearcherSearch()" title="مسح البحث">
+                        <i class="fas fa-xmark"></i>
+                    </button>
                 </div>
-                <div class="input-group">
-                    <label for="resWorkFilter">تصفية بنوع العمل:</label>
-                    <select id="resWorkFilter" class="year-select" style="width:100%;" onchange="applyRegionFilter()"></select>
-                </div>
+                <span class="rc-help" title="يبحث في كل بيانات الباحث. اكتب جزءا من الاسم، او رقم الجوال بأي صيغة (05xxxxxxxx او +966xxxxxxxxx)، او اسم منطقة. ويمكنك كتابة عدة كلمات معا مثل: فيصل الشرقية">؟</span>
             </div>
         </div>
 
         <button class="btn-manager btn-icon-watermark icon-user-plus" onclick="toggleAddResearcherForm()">اضافة باحث جديد</button>
-        <button class="btn-excel btn-icon-watermark icon-excel" onclick="exportResearchersExcel()">تصدير القائمة الى Excel</button>
-        <button class="btn-pdf btn-icon-watermark icon-pdf" onclick="exportResearchersPDF()">تصدير القائمة الى PDF</button>
 
         <div id="addResearcherSection" class="add-form-section" style="display: none;">
             <h3 id="addResearcherTitle">بيانات الباحث الجديد</h3>
@@ -9846,6 +9976,31 @@
     };
 
     /* اعادة الرسم عند تغيير المنطقة، مع بقاء تصفية الحالة كما هي */
+    /* مسح خانة البحث وحدها مع ابقاء الفلاتر */
+    window.clearResearcherSearch = function() {
+        const el = document.getElementById("resSearchBox");
+        if (el) { el.value = ""; el.focus(); }
+        window.applyRegionFilter();
+    };
+
+    /* اعادة كل شيء الى وضعه الابتدائي: بحث وفلاتر وحالة */
+    window.clearResearcherFilters = function() {
+        const s = document.getElementById("resSearchBox");
+        if (s) s.value = "";
+        const rg = document.getElementById("resRegionFilter");
+        if (rg) rg.value = "";
+        const wk = document.getElementById("resWorkFilter");
+        if (wk) wk.value = "";
+
+        document.querySelectorAll('.rc-status .btn-sort').forEach(function(b, i) {
+            b.classList.toggle('active-sort', i === 0);
+        });
+        currentFilterStatus = 'all';
+
+        renderResearchersTable('all');
+        toast("تم الغاء كل الفلاتر.", "info");
+    };
+
     window.applyRegionFilter = function() {
         renderResearchersTable(currentFilterStatus || 'all');
     };
