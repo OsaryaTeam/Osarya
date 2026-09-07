@@ -4420,51 +4420,31 @@
              مكتوبة مسبقا، فتظهر فيها تلقائيا اي عملية جديدة تضاف
              للنظام مستقبلا بلا تعديل هنا، ويعرض عدد سجلات كل نوع.
              ========================================================== -->
-        <div class="sorting-controls">
-            <strong style="font-size: 16px; margin-bottom: 8px;"><i class="fas fa-filter"></i> تصفية السجل:</strong>
-
-            <div class="form-grid" style="margin-top: 5px;">
-                <div class="input-group">
-                    <label for="auditFilterAction">نوع العملية:</label>
-                    <select id="auditFilterAction" class="year-select" style="width:100%;" onchange="renderAuditLog()"></select>
-                </div>
-
-                <div class="input-group">
-                    <label for="auditFilterActor">صفة المنفذ:</label>
-                    <select id="auditFilterActor" class="year-select" style="width:100%;" onchange="renderAuditLog()">
-                        <option value="all">الجميع</option>
-                        <option value="manager">المدراء</option>
-                        <option value="researcher">الباحثون</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label for="auditFilterFrom">من تاريخ:</label>
-                    <div class="input-with-icon">
-                        <input type="text" id="auditFilterFrom" class="custom-date-picker" placeholder="يوم / شهر / سنة" onchange="renderAuditLog()">
-                        <i class="fas fa-calendar-alt right-icon"></i>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="auditFilterTo">الى تاريخ:</label>
-                    <div class="input-with-icon">
-                        <input type="text" id="auditFilterTo" class="custom-date-picker" placeholder="يوم / شهر / سنة" onchange="renderAuditLog()">
-                        <i class="fas fa-calendar-alt right-icon"></i>
-                    </div>
-                </div>
-
-                <div class="input-group full-width">
-                    <label for="auditFilterText">بحث في الاسم او التفاصيل:</label>
-                    <div class="input-with-icon">
-                        <input type="text" id="auditFilterText" placeholder="اكتب كلمة للبحث عنها..." oninput="renderAuditLog()">
-                        <i class="fas fa-magnifying-glass right-icon"></i>
-                    </div>
-                </div>
+        <div class="res-controls">
+            <!-- القوائم والتواريخ في صف واحد -->
+            <div class="rc-row rc-selects">
+                <select id="auditFilterAction" class="rc-select" onchange="renderAuditLog()" aria-label="نوع العملية"></select>
+                <select id="auditFilterActor" class="rc-select" onchange="renderAuditLog()" aria-label="صفة المنفذ">
+                    <option value="all">كل المنفذين</option>
+                    <option value="manager">المدراء</option>
+                    <option value="researcher">الباحثون</option>
+                </select>
+                <input type="text" id="auditFilterFrom" class="rc-select custom-date-picker" placeholder="من تاريخ" onchange="renderAuditLog()">
+                <input type="text" id="auditFilterTo" class="rc-select custom-date-picker" placeholder="الى تاريخ" onchange="renderAuditLog()">
+                <button type="button" class="rc-btn rc-btn-clear" onclick="clearAuditFilters()" title="الغاء كل الفلاتر">
+                    <i class="fas fa-rotate-left"></i>
+                </button>
             </div>
 
-            <div class="btn-group" style="margin-top: 10px;">
-                <button class="btn-neutral btn-small btn-icon-watermark icon-times" onclick="clearAuditFilters()">الغاء كل الفلاتر</button>
+            <!-- البحث ملاصق للنتائج -->
+            <div class="rc-row rc-search">
+                <div class="rc-search-wrap">
+                    <i class="fas fa-magnifying-glass rc-search-icon"></i>
+                    <input type="text" id="auditFilterText" placeholder="ابحث في الاسم او التفاصيل..." oninput="renderAuditLog()">
+                    <button type="button" class="rc-search-clear" onclick="clearAuditSearch()" title="مسح البحث">
+                        <i class="fas fa-xmark"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -5809,12 +5789,22 @@
         </div>
 
 
-        <div class="sorting-controls">
-            <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-filter"></i> تصفية حسب النوع:</strong>
-            <div class="sorting-buttons-row" id="noticeLogFilterRow">
-                <button type="button" class="btn-sort active-sort" onclick="filterNoticeLog('notice', this)">التنبيهات (<span id="ncount_notice">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterNoticeLog('alert', this)">الإنذارات (<span id="ncount_alert">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterNoticeLog('all', this)">الكل (<span id="ncount_all">0</span>)</button>
+        <div class="res-controls">
+            <div class="rc-row" id="noticeLogFilterRow">
+                <button type="button" class="btn-sort btn-sort-sm active-sort" onclick="filterNoticeLog('notice', this)">التنبيهات (<span id="ncount_notice">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterNoticeLog('alert', this)">الإنذارات (<span id="ncount_alert">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterNoticeLog('all', this)">الكل (<span id="ncount_all">0</span>)</button>
+            </div>
+
+            <!-- بحث فوري: يطبع الحروف فلا يفرق بين ا و أ و إ و آ -->
+            <div class="rc-row rc-search">
+                <div class="rc-search-wrap">
+                    <i class="fas fa-magnifying-glass rc-search-icon"></i>
+                    <input type="text" id="noticeLogSearch" placeholder="ابحث باسم الباحث او السبب او رقم الزيارة..." oninput="renderNoticeLog()">
+                    <button type="button" class="rc-search-clear" onclick="clearNoticeLogSearch()" title="مسح البحث">
+                        <i class="fas fa-xmark"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -6172,13 +6162,12 @@
         </div>
         <h2>متابعة البلاغات</h2>
 
-        <div class="sorting-controls">
-            <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-filter"></i> تصفية حسب الحالة:</strong>
-            <div class="sorting-buttons-row" id="myRepFilterRow">
-                <button type="button" class="btn-sort active-sort" onclick="filterMyReports('all', this)">الكل (<span id="mrcount_all">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterMyReports('pending', this)">قيد المراجعة (<span id="mrcount_pending">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterMyReports('approved', this)">مقبولة (<span id="mrcount_approved">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterMyReports('rejected', this)">مرفوضة (<span id="mrcount_rejected">0</span>)</button>
+        <div class="res-controls">
+            <div class="rc-row" id="myRepFilterRow">
+                <button type="button" class="btn-sort btn-sort-sm active-sort" onclick="filterMyReports('all', this)">الكل (<span id="mrcount_all">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterMyReports('pending', this)">قيد المراجعة (<span id="mrcount_pending">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterMyReports('approved', this)">مقبولة (<span id="mrcount_approved">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterMyReports('rejected', this)">مرفوضة (<span id="mrcount_rejected">0</span>)</button>
             </div>
         </div>
 
@@ -6397,13 +6386,12 @@
             وضع العرض فقط: يمكنك الاطلاع على الطلبات، ولا تملك صلاحية اصدار كلمات مرور مؤقتة.
         </div>
 
-        <div class="sorting-controls">
-            <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-filter"></i> تصفية حسب الحالة:</strong>
-            <div class="sorting-buttons-row" id="pwFilterRow">
-                <button type="button" class="btn-sort active-sort" onclick="filterPwRequests('pending', this)">قيد المراجعة (<span id="pwcount_pending">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterPwRequests('done', this)">تم اصدارها (<span id="pwcount_done">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterPwRequests('rejected', this)">مرفوضة (<span id="pwcount_rejected">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterPwRequests('all', this)">الكل (<span id="pwcount_all">0</span>)</button>
+        <div class="res-controls">
+            <div class="rc-row" id="pwFilterRow">
+                <button type="button" class="btn-sort btn-sort-sm active-sort" onclick="filterPwRequests('pending', this)">قيد المراجعة (<span id="pwcount_pending">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterPwRequests('done', this)">تم اصدارها (<span id="pwcount_done">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterPwRequests('rejected', this)">مرفوضة (<span id="pwcount_rejected">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterPwRequests('all', this)">الكل (<span id="pwcount_all">0</span>)</button>
             </div>
         </div>
 
@@ -7703,6 +7691,13 @@
         /* نحافظ على اختيار المستخدم ان بقي متاحا بعد اعادة البناء */
         if (prev && (prev === "all" || counts[prev])) sel.value = prev;
     }
+
+    /* مسح بحث سجل التدقيق وحده */
+    window.clearAuditSearch = function() {
+        const el = document.getElementById("auditFilterText");
+        if (el) { el.value = ""; el.focus(); }
+        window.renderAuditLog();
+    };
 
     window.clearAuditFilters = function() {
         const a = document.getElementById("auditFilterAction");
@@ -16194,6 +16189,13 @@
         });
     }
 
+    /* مسح بحث سجل التنبيهات */
+    window.clearNoticeLogSearch = function() {
+        const el = document.getElementById("noticeLogSearch");
+        if (el) { el.value = ""; el.focus(); }
+        renderNoticeLog();
+    };
+
     window.filterNoticeLog = function(type, btnEl) {
         document.querySelectorAll('#noticeLogFilterRow .btn-sort').forEach(function(b) { b.classList.remove('active-sort'); });
         if (btnEl) btnEl.classList.add('active-sort');
@@ -16201,7 +16203,7 @@
         renderNoticeLog();
     };
 
-    function renderNoticeLog() {
+    window.renderNoticeLog = function() {
         const tbody = document.getElementById("noticeLogBody");
         const empty = document.getElementById("noticeLogEmpty");
         if (!tbody) return;
@@ -16209,12 +16211,36 @@
         destroyDatePickersIn(tbody);
         tbody.innerHTML = "";
 
-        const list = (noticeLogFilter === 'all')
+        let list = (noticeLogFilter === 'all')
             ? noticeLog
             : noticeLog.filter(function(n) { return n.type === noticeLogFilter; });
 
+        /* ------------------------------------------------------------------
+           البحث الفوري
+           ------------------------------------------------------------------
+           يطبع الحروف العربية بنفس قاعدة بقية الشاشات، فلا يفرق بين
+           صور الالف (ا أ إ آ) ولا بين التاء المربوطة والهاء.
+           ------------------------------------------------------------------ */
+        const nq = normalizeArabic(((document.getElementById("noticeLogSearch") || {}).value || "").trim());
+        if (nq) {
+            const words = nq.split(/\s+/).filter(Boolean);
+            list = list.filter(function(n) {
+                const hay = normalizeArabic([
+                    n.empName || "", n.empId || "", n.reason || "",
+                    n.note || "", n.visitId || "",
+                    (n.type === "alert") ? "انذار" : "تنبيه"
+                ].join(" "));
+                return words.every(function(w) { return hay.indexOf(w) !== -1; });
+            });
+        }
+
         if (list.length === 0) {
-            if (empty) empty.style.display = "block";
+            if (empty) {
+                empty.style.display = "block";
+                empty.innerHTML = nq
+                    ? '<i class="fas fa-magnifying-glass"></i> لا يوجد سجل مطابق لبحثك'
+                    : '<i class="fas fa-inbox"></i> لا توجد سجلات في هذا التصنيف';
+            }
             return;
         }
         if (empty) empty.style.display = "none";
@@ -16334,7 +16360,7 @@
 
         /* تهيئة مؤجلة لحقول التاريخ */
         lazyDates.forEach(function(el) { window.attachLazyDatePicker(el); });
-    }
+    };
 
     /* تأكيد حذف تنبيه او انذار بالكامل */
     function confirmDeleteNotice(idx, docId) {
