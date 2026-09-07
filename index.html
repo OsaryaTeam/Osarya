@@ -4583,14 +4583,16 @@
             <!-- تصفية بالمنطقة: تعمل مع تصفية الحالة اعلاه في ان واحد -->
             <!-- بحث فوري: يتحدث مع كل حرف بلا زر -->
             <div class="input-group" style="margin-top: 12px;">
-                <label for="resSearchBox">بحث بالاسم او الاسم المستخدم او رقم الجوال:</label>
+                <label for="resSearchBox">بحث شامل عن باحث:</label>
                 <div class="input-with-icon">
-                    <input type="text" id="resSearchBox" placeholder="اكتب للبحث الفوري..." oninput="applyRegionFilter()">
+                    <input type="text" id="resSearchBox" placeholder="اسم، اسم مستخدم، جوال، منطقة، نوع عمل..." oninput="applyRegionFilter()">
                     <i class="fas fa-magnifying-glass right-icon"></i>
                 </div>
                 <div class="field-hint" style="display:block;">
                     <i class="fas fa-lightbulb"></i>
-                    يقبل رقم الجوال بأي صيغة (05xxxxxxxx او +966xxxxxxxxx) ويطابقها معا.
+                    يبحث في كل بيانات الباحث. يمكنك كتابة جزء من الاسم، او رقم الجوال بأي صيغة
+                    (05xxxxxxxx او +966xxxxxxxxx)، او اسم منطقة، او عدة كلمات معا مثل
+                    <strong>فيصل الشرقية</strong> لتضييق النتائج.
                 </div>
             </div>
 
@@ -4679,6 +4681,11 @@
         <div id="resListError" class="error-message"></div>
 
         <div id="resSearchCount" class="records-info"></div>
+
+        <div id="resSearchEmpty" class="empty-state" style="display:none;">
+            <i class="fas fa-magnifying-glass"></i>
+            لا يوجد باحث مطابق لبحثك او للفلاتر المحددة
+        </div>
 
         <div class="table-container" style="margin-top: 20px;">
             <table id="researchersTable">
@@ -6208,6 +6215,10 @@
 
     /* الاسم المستخدم المحجوز لحساب المبرمج، يمنع اسناده لاي حساب اخر */
     const RESERVED_MASTER_USERNAME = "OSP0001";
+
+    /* رابط النظام الرسمي، يرسل مع بيانات الحساب في رسائل الواتساب.
+       عند تغيير النطاق يحدث هنا وحده فيسري على كل الرسائل */
+    const SYSTEM_URL = "https://osaryateam.github.io/Osarya/";
 
     /* ------------------------------------------------------------------
        مناطق عمل الباحثين
@@ -9865,6 +9876,70 @@
             filteredList = filteredList.filter(function(r) { return (r.workType || "") === workFilter; });
         }
 
+        /* ------------------------------------------------------------------
+           البحث الشامل المرن
+           ------------------------------------------------------------------
+           يبحث في كل بيانات الباحث دفعة واحدة: الاسم والاسم المستخدم
+           والجوال والمنطقة ونوع العمل والحالة والتفعيل.
+
+           ثلاث خصائص تجعله مرنا:
+
+           1) اجزاء الاسم: البحث عن "فيصل" يظهر كل من في اسمه فيصل ولو
+              كان في وسط الاسم الثلاثي او اخره.
+
+           2) كلمات متعددة: كتابة "فيصل الشرقية" تظهر من اسمه فيصل وهو
+              في المنطقة الشرقية معا، فكل كلمة تضيق النتائج اكثر.
+
+           3) صيغتا الجوال: الرقم مخزن بالصيغة الدولية، فنوحد ما يكتبه
+              المدير ونطابق بالصيغتين، ويعمل ولو كتب جزءا من الرقم.
+           ------------------------------------------------------------------ */
+        const rawQuery = ((document.getElementById("resSearchBox") || {}).value || "").trim();
+        if (rawQuery) {
+            const words = window.toEnglishDigits(rawQuery).toLowerCase().split(/\s+/).filter(Boolean);
+
+            filteredList = filteredList.filter(function(r) {
+                /* نجمع كل بيانات الباحث في نص واحد نبحث فيه */
+                const haystack = [
+                    r.empName || "",
+                    r.empId || "",
+                    r.phone || "",
+                    r.region || "",
+                    r.workType || "",
+                    (r.activated === true) ? "مفعل" : "غير مفعل",
+                    (r.status === "suspended") ? "ايقاف مؤقت"
+                        : (r.status === "excluded") ? "مستبعد" : "على رأس العمل"
+                ].join(" ").toLowerCase();
+
+                /* كل كلمة يجب ان توجد، فتضيق النتائج مع كل كلمة تضاف */
+                return words.every(function(w) {
+                    if (haystack.indexOf(w) !== -1) return true;
+
+                    /* الكلمة رقم؟ نجرب مطابقتها بالصيغة الدولية للجوال */
+                    if (/^[0-9+]+$/.test(w) && r.phone) {
+                        const norm = normalizeSaudiPhone(w);
+                        if (norm && norm.length > 4 &&
+                            String(r.phone).indexOf(norm) !== -1) return true;
+                    }
+                    return false;
+                });
+            });
+        }
+
+        /* عداد النتائج: يوضح اثر البحث والفلاتر مجتمعة */
+        const resCountEl = document.getElementById("resSearchCount");
+        if (resCountEl) {
+            const total = researchersList.length;
+            resCountEl.textContent = (filteredList.length === total)
+                ? ("عدد الباحثين: " + total)
+                : ("المعروض: " + filteredList.length + " من اصل " + total);
+        }
+
+        /* حالة الفراغ: نبين ان السبب البحث لا خلو القائمة */
+        const resEmptyEl = document.getElementById("resSearchEmpty");
+        if (resEmptyEl) {
+            resEmptyEl.style.display = (filteredList.length === 0 && researchersList.length > 0) ? "block" : "none";
+        }
+
         /* البناء في الذاكرة ثم الادراج دفعة واحدة لتقليل اعادة الرسم */
         const frag = document.createDocumentFragment();
 
@@ -11115,13 +11190,24 @@
             lines.push("");
             lines.push("نوع العمل: " + workType);
         }
-        /* كلمة المرور المؤقتة عند اعادة التعيين فقط */
+        /* كلمة المرور المؤقتة عند التفعيل او اعادة التعيين */
         if (tempPass) {
             lines.push("");
             lines.push("كلمة المرور المؤقتة: " + tempPass);
             lines.push("");
             lines.push("يلزمك تغييرها عند اول تسجيل دخول من شاشة حسابي.");
         }
+
+        /* ------------------------------------------------------------
+           رابط الموقع
+           ------------------------------------------------------------
+           يوضع اخر الرسالة ليكون اخر ما يقرؤه الباحث فيضغطه مباشرة،
+           ولان تطبيقات المراسلة تجعل الرابط قابلا للضغط تلقائيا.
+           ويرسل مع كل بطاقة، سواء كانت تفعيلا او تذكيرا بالبيانات.
+           ------------------------------------------------------------ */
+        lines.push("");
+        lines.push("رابط النظام:");
+        lines.push(SYSTEM_URL);
         const wa = String(phone).replace(/^\+/, "");
         window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
     }
