@@ -2755,14 +2755,68 @@
            ثلاثة صفوف مضغوطة تنتهي بخانة البحث ملاصقة للجدول، فتبقى
            النتائج في مجال النظر اثناء الكتابة.
            ================================================================== */
-        .res-controls {
+        .res-controls,
+        .sorting-controls {
             margin-top: 18px;
             padding: 12px;
             border-radius: 14px;
             background: rgba(74, 135, 148, 0.06);
             border: 1px solid rgba(74, 135, 148, 0.18);
         }
-        body.dark-mode .res-controls { background: rgba(74,135,148,0.12); border-color: rgba(255,255,255,0.07); }
+        body.dark-mode .res-controls,
+        body.dark-mode .sorting-controls { background: rgba(74,135,148,0.12); border-color: rgba(255,255,255,0.07); }
+
+        /* ------------------------------------------------------------------
+           ضغط لوحات الفلاتر في كل الشاشات
+           ------------------------------------------------------------------
+           كانت لوحات التصفية تاخذ مساحة كبيرة فتدفع النتائج خارج الشاشة.
+           هذه القواعد تضغطها في كل شاشة دفعة واحدة، بدل تعديل كل شاشة
+           على حدة، فتبقى النتائج قريبة من العين اثناء التصفية.
+           ------------------------------------------------------------------ */
+        .sorting-controls > strong {
+            font-size: 13.5px !important;
+            margin-bottom: 7px !important;
+            display: block;
+            opacity: 0.85;
+        }
+        .sorting-controls .btn-sort {
+            padding: 7px 13px !important;
+            font-size: 13px !important;
+            margin: 0 !important;
+            min-height: auto !important;
+            border-radius: 20px !important;
+        }
+        .sorting-buttons-row { gap: 7px !important; }
+
+        /* حقول الفلاتر داخل اللوحة: اصغر واقرب */
+        .sorting-controls .input-group { margin-bottom: 0 !important; }
+        .sorting-controls .input-group label {
+            font-size: 12.5px !important;
+            margin-bottom: 4px !important;
+            opacity: 0.85;
+        }
+        .sorting-controls .input-group input,
+        .sorting-controls .input-group select,
+        .sorting-controls .year-select {
+            padding: 9px 12px !important;
+            font-size: 14px !important;
+            border-radius: 9px !important;
+        }
+        .sorting-controls .input-with-icon i.right-icon { font-size: 14px; }
+        .sorting-controls .form-grid { gap: 9px !important; margin-top: 8px !important; }
+
+        /* التلميحات الطويلة تختفي داخل لوحات الفلاتر توفيرا للمساحة */
+        .sorting-controls .field-hint { display: none !important; }
+
+        /* ازرار اللوحة السفلية مضغوطة */
+        .sorting-controls .btn-group { margin-top: 9px !important; gap: 7px; }
+        .sorting-controls .btn-group button {
+            padding: 8px 14px !important;
+            font-size: 13px !important;
+            min-height: auto !important;
+            margin: 0 !important;
+            border-radius: 9px !important;
+        }
 
         .rc-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
         .rc-row + .rc-row { margin-top: 9px; }
@@ -5129,6 +5183,8 @@
             <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
         </div>
         <h2>طلبات الاجازات</h2>
+
+        <button class="btn-manager btn-icon-watermark icon-users" onclick="openLeaveBalances()">ارصدة الباحثين</button>
         <div class="readonly-badge" data-perm="طلبات الاجازات" style="display:none;">
             <i class="fas fa-eye"></i>
             وضع العرض فقط: يمكنك الاطلاع والبحث والفلترة، ولا تملك صلاحية التعديل في هذه الشاشة.
@@ -5335,6 +5391,105 @@
          ملاحظة على الترتيب: التنبيه يسبق الانذار دائما في كل الشاشات
          لان التنبيه ادنى درجة منه.
          ============================================================== -->
+    <!-- ==============================================================
+         شاشة الادارة: ارصدة اجازات الباحثين
+         --------------------------------------------------------------
+         نظرة شاملة على رصيد كل باحث في سنة مختارة: المستخدم والمعلق
+         والمتبقي، مع زر لعرض تفاصيل اجازاته كاملة.
+         ============================================================== -->
+    <div id="leaveBalancesScreen" class="container screen" style="max-width: 1100px;">
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('leaveManageScreen')">العودة لطلبات الاجازات</button>
+        </div>
+        <h2>ارصدة اجازات الباحثين</h2>
+
+        <div class="res-controls">
+            <div class="rc-row rc-selects">
+                <select id="lbYear" class="rc-select" onchange="loadLeaveBalances()" aria-label="السنة"></select>
+                <select id="lbRegion" class="rc-select" onchange="renderLeaveBalances()" aria-label="تصفية بالمنطقة"></select>
+                <select id="lbSort" class="rc-select" onchange="renderLeaveBalances()" aria-label="الترتيب">
+                    <option value="name">ترتيب بالاسم</option>
+                    <option value="remaining">الاقل رصيدا اولا</option>
+                    <option value="used">الاكثر استهلاكا اولا</option>
+                </select>
+                <button type="button" class="rc-btn rc-btn-excel" onclick="exportLeaveBalancesExcel()" title="تصدير الارصدة الى Excel">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+            </div>
+
+            <div class="rc-row rc-search">
+                <div class="rc-search-wrap">
+                    <i class="fas fa-magnifying-glass rc-search-icon"></i>
+                    <input type="text" id="lbSearch" placeholder="ابحث بالاسم او الاسم المستخدم او المنطقة..." oninput="renderLeaveBalances()">
+                    <button type="button" class="rc-search-clear" onclick="clearLeaveBalanceSearch()" title="مسح البحث">
+                        <i class="fas fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="lbCount" class="records-info"></div>
+        <div id="lbLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري حساب الارصدة...</div>
+        <div id="lbError" class="error-message"></div>
+
+        <div id="lbEmpty" class="empty-state" style="display:none;">
+            <i class="fas fa-magnifying-glass"></i>
+            لا يوجد باحث مطابق
+        </div>
+
+        <div class="table-container">
+            <table id="lbTable">
+                <thead>
+                    <tr>
+                        <th>م</th>
+                        <th>اسم الباحث</th>
+                        <th>الاسم المستخدم</th>
+                        <th>المنطقة</th>
+                        <th>الرصيد الكلي</th>
+                        <th>المستخدم</th>
+                        <th>قيد المراجعة</th>
+                        <th>المتبقي</th>
+                        <th>التفاصيل</th>
+                    </tr>
+                </thead>
+                <tbody id="lbBody"></tbody>
+            </table>
+        </div>
+
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('leaveManageScreen')">العودة لطلبات الاجازات</button>
+        </div>
+    </div>
+
+    <!-- ==============================================================
+         شاشة الادارة: تفاصيل اجازات باحث
+         ============================================================== -->
+    <div id="leaveDetailScreen" class="container screen" style="max-width: 1000px;">
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('leaveBalancesScreen')">العودة للارصدة</button>
+        </div>
+        <h2>تفاصيل اجازات الباحث</h2>
+
+        <div id="ldHeader" class="employee-info"></div>
+
+        <!-- بطاقات الرصيد -->
+        <div id="ldStats" class="ds-counts"></div>
+
+        <div id="ldLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري تحميل الاجازات...</div>
+        <div id="ldError" class="error-message"></div>
+
+        <div id="ldEmpty" class="empty-state" style="display:none;">
+            <i class="fas fa-calendar-xmark"></i>
+            لا توجد اجازات مسجلة لهذا الباحث في هذه السنة
+        </div>
+
+        <div id="ldList"></div>
+
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('leaveBalancesScreen')">العودة للارصدة</button>
+        </div>
+    </div>
+
     <div id="noticeAdminScreen" class="container screen">
         <div style="text-align: left; margin-bottom: 10px;">
             <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
@@ -7241,6 +7396,44 @@
                ((err && err.message) ? ("<br><span style='font-size:11.5px;opacity:0.8;'>" + esc(err.message) + "</span>") : "");
     }
 
+    /* ==================================================================
+       تطبيع النص العربي للبحث
+       ==================================================================
+       يوحد صور الحروف التي تكتب باشكال مختلفة لنفس الصوت، فيجد البحث
+       ما يقصده المستخدم لا ما كتبه حرفيا.
+
+       ما يوحد:
+         الالف   : أ إ آ ٱ ا  ->  ا     (ابراهيم = إبراهيم)
+         التاء   : ة  ->  ه               (فاطمة = فاطمه)
+         الياء   : ى  ->  ي               (يحيى = يحيي)
+         الهمزة  : ؤ -> و   ئ -> ي
+         التشكيل : يحذف كليا              (مُحَمَّد = محمد)
+         التطويل : يحذف                   (محـمـد = محمد)
+
+       ولماذا نطبع الطرفين؟
+       ---------------------
+       لان الخطأ قد يكون في اي منهما: قد يكتب المدير "ابراهيم" والاسم
+       مسجل "إبراهيم"، وقد يكون العكس. فتطبيع الاثنين يضمن التطابق
+       في الحالتين.
+       ================================================================== */
+    function normalizeArabic(str) {
+        return String(str || "")
+            /* التشكيل: الفتحة والضمة والكسرة والشدة والسكون والتنوين */
+            .replace(/[\u064B-\u0652\u0670\u0640]/g, "")
+            /* صور الالف */
+            .replace(/[\u0623\u0625\u0622\u0671]/g, "\u0627")
+            /* التاء المربوطة */
+            .replace(/\u0629/g, "\u0647")
+            /* الالف المقصورة */
+            .replace(/\u0649/g, "\u064A")
+            /* الهمزة على الواو والياء */
+            .replace(/\u0624/g, "\u0648")
+            .replace(/\u0626/g, "\u064A")
+            /* الهمزة المفردة */
+            .replace(/\u0621/g, "")
+            .toLowerCase();
+    }
+
     /* رسالة منبثقة موحدة بدلا من alert */
     function toast(msg, type) {
         let box = document.getElementById("toastContainer");
@@ -7404,7 +7597,8 @@
 
         const fAction = (document.getElementById("auditFilterAction") || {}).value || "all";
         const fActor  = (document.getElementById("auditFilterActor") || {}).value || "all";
-        const fText   = ((document.getElementById("auditFilterText") || {}).value || "").trim().toLowerCase();
+        /* التطبيع يجعل البحث لا يفرق بين صور الالف والتاء والياء */
+        const fText   = normalizeArabic(((document.getElementById("auditFilterText") || {}).value || "").trim());
         const fFrom   = window.toEnglishDigits((document.getElementById("auditFilterFrom") || {}).value || "");
         const fTo     = window.toEnglishDigits((document.getElementById("auditFilterTo") || {}).value || "");
 
@@ -7420,7 +7614,7 @@
             }
 
             if (fText) {
-                const hay = [r.actorName, r.actorId, r.details, r.action].join(" ").toLowerCase();
+                const hay = normalizeArabic([r.actorName, r.actorId, r.details, r.action].join(" "));
                 if (hay.indexOf(fText) === -1) return false;
             }
             return true;
@@ -8287,7 +8481,7 @@
         resultsScreen: 'manager',
         researcherPortal: 'researcher', researcherScreen: 'researcher', visitTypeScreen: 'researcher', researcherQueryScreen: 'researcher',
         /* شاشات نظام الاجازات */
-        leaveManageScreen: 'manager',
+        leaveManageScreen: 'manager', leaveBalancesScreen: 'manager', leaveDetailScreen: 'manager',
         leaveRequestScreen: 'researcher', leaveHistoryScreen: 'researcher', sickLeaveScreen: 'researcher',
         notifHistoryScreen: 'any', accountScreen: 'any',
         /* شاشات زياراتي والتنبيهات والانذارات */
@@ -10050,11 +10244,14 @@
            ------------------------------------------------------------------ */
         const rawQuery = ((document.getElementById("resSearchBox") || {}).value || "").trim();
         if (rawQuery) {
-            const words = window.toEnglishDigits(rawQuery).toLowerCase().split(/\s+/).filter(Boolean);
+            /* نطبع ما كتبه المستخدم قبل تقسيمه الى كلمات */
+            const words = normalizeArabic(window.toEnglishDigits(rawQuery))
+                            .split(/\s+/).filter(Boolean);
 
             filteredList = filteredList.filter(function(r) {
-                /* نجمع كل بيانات الباحث في نص واحد نبحث فيه */
-                const haystack = [
+                /* نجمع كل بيانات الباحث في نص واحد ونطبعه بنفس القاعدة،
+                   فيتطابق الطرفان مهما اختلفت صور الحروف بينهما */
+                const haystack = normalizeArabic([
                     r.empName || "",
                     r.empId || "",
                     r.phone || "",
@@ -10063,7 +10260,7 @@
                     (r.activated === true) ? "مفعل" : "غير مفعل",
                     (r.status === "suspended") ? "ايقاف مؤقت"
                         : (r.status === "excluded") ? "مستبعد" : "على رأس العمل"
-                ].join(" ").toLowerCase();
+                ].join(" "));
 
                 /* كل كلمة يجب ان توجد، فتضيق النتائج مع كل كلمة تضاف */
                 return words.every(function(w) {
@@ -13144,6 +13341,363 @@
             remaining: total - used - pending
         };
     }
+
+    /* ==================================================================
+       ارصدة اجازات الباحثين (نظرة شاملة للادارة)
+       ==================================================================
+       تعرض رصيد كل باحث في سنة مختارة، فتعرف الادارة من استهلك رصيده
+       ومن بقي له، قبل ان تبت في طلب جديد.
+
+       كيف تحسب؟
+       ---------
+       نجلب كل الاجازات مرة واحدة ثم نوزعها على الباحثين محليا، بدل
+       استعلام لكل باحث. فمع خمسين باحثا يوفر ذلك خمسين استعلاما
+       ويحولها الى استعلامين فقط.
+       ================================================================== */
+
+    let lbRows = [];            /* الارصدة المحسوبة */
+    let lbCurrentYear = null;
+
+    window.openLeaveBalances = async function() {
+        if (!isManager()) { window.switchScreen('managerScreen'); return; }
+
+        /* قائمة السنوات: من سنتين قبل الى سنة بعد */
+        const ySel = document.getElementById("lbYear");
+        if (ySel && !ySel.options.length) {
+            const now = new Date().getFullYear();
+            for (let y = now + 1; y >= now - 2; y--) {
+                const o = document.createElement("option");
+                o.value = y;
+                o.textContent = "سنة " + y;
+                if (y === now) o.selected = true;
+                ySel.appendChild(o);
+            }
+        }
+
+        const rSel = document.getElementById("lbRegion");
+        if (rSel && !rSel.options.length) fillRegionSelect(rSel, "كل المناطق");
+
+        window.switchScreen('leaveBalancesScreen');
+        await loadLeaveBalances();
+    };
+
+    window.loadLeaveBalances = async function() {
+        const loading = document.getElementById("lbLoading");
+        const tbody = document.getElementById("lbBody");
+        hideMsg("lbError");
+        if (tbody) tbody.innerHTML = "";
+        if (loading) loading.style.display = "block";
+
+        const year = Number((document.getElementById("lbYear") || {}).value) || new Date().getFullYear();
+        lbCurrentYear = year;
+
+        try {
+            /* استعلامان فقط مهما كثر الباحثون */
+            const [resSnap, leaveSnap] = await Promise.all([
+                getDocs(collection(db, "researchers")),
+                getDocs(query(collection(db, "leaves"), where("year", "==", year)))
+            ]);
+
+            /* توزيع الاجازات على اصحابها */
+            const byEmp = {};
+            leaveSnap.forEach(function(d) {
+                const l = Object.assign({ id: d.id }, d.data());
+                const k = String(l.empId);
+                if (!byEmp[k]) byEmp[k] = [];
+                byEmp[k].push(l);
+            });
+
+            lbRows = [];
+            resSnap.forEach(function(d) {
+                const r = Object.assign({ id: d.id }, d.data());
+                /* المستبعدون لا يعنينا رصيدهم */
+                if (r.status === "excluded") return;
+
+                const leaves = byEmp[String(r.empId)] || [];
+                const s = computeLeaveSummary(leaves, r, year);
+
+                lbRows.push({
+                    id: r.id,
+                    empName: r.empName || "",
+                    empId: r.empId || "",
+                    region: r.region || "",
+                    workType: r.workType || "",
+                    status: r.status || "active",
+                    total: s.total,
+                    used: s.used,
+                    pending: s.pending,
+                    remaining: s.remaining
+                });
+            });
+
+            renderLeaveBalances();
+        } catch (e) {
+            showMsg("lbError", dbErrorMessage(e, "حساب الارصدة"));
+        }
+        if (loading) loading.style.display = "none";
+    };
+
+    window.clearLeaveBalanceSearch = function() {
+        const el = document.getElementById("lbSearch");
+        if (el) { el.value = ""; el.focus(); }
+        window.renderLeaveBalances();
+    };
+
+    window.renderLeaveBalances = function() {
+        const tbody = document.getElementById("lbBody");
+        const empty = document.getElementById("lbEmpty");
+        const count = document.getElementById("lbCount");
+        if (!tbody) return;
+
+        const q = normalizeArabic(((document.getElementById("lbSearch") || {}).value || "").trim());
+        const region = (document.getElementById("lbRegion") || {}).value || "";
+        const sortBy = (document.getElementById("lbSort") || {}).value || "name";
+
+        let list = lbRows.slice();
+
+        if (region) list = list.filter(function(r) { return (r.region || "") === region; });
+
+        if (q) {
+            const words = q.split(/\s+/).filter(Boolean);
+            list = list.filter(function(r) {
+                const hay = normalizeArabic([r.empName, r.empId, r.region, r.workType].join(" "));
+                return words.every(function(w) { return hay.indexOf(w) !== -1; });
+            });
+        }
+
+        list.sort(function(a, b) {
+            if (sortBy === "remaining") return a.remaining - b.remaining;
+            if (sortBy === "used") return b.used - a.used;
+            return String(a.empName).localeCompare(String(b.empName), 'ar');
+        });
+
+        tbody.innerHTML = "";
+
+        if (count) {
+            count.textContent = "المعروض: " + list.length + " باحث" +
+                (list.length !== lbRows.length ? (" من اصل " + lbRows.length) : "") +
+                "  |  سنة " + lbCurrentYear;
+        }
+
+        if (list.length === 0) { if (empty) empty.style.display = "block"; return; }
+        if (empty) empty.style.display = "none";
+
+        const frag = document.createDocumentFragment();
+        list.forEach(function(r, idx) {
+            const tr = document.createElement("tr");
+
+            const tdNum = document.createElement("td");
+            tdNum.textContent = idx + 1;
+            tdNum.style.fontWeight = "900";
+            tdNum.style.backgroundColor = "rgba(222, 140, 67, 0.1)";
+            tr.appendChild(tdNum);
+
+            [r.empName, r.empId, r.region || "غير محددة"].forEach(function(v) {
+                const td = document.createElement("td");
+                td.textContent = v;
+                tr.appendChild(td);
+            });
+
+            /* الرصيد الكلي والمستخدم والمعلق */
+            [r.total, r.used, r.pending].forEach(function(v) {
+                const td = document.createElement("td");
+                td.textContent = v + " يوم";
+                td.style.fontWeight = "700";
+                tr.appendChild(td);
+            });
+
+            /* المتبقي: يلون تحذيرا حين يقل او ينفد */
+            const tdRem = document.createElement("td");
+            tdRem.textContent = r.remaining + " يوم";
+            tdRem.style.fontWeight = "900";
+            if (r.remaining <= 0) tdRem.style.color = "#c0392b";
+            else if (r.remaining <= 5) tdRem.style.color = "#a5601f";
+            else tdRem.style.color = "#0f5132";
+            tr.appendChild(tdRem);
+
+            const tdAct = document.createElement("td");
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "btn-manager btn-icon-watermark icon-results btn-table";
+            btn.textContent = "التفاصيل";
+            btn.onclick = function() { window.openLeaveDetail(r.empId, r.empName); };
+            tdAct.appendChild(btn);
+            tr.appendChild(tdAct);
+
+            frag.appendChild(tr);
+        });
+
+        tbody.appendChild(frag);
+        window.applyCardLabels("lbTable");
+    };
+
+    /* تصدير الارصدة المعروضة */
+    window.exportLeaveBalancesExcel = function() {
+        if (!isManager()) return;
+        const rows = Array.prototype.slice.call(document.querySelectorAll("#lbBody tr"));
+        if (!rows.length) { toast("لا توجد نتائج لتصديرها.", "warn"); return; }
+
+        const cell = function(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; };
+        const csv = [["م", "اسم الباحث", "الاسم المستخدم", "المنطقة",
+                      "الرصيد الكلي", "المستخدم", "قيد المراجعة", "المتبقي"].map(cell).join(";")];
+
+        rows.forEach(function(tr, i) {
+            const c = tr.children;
+            csv.push([i + 1, c[1].textContent, c[2].textContent, c[3].textContent,
+                      c[4].textContent, c[5].textContent, c[6].textContent, c[7].textContent].map(cell).join(";"));
+        });
+
+        const blob = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", "ارصدة_الاجازات_" + lbCurrentYear + ".csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function() { URL.revokeObjectURL(link.href); }, 2000);
+
+        logAudit("تصدير بيانات", "تصدير ارصدة الاجازات لسنة " + lbCurrentYear);
+        toast("تم التصدير.", "success");
+    };
+
+    /* ==================================================================
+       تفاصيل اجازات باحث
+       ==================================================================
+       كل اجازات الباحث في السنة المختارة بتواريخها واسبابها وحالاتها،
+       مع بطاقات الرصيد في الاعلى.
+       ================================================================== */
+    window.openLeaveDetail = async function(empId, empName) {
+        if (!isManager()) { window.switchScreen('managerScreen'); return; }
+
+        window.switchScreen('leaveDetailScreen');
+
+        const loading = document.getElementById("ldLoading");
+        const list = document.getElementById("ldList");
+        const empty = document.getElementById("ldEmpty");
+        const stats = document.getElementById("ldStats");
+        hideMsg("ldError");
+        if (list) list.innerHTML = "";
+        if (stats) stats.innerHTML = "";
+        if (empty) empty.style.display = "none";
+        if (loading) loading.style.display = "block";
+
+        document.getElementById("ldHeader").innerHTML =
+            '<i class="fas fa-user"></i> <strong>' + esc(empName) + '</strong> (' + esc(empId) + ')' +
+            '  —  سنة ' + lbCurrentYear;
+
+        try {
+            const leaves = await fetchLeavesOf(empId);
+
+            /* بيانات الباحث لقراءة الترحيل */
+            const rSnap = await getDocs(query(collection(db, "researchers"), where("empId", "==", empId)));
+            const resData = rSnap.empty ? null : rSnap.docs[0].data();
+
+            const s = computeLeaveSummary(leaves, resData, lbCurrentYear);
+
+            /* بطاقات الرصيد */
+            const cards = [
+                { n: s.total,     l: "الرصيد الكلي",  c: "ds-total" },
+                { n: s.used,      l: "المستخدم",       c: "vt-failed" },
+                { n: s.pending,   l: "قيد المراجعة",   c: "vt-transfer" },
+                { n: s.remaining, l: "المتبقي",        c: "vt-done" }
+            ];
+            stats.innerHTML = "";
+            cards.forEach(function(c) {
+                const el = document.createElement("div");
+                el.className = "ds-count-card " + c.c;
+                el.innerHTML = '<div class="ds-count-num">' + c.n + '</div>' +
+                               '<div class="ds-count-label">' + esc(c.l) + ' (يوم)</div>';
+                stats.appendChild(el);
+            });
+
+            /* اجازات السنة المختارة وحدها */
+            const yearLeaves = leaves.filter(function(l) { return Number(l.year) === Number(lbCurrentYear); });
+
+            if (yearLeaves.length === 0) {
+                if (empty) empty.style.display = "block";
+                if (loading) loading.style.display = "none";
+                return;
+            }
+
+            /* الاحدث بداية اولا */
+            yearLeaves.sort(function(a, b) {
+                return String(b.startDate || "").localeCompare(String(a.startDate || ""));
+            });
+
+            const frag = document.createDocumentFragment();
+            yearLeaves.forEach(function(l) {
+                const card = document.createElement("div");
+                card.className = "req-card";
+
+                const head = document.createElement("div");
+                head.className = "req-head";
+                const t = document.createElement("span");
+                t.textContent = (l.type === "sick") ? "اجازة مرضية" : "اجازة اعتيادية";
+                head.appendChild(t);
+                head.appendChild(reqBadge(l.status));
+                card.appendChild(head);
+
+                const addLine = function(label, value, cls) {
+                    if (!value) return;
+                    const d = document.createElement("div");
+                    d.className = "req-line";
+                    const sl = document.createElement("span");
+                    sl.className = cls || "req-line-label";
+                    sl.textContent = label + ": ";
+                    const sv = document.createElement("span");
+                    sv.textContent = value;
+                    d.appendChild(sl);
+                    d.appendChild(sv);
+                    card.appendChild(d);
+                };
+
+                addLine("المدة", fmtDate(l.startDate) + " الى " + fmtDate(l.endDate) +
+                                 "  (" + (l.days || 0) + " يوم)");
+                if (l.compensatedDays) addLine("ايام معوضة", l.compensatedDays + " يوم");
+                addLine("السبب", l.reason);
+
+                if (l.status === "rejected" && l.rejectReason) {
+                    const d = document.createElement("div");
+                    d.className = "req-line";
+                    const sl = document.createElement("span");
+                    sl.className = "detail-reject-label";
+                    sl.textContent = "سبب الرفض: ";
+                    const sv = document.createElement("span");
+                    sv.className = "detail-reject-text";
+                    sv.textContent = l.rejectReason;
+                    d.appendChild(sl); d.appendChild(sv);
+                    card.appendChild(d);
+                }
+
+                /* مرفق العذر الطبي ان وجد */
+                if (l.fileUrl) {
+                    const d = document.createElement("div");
+                    d.className = "req-line";
+                    const a = document.createElement("a");
+                    a.href = l.fileUrl;
+                    a.target = "_blank";
+                    a.rel = "noopener";
+                    a.className = "file-link";
+                    a.innerHTML = '<i class="fas fa-file-medical"></i> عرض العذر الطبي المرفق';
+                    d.appendChild(a);
+                    card.appendChild(d);
+                }
+
+                const meta = document.createElement("div");
+                meta.className = "req-meta";
+                meta.textContent = "قدم في: " + window.formatDateTimeToEnglish(l.createdAt) +
+                    (l.decidedAt ? ("  |  تاريخ القرار: " + window.formatDateTimeToEnglish(l.decidedAt)) : "");
+                card.appendChild(meta);
+
+                frag.appendChild(card);
+            });
+
+            list.appendChild(frag);
+        } catch (e) {
+            showMsg("ldError", dbErrorMessage(e, "جلب تفاصيل الاجازات"));
+        }
+        if (loading) loading.style.display = "none";
+    };
 
     /* جلب كل طلبات باحث معين (استعلام بحقل واحد فلا يحتاج فهرسا مركبا) */
     async function fetchLeavesOf(empId) {
