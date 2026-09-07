@@ -2868,9 +2868,60 @@
         .rc-btn-excel { background: #1d6f42 !important; }
         .rc-btn-pdf   { background: #a8402f !important; }
         .rc-btn-clear { background: #6c7a80 !important; padding: 8px 12px !important; }
-        .rc-btn-balances { background: #4a8794 !important; }
-        .rc-btn-reports  { background: #2c5f8a !important; position: relative; }
-        .rc-btn-carry    { background: #7a6aa8 !important; }
+        /* ==================================================================
+           ازرار ادوات الشاشة
+           ------------------------------------------------------------------
+           حجم متوسط: اصغر من ازرار البوابة الرئيسية بوضوح، واكبر من
+           ازرار الفرز بوضوح ايضا. والفصل عن اطار الفرز يجعل وظيفتها
+           مفهومة: هذه تنقلك، وتلك تصفي ما امامك.
+           ================================================================== */
+        .screen-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .tool-btn {
+            flex: 1 1 auto;
+            min-width: 150px;
+            width: auto !important;
+            margin: 0 !important;
+            padding: 14px 18px !important;
+            font-size: 15px !important;
+            font-weight: 800 !important;
+            min-height: auto !important;
+            border-radius: 12px !important;
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            font-family: 'Tajawal', sans-serif;
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .tool-btn::after { display: none !important; }
+        .tool-btn i { margin-left: 7px; }
+        .tool-btn:hover { transform: translateY(-2px); }
+
+        .tool-balances {
+            background: linear-gradient(135deg, #4a8794, #396d78) !important;
+            box-shadow: 0 6px 16px rgba(57, 109, 120, 0.28) !important;
+        }
+        .tool-reports {
+            background: linear-gradient(135deg, #2c5f8a, #1b3f5f) !important;
+            box-shadow: 0 6px 16px rgba(27, 63, 95, 0.28) !important;
+        }
+        .tool-carry {
+            background: linear-gradient(135deg, #7a6aa8, #5c4e85) !important;
+            box-shadow: 0 6px 16px rgba(92, 78, 133, 0.28) !important;
+        }
+
+        /* شارة الطلبات المعلقة فوق زر الادوات */
+        .tool-btn .action-badge { top: -7px; left: -7px; }
+
+        @media (max-width: 768px) {
+            .tool-btn { flex: 1 1 100%; padding: 13px 16px !important; font-size: 14.5px !important; }
+        }
 
         /* تسمية صغيرة داخل صف الادوات */
         .rc-label {
@@ -5191,58 +5242,26 @@
          قبول الطلب او رفضه مع كتابة سبب الرفض الالزامي.
          تحتوي ايضا على قسم ترحيل الرصيد المتبقي من سنة الى التي تليها.
          ============================================================== -->
-    <div id="leaveManageScreen" class="container screen" style="max-width: 1200px;">
+    <!-- ==============================================================
+         شاشة الادارة: ترحيل رصيد الاجازات
+         --------------------------------------------------------------
+         كانت قسما ينفتح داخل شاشة طلبات الاجازات فيدفع الطلبات الى
+         اسفل الشاشة. فصلها الى شاشة مستقلة يبقي الطلبات في مكانها،
+         ويتيح عرض سجل الترحيلات السابقة معها.
+         ============================================================== -->
+    <div id="carryScreen" class="container screen" style="max-width: 1000px;">
         <div style="text-align: left; margin-bottom: 10px;">
-            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('leaveManageScreen')">العودة لطلبات الإجازات</button>
         </div>
-        <h2>طلبات الاجازات</h2>
+        <h2>ترحيل رصيد الاجازات</h2>
 
-        <div class="readonly-badge" data-perm="طلبات الاجازات" style="display:none;">
-            <i class="fas fa-eye"></i>
-            وضع العرض فقط: يمكنك الاطلاع والبحث والفلترة، ولا تملك صلاحية التعديل في هذه الشاشة.
+        <div class="rule-note">
+            <i class="fas fa-circle-info"></i>
+            حساب كل سنة مستقل ولا يرحل الفائض تلقائيا. استخدم هذه الشاشة لترحيل ايام محددة يدويا
+            من سنة الى التي تليها.
         </div>
-
-        <!-- ==========================================================
-             شريط ادوات مضغوط
-             ----------------------------------------------------------
-             الازرار الثلاثة والفرز في مساحة صغيرة، فتظهر الطلبات
-             مباشرة تحتها ولا تحتاج تمريرا لرؤيتها. وهذا مهم هنا
-             تحديدا: الطلبات تنتظر قرارا، وما لا يرى لا يقرر فيه.
-             ========================================================== -->
-        <div class="res-controls">
-            <!-- ادوات الشاشة -->
-            <div class="rc-row">
-                <button type="button" class="rc-btn rc-btn-balances" onclick="openLeaveBalances()">
-                    <i class="fas fa-users"></i> ارصدة الباحثين
-                </button>
-                <button type="button" class="rc-btn rc-btn-reports" data-action-badge="leave-report" onclick="openRequests('leave')">
-                    <i class="fas fa-flag"></i> البلاغات
-                </button>
-                <button type="button" class="rc-btn rc-btn-carry" data-requires-perm="طلبات الاجازات" onclick="toggleCarrySection()">
-                    <i class="fas fa-right-left"></i> ترحيل رصيد
-                </button>
-            </div>
-
-            <!-- حالة الطلب -->
-            <div class="rc-row" id="leaveStatusFilterRow">
-                <button type="button" class="btn-sort btn-sort-sm active-sort" onclick="filterLeaves('pending', this)">قيد المراجعة (<span id="lcount_pending">0</span>)</button>
-                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('approved', this)">مقبولة (<span id="lcount_approved">0</span>)</button>
-                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('rejected', this)">مرفوضة (<span id="lcount_rejected">0</span>)</button>
-                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('cancelled', this)">ملغاة (<span id="lcount_cancelled">0</span>)</button>
-                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('all', this)">الكل (<span id="lcount_all">0</span>)</button>
-            </div>
-
-            <!-- نوع الاجازة -->
-            <div class="rc-row" id="leaveTypeFilterRow">
-                <span class="rc-label"><i class="fas fa-layer-group"></i> النوع:</span>
-                <button type="button" class="btn-sort btn-sort-sm active-sort" onclick="filterLeaveType('all', this)">الكل</button>
-                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaveType('annual', this)">اعتيادية</button>
-                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaveType('sick', this)">مرضية</button>
-            </div>
-        </div>
-
-        <div id="carrySection" class="add-form-section" style="display:none;">
-            <h3>ترحيل الرصيد المتبقي الى السنة التالية</h3>
+        
+            
             <p style="text-align:center; font-size:13px; color:#6c757d; margin-top:0;">
                 حساب كل سنة مستقل ولا يرحل الفائض تلقائيا. استخدم هذا القسم لترحيل ايام محددة يدويا.
             </p>
@@ -5271,7 +5290,92 @@
 
             <div class="btn-group">
                 <button class="btn-manager btn-icon-watermark icon-save" onclick="applyCarryOver()">تنفيذ الترحيل</button>
-                <button class="btn-neutral btn-icon-watermark icon-times" onclick="toggleCarrySection()">اغلاق</button>
+                <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('leaveManageScreen')">العودة لطلبات الإجازات</button>
+            </div>
+        
+        <!-- سجل الترحيلات السابقة -->
+        <h3 style="margin-top: 28px;"><i class="fas fa-clock-rotate-left"></i> سجل الترحيلات</h3>
+
+        <div id="carryLogLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري تحميل السجل...</div>
+
+        <div id="carryLogEmpty" class="empty-state" style="display:none;">
+            <i class="fas fa-inbox"></i>
+            لا توجد عمليات ترحيل مسجلة بعد
+        </div>
+
+        <div class="table-container">
+            <table id="carryLogTable">
+                <thead>
+                    <tr>
+                        <th>م</th>
+                        <th>الباحث</th>
+                        <th>التفاصيل</th>
+                        <th>نفذها</th>
+                        <th>التاريخ</th>
+                    </tr>
+                </thead>
+                <tbody id="carryLogBody"></tbody>
+            </table>
+        </div>
+
+        <div class="btn-group bottom-return">
+            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('leaveManageScreen')">العودة لطلبات الإجازات</button>
+        </div>
+    </div>
+
+    <div id="leaveManageScreen" class="container screen" style="max-width: 1200px;">
+        <div style="text-align: left; margin-bottom: 10px;">
+            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
+        </div>
+        <h2>طلبات الاجازات</h2>
+
+        <div class="readonly-badge" data-perm="طلبات الاجازات" style="display:none;">
+            <i class="fas fa-eye"></i>
+            وضع العرض فقط: يمكنك الاطلاع والبحث والفلترة، ولا تملك صلاحية التعديل في هذه الشاشة.
+        </div>
+
+        <!-- ==========================================================
+             شريط ادوات مضغوط
+             ----------------------------------------------------------
+             الازرار الثلاثة والفرز في مساحة صغيرة، فتظهر الطلبات
+             مباشرة تحتها ولا تحتاج تمريرا لرؤيتها. وهذا مهم هنا
+             تحديدا: الطلبات تنتظر قرارا، وما لا يرى لا يقرر فيه.
+             ========================================================== -->
+        <!-- ==========================================================
+             ادوات الشاشة: خارج اطار الفرز
+             ----------------------------------------------------------
+             هذه ازرار تنقلك الى شاشات اخرى، بينما الفرز يعدل ما تراه
+             في هذه الشاشة. فصلهما ضروري حتى لا يظن المدير ان الانتقال
+             جزء من التصفية.
+             ========================================================== -->
+        <div class="screen-tools">
+            <button type="button" class="tool-btn tool-balances" onclick="openLeaveBalances()">
+                <i class="fas fa-users"></i> ارصدة الباحثين
+            </button>
+            <button type="button" class="tool-btn tool-reports" data-action-badge="leave-report" onclick="openRequests('leave')">
+                <i class="fas fa-flag"></i> بلاغات الإجازات
+            </button>
+            <button type="button" class="tool-btn tool-carry" data-requires-perm="طلبات الاجازات" onclick="openCarryScreen()">
+                <i class="fas fa-right-left"></i> ترحيل الرصيد
+            </button>
+        </div>
+
+        <div class="res-controls">
+            <!-- حالة الطلب -->
+            <div class="rc-row" id="leaveStatusFilterRow">
+                <button type="button" class="btn-sort btn-sort-sm active-sort" onclick="filterLeaves('pending', this)">قيد المراجعة (<span id="lcount_pending">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('approved', this)">مقبولة (<span id="lcount_approved">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('rejected', this)">مرفوضة (<span id="lcount_rejected">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('cancelled', this)">ملغاة (<span id="lcount_cancelled">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('all', this)">الكل (<span id="lcount_all">0</span>)</button>
+            </div>
+
+            <!-- نوع الاجازة -->
+            <div class="rc-row" id="leaveTypeFilterRow">
+                <span class="rc-label"><i class="fas fa-layer-group"></i> النوع:</span>
+                <button type="button" class="btn-sort btn-sort-sm active-sort" onclick="filterLeaveType('all', this)">الكل</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaveType('annual', this)">اعتيادية</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaveType('sick', this)">مرضية</button>
             </div>
         </div>
 
@@ -8508,7 +8612,7 @@
         resultsScreen: 'manager',
         researcherPortal: 'researcher', researcherScreen: 'researcher', visitTypeScreen: 'researcher', researcherQueryScreen: 'researcher',
         /* شاشات نظام الاجازات */
-        leaveManageScreen: 'manager', leaveBalancesScreen: 'manager', leaveDetailScreen: 'manager',
+        leaveManageScreen: 'manager', carryScreen: 'manager', leaveBalancesScreen: 'manager', leaveDetailScreen: 'manager',
         leaveRequestScreen: 'researcher', leaveHistoryScreen: 'researcher', sickLeaveScreen: 'researcher',
         notifHistoryScreen: 'any', accountScreen: 'any',
         /* شاشات زياراتي والتنبيهات والانذارات */
@@ -14754,16 +14858,117 @@
          leaveCarryIn : { "2027": 5 }   اي اضيفت 5 ايام الى سنة 2027
        ================================================================== */
 
-    window.toggleCarrySection = function() {
-        const sec = document.getElementById("carrySection");
-        if (!sec) return;
-        if (sec.style.display === "none" || sec.style.display === "") {
-            sec.style.display = "block";
-            loadCarryResearchers();
-        } else {
-            sec.style.display = "none";
-        }
+    /* ==================================================================
+       شاشة ترحيل الرصيد
+       ==================================================================
+       تفتح الشاشة، تحمل قوائم الباحثين والسنوات، ثم تعرض سجل عمليات
+       الترحيل السابقة.
+
+       السجل يقرأ من audit_log بتصفية نوع العملية، فلا يحتاج مجموعة
+       جديدة في قاعدة البيانات: الترحيل مسجل هناك اصلا منذ البداية.
+       ================================================================== */
+    window.openCarryScreen = async function() {
+        if (!isManager()) { window.switchScreen('managerScreen'); return; }
+        if (!hasPerm("طلبات الاجازات")) { denyAccess(); return; }
+
+        window.switchScreen('carryScreen');
+
+        hideMsg("carryError");
+        hideMsg("carrySuccess");
+        const daysEl = document.getElementById("carryDays");
+        if (daysEl) daysEl.value = "";
+        const infoEl = document.getElementById("carryInfo");
+        if (infoEl) infoEl.innerHTML = "";
+
+        await loadCarryLists();
+        await loadCarryLog();
     };
+
+    /* سجل الترحيلات: يستخرج من سجل التدقيق */
+    async function loadCarryLog() {
+        const loading = document.getElementById("carryLogLoading");
+        const empty = document.getElementById("carryLogEmpty");
+        const tbody = document.getElementById("carryLogBody");
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+        if (empty) empty.style.display = "none";
+        if (loading) loading.style.display = "block";
+
+        try {
+            const snap = await getDocs(query(collection(db, "audit_log"), limit(AUDIT_LOG_LIMIT)));
+            const list = [];
+            snap.forEach(function(d) {
+                const rec = d.data();
+                if (String(rec.action || "").indexOf("ترحيل رصيد") !== -1) {
+                    list.push(Object.assign({ id: d.id }, rec));
+                }
+            });
+
+            /* الاحدث اولا */
+            list.sort(function(a, b) {
+                return String(b.at || "").localeCompare(String(a.at || ""));
+            });
+
+            if (list.length === 0) {
+                if (empty) empty.style.display = "block";
+                if (loading) loading.style.display = "none";
+                return;
+            }
+
+            const frag = document.createDocumentFragment();
+            list.forEach(function(rec, idx) {
+                const tr = document.createElement("tr");
+
+                const tdNum = document.createElement("td");
+                tdNum.textContent = idx + 1;
+                tdNum.style.fontWeight = "900";
+                tdNum.style.backgroundColor = "rgba(222, 140, 67, 0.1)";
+                tr.appendChild(tdNum);
+
+                /* التفاصيل مسجلة كنص واحد، نعرضه كما هو */
+                const details = String(rec.details || "");
+
+                /* محاولة استخراج اسم الباحث من بداية النص */
+                const nameMatch = details.match(/^([^|(]+)/);
+                const tdName = document.createElement("td");
+                tdName.textContent = nameMatch ? nameMatch[1].trim() : "-";
+                tr.appendChild(tdName);
+
+                const tdDetails = document.createElement("td");
+                tdDetails.className = "reason-cell";
+                tdDetails.textContent = details || "-";
+                tr.appendChild(tdDetails);
+
+                const tdBy = document.createElement("td");
+                tdBy.textContent = rec.actorName || "-";
+                tr.appendChild(tdBy);
+
+                const tdAt = document.createElement("td");
+                tdAt.textContent = window.formatDateTimeToEnglish(rec.at);
+                tr.appendChild(tdAt);
+
+                frag.appendChild(tr);
+            });
+
+            tbody.appendChild(frag);
+            window.applyCardLabels("carryLogTable");
+        } catch (e) {
+            /* فشل السجل لا يعطل الترحيل نفسه */
+            if (empty) {
+                empty.style.display = "block";
+                empty.innerHTML = '<i class="fas fa-wifi"></i> تعذر تحميل سجل الترحيلات';
+            }
+        }
+        if (loading) loading.style.display = "none";
+    }
+
+    /* ملاحظة: حذفت من هنا toggleCarrySection.
+       كانت تفتح واغلق قسم الترحيل داخل شاشة طلبات الاجازات، وقد صار
+       الترحيل شاشة مستقلة تفتح بـ openCarryScreen. */
+
+    /* تحميل قوائم الباحثين والسنوات في شاشة الترحيل */
+    async function loadCarryLists() { return loadCarryResearchers(); }
 
     async function loadCarryResearchers() {
         const sel = document.getElementById("carryResSelect");
@@ -14875,6 +15080,9 @@
             });
 
             logAudit("ترحيل رصيد اجازات", r.empName + " (" + r.empId + ") | " + days + " يوم من " + year + " الى " + (year + 1));
+            /* تحديث السجل فورا ليظهر الترحيل الجديد */
+            loadCarryLog();
+
             showMsg("carrySuccess", "<i class='fas fa-check-circle'></i> تم ترحيل " + days + " يوم من سنة " + year + " الى سنة " + (year + 1) + " بنجاح.");
             document.getElementById("carryDays").value = "";
             window.previewCarryBalance();
