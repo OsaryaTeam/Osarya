@@ -2749,6 +2749,21 @@
             .ds-count-num { font-size: 23px; }
         }
 
+        /* ---------------- زرا التفعيل والغاء التفعيل ---------------- */
+        .btn-activate-row {
+            background: linear-gradient(135deg, #25D366, #1da851) !important;
+            color: #fff !important;
+        }
+        .btn-deactivate-row {
+            background: linear-gradient(135deg, #d15a4a, #a8402f) !important;
+            color: #fff !important;
+        }
+        .btn-activate-row:disabled,
+        .btn-deactivate-row:disabled,
+        .btn-whatsapp-row:disabled { background: #9aa5a1 !important; }
+
+        .icon-user-lock::before { content: "\f505"; }
+
         /* ---------------- شارة تفعيل الحساب ---------------- */
         .act-chip {
             display: inline-block;
@@ -3655,43 +3670,37 @@
     </div>
 </div>
 
+<!-- ملاحظة: حذفت من هنا نافذة "خيار ارسال بيانات الباحث".
+     حل محلها زرا التفعيل والغاء التفعيل بجانب كل باحث في القائمة،
+     وهما اوضح واقصر: الزر النشط يدل على حالة الحساب مباشرة. -->
+
 <!-- ==============================================================
-     نافذة خيار ارسال بيانات الباحث عبر الواتساب
-     --------------------------------------------------------------
-     خياران: ارسال البيانات كما هي، او ارسالها مع تعيين كلمة مرور
-     مؤقتة جديدة تلزم الباحث بتغييرها عند اول دخول.
+     نافذة تأكيد الغاء تفعيل حساب باحث
      ============================================================== -->
-<div id="waChoiceModal" class="install-modal" onclick="if(event.target===this) closeWaChoice()">
+<div id="deactModal" class="install-modal" onclick="if(event.target===this) closeDeactivateModal()">
     <div class="install-modal-box">
-        <h3><i class="fab fa-whatsapp"></i> ارسال بيانات الحساب</h3>
+        <h3><i class="fas fa-user-lock"></i> الغاء تفعيل الحساب</h3>
 
-        <div class="current-info" id="waChoiceName"></div>
+        <div class="current-info" id="deactName"></div>
 
-        <p style="font-size:14.5px; line-height:1.9; margin:16px 0 8px 0;">
-            اختر ما تريد ارساله للباحث:
-        </p>
-
-        <div class="wa-choice-opt">
-            <strong>البيانات فقط</strong>
-            <span>الاسم والاسم المستخدم والصفة والمنطقة، بلا اي تغيير على كلمة مروره الحالية.</span>
+        <div class="rule-note rule-note-danger" style="margin-top:16px; text-align:right;">
+            <i class="fas fa-triangle-exclamation"></i>
+            سيمنع هذا الباحث من الدخول فورا، <strong>وتمحى كلمة مروره الحالية تماما</strong>.
+            ولن يستطيع الدخول باي كلمة مرور سابقة حتى تعيد تفعيل حسابه.
         </div>
 
-        <div id="waInactiveNote" class="rule-note rule-note-danger" style="display:none;">
-            <i class="fas fa-user-lock"></i>
-            هذا الحساب <strong>غير مفعل</strong> ولا يستطيع صاحبه الدخول.
-            اختر <strong>مع اعادة تعيين كلمة المرور</strong> لتفعيله وارسال بياناته.
-        </div>
-
-        <div class="wa-choice-opt wa-choice-warn">
-            <strong>مع اعادة تعيين كلمة المرور</strong>
-            <span>تعين له كلمة مرور مؤقتة جديدة وترسل معه، <strong>وتلغى كلمة مروره الحالية فورا</strong>،
-            ويلزم بتغيير المؤقتة عند اول دخول.</span>
+        <div class="safe-box" style="margin-top:12px;">
+            <div class="safe-box-title"><i class="fas fa-shield-halved"></i> لا تحذف بياناته:</div>
+            <div class="safe-box-row">اسمه ومنطقته ونوع عمله وزياراته وتقاريره تبقى كما هي</div>
+            <div class="safe-box-note">
+                الالغاء منع دخول لا حذف سجل. ويمكنك اعادة تفعيله في اي وقت
+                بالضغط على زر <strong>تفعيل</strong>، فتولد له كلمة مرور مؤقتة جديدة.
+            </div>
         </div>
 
         <div class="btn-group">
-            <button id="btnWaInfoOnly" class="btn-manager btn-icon-watermark icon-whatsapp" onclick="waSendInfoOnly()">البيانات فقط</button>
-            <button id="btnWaReset" class="btn-alert-red btn-icon-watermark icon-key" onclick="waSendWithReset()">مع اعادة تعيين كلمة المرور</button>
-            <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeWaChoice()">الغاء</button>
+            <button id="btnDoDeactivate" class="btn-danger btn-icon-watermark icon-user-lock" onclick="doDeactivateResearcher()">تأكيد الغاء التفعيل</button>
+            <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeDeactivateModal()">الغاء والعودة</button>
         </div>
     </div>
 </div>
@@ -4644,33 +4653,20 @@
                     <select id="newResWorkType" class="year-select" style="width:100%;"></select>
                 </div>
 
-                <div class="input-group full-width">
-                    <label for="newResPass" id="newResPassLabel">كلمة المرور:</label>
-                    <div class="password-wrapper">
-                        <i class="fas fa-lock right-icon" style="position: absolute; right: 18px; opacity: 0.6; z-index: 2;"></i>
-                        <input type="password" id="newResPass" placeholder="يجب ان تتكون من 6 خانات، ارقام وحروف، وحرف انجليزي كبير">
-                        <button type="button" class="toggle-password-btn" onclick="toggleResPasswordVisibility()" title="اظهار/اخفاء">
-                            <i id="toggleResPassIcon" class="fas fa-eye"></i>
-                        </button>
-                    </div>
+                <!-- ملاحظة: ازيل من هنا حقل كلمة المرور.
+                     الباحث الجديد يضاف دائما غير مفعل بلا كلمة مرور،
+                     ويفعل من زر التفعيل في القائمة الذي يولد له كلمة
+                     مؤقتة ويرسلها عبر الواتساب. فلا معنى لكتابة كلمة
+                     مرور هنا لن تصل صاحبها. -->
 
-                    <div class="btn-group" style="margin-top: 10px;">
-                        <button type="button" class="btn-neutral btn-small btn-icon-watermark icon-key" onclick="generateResearcherPassword()">توليد كلمة مرور عشوائية</button>
-                    </div>
-
-                    <div id="genPassPreview" class="gen-pass-box" style="display:none;"></div>
-
-                    <!-- شرح حالة التفعيل: يظهر عند اضافة باحث جديد -->
-                    <div id="newResPassNote" class="rule-note" style="display:none; margin-top:10px;">
-                        <i class="fas fa-circle-info"></i>
-                        يمكنك ترك كلمة المرور فارغة. عندها يضاف الباحث بحساب <strong>غير مفعل</strong>،
-                        ويفعل تلقائيا عند ارسال كلمة مرور مؤقتة له من زر الواتساب في القائمة.
-                    </div>
+                <div class="rule-note full-width">
+                    <i class="fas fa-circle-info"></i>
+                    يضاف الباحث بحساب <strong>غير مفعل</strong> ولا يستطيع الدخول.
+                    لتفعيله: اضغط زر <strong>تفعيل</strong> بجانبه في القائمة،
+                    فتولد له كلمة مرور مؤقتة وترسل الى جواله عبر الواتساب.
                 </div>
             </div>
-            
-            <div id="addResError" class="error-message"></div>
-            <div id="addResSuccess" class="success-message"></div>
+
             <div id="addResLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري المعالجة...</div>
             
             <div class="btn-group">
@@ -7690,117 +7686,17 @@
         const toggleIcon = document.getElementById(iconId);
         if (!passInput) return;
         if (passInput.type === "password") {
-            passInput.type = "text";
             if (toggleIcon) toggleIcon.className = "fas fa-eye-slash";
         } else {
-            passInput.type = "password";
             if (toggleIcon) toggleIcon.className = "fas fa-eye";
         }
     }
 
     window.togglePasswordVisibility        = function() { togglePass("managerPass", "togglePassIcon"); };
-    /* ==================================================================
-       توليد كلمة مرور عشوائية
-       ==================================================================
-       تتبع نفس معايير النظام بالضبط (validatePassword):
-         * ست خانات على الاقل
-         * رقم واحد على الاقل
-         * حرف انجليزي كبير واحد على الاقل
-         * حروف وارقام
+    /* ملاحظة: حذف من هنا مولد كلمة المرور الخاص بنموذج الباحث،
+       بعد ازالة حقل كلمة المرور من النموذج. التوليد الان يتم داخل
+       زر التفعيل الذي يرسل الكلمة المؤقتة عبر الواتساب مباشرة. */
 
-       ملاحظتان في التصميم:
-       -------------------
-       1) العشوائية من crypto لا من Math.random. الثانية متوقعة رياضيا
-          ويمكن التنبؤ بمخرجاتها، وهي لا تصلح لتوليد كلمات مرور.
-
-       2) استبعدنا الحروف والارقام المتشابهة بصريا (O و 0، l و I و 1)
-          لان كلمة المرور تسلم للباحث عبر رسالة، فالخلط بينها يسبب
-          محاولات دخول فاشلة ومراجعات لا داعي لها.
-       ================================================================== */
-    const GEN_UPPER  = "ABCDEFGHJKLMNPQRSTUVWXYZ";   /* بلا I و O */
-    const GEN_LOWER  = "abcdefghijkmnpqrstuvwxyz";   /* بلا l و o */
-    const GEN_DIGITS = "23456789";                   /* بلا 0 و 1 */
-    const GEN_LENGTH = 10;
-
-    /* اختيار عشوائي امن من نص معطى */
-    function securePick(chars) {
-        const buf = new Uint32Array(1);
-        crypto.getRandomValues(buf);
-        return chars[buf[0] % chars.length];
-    }
-
-    /* خلط المصفوفة بخوارزمية فيشر-ييتس بعشوائية امنة، حتى لا تقع
-       الاحرف المضمونة في مواضع ثابتة يمكن توقعها */
-    function secureShuffle(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const buf = new Uint32Array(1);
-            crypto.getRandomValues(buf);
-            const j = buf[0] % (i + 1);
-            const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
-        }
-        return arr;
-    }
-
-    function generateStrongPassword() {
-        const all = GEN_UPPER + GEN_LOWER + GEN_DIGITS;
-
-        /* نضمن تحقق كل شرط بحرف واحد على الاقل، ثم نكمل الباقي عشوائيا */
-        const chars = [
-            securePick(GEN_UPPER),
-            securePick(GEN_LOWER),
-            securePick(GEN_DIGITS)
-        ];
-        while (chars.length < GEN_LENGTH) chars.push(securePick(all));
-
-        return secureShuffle(chars).join("");
-    }
-
-    window.generateResearcherPassword = function() {
-        const input = document.getElementById("newResPass");
-        const icon = document.getElementById("toggleResPassIcon");
-        const box = document.getElementById("genPassPreview");
-        if (!input) return;
-
-        let pass = generateStrongPassword();
-
-        /* حزام امان: لو خالفت المعايير لاي سبب نعيد التوليد.
-           لن يقع عمليا لان البناء يضمنها، لكنه يمنع اي مفاجأة */
-        let guard = 0;
-        while (!validatePassword(pass) && guard < 20) {
-            pass = generateStrongPassword();
-            guard++;
-        }
-
-        input.value = pass;
-
-        /* نظهرها فورا: المدير يحتاج قراءتها ليسلمها للباحث */
-        input.type = "text";
-        if (icon) icon.className = "fas fa-eye-slash";
-
-        if (box) {
-            box.style.display = "block";
-            box.innerHTML = '<div class="gen-pass-label"><i class="fas fa-circle-info"></i> كلمة المرور المولدة:</div>' +
-                            '<div class="gen-pass-value" dir="ltr">' + esc(pass) + '</div>' +
-                            '<div class="gen-pass-hint">انسخها الان وسلمها للباحث، فلن تظهر مرة اخرى بعد الحفظ. ' +
-                            'ويمكنه تغييرها بنفسه من شاشة حسابي.</div>' +
-                            '<button type="button" class="notif-mini-btn" onclick="copyGeneratedPassword()">نسخ كلمة المرور</button>';
-        }
-    };
-
-    window.copyGeneratedPassword = async function() {
-        const input = document.getElementById("newResPass");
-        if (!input || !input.value) return;
-        try {
-            await navigator.clipboard.writeText(input.value);
-            toast("تم نسخ كلمة المرور.", "success");
-        } catch (e) {
-            input.select();
-            try { document.execCommand("copy"); toast("تم نسخ كلمة المرور.", "success"); }
-            catch (e2) { toast("تعذر النسخ، حددها وانسخها يدويا.", "warn"); }
-        }
-    };
-
-    window.toggleResPasswordVisibility     = function() { togglePass("newResPass", "toggleResPassIcon"); };
     window.toggleManPasswordVisibility     = function() { togglePass("newManPass", "toggleManPassIcon"); };
     window.toggleResLoginPasswordVisibility= function() { togglePass("resPassLogin", "toggleResLoginPassIcon"); };
 
@@ -8448,28 +8344,26 @@
             const resData = resDoc.data();
 
             /* ------------------------------------------------------------
-               الحساب غير المفعل لا يدخل
+               الحساب غير المفعل يعامل كأنه غير موجود
                ------------------------------------------------------------
-               حسابه موجود وبياناته مسجلة، لكن لم تسلم له كلمة مرور بعد.
-               نمنعه قبل التحقق من كلمة المرور ونرشده الى الادارة، بدل
-               رسالة "بيانات غير صحيحة" التي تحيره.
+               نرمي الخطأ نفسه الذي يرمى عند خطأ الاسم او كلمة المرور،
+               فتظهر للباحث الرسالة المعتادة "بيانات غير صحيحة".
+
+               لماذا لا نخبره ان حسابه غير مفعل؟
+               ----------------------------------
+               الغاء التفعيل قرار اداري قد يكون لسبب حساس، فاخباره به
+               من شاشة الدخول يفتح باب نقاش لا محل له هناك، ويؤكد لمن
+               يجرب اسماء مستخدمين ان هذا الاسم موجود فعلا.
+
+               ويختلف هذا عن الايقاف المؤقت والاستبعاد، فهما حالتان
+               معلنتان للباحث اصلا ويعرف بهما، فتظهر لهما رسالة صريحة
+               بعد التحقق من صحة بياناته.
 
                الحسابات المنشأة قبل هذه الميزة بلا حقل activated وتعامل
-               غير مفعلة، حتى تراجعها الادارة وترسل لكل باحث كلمة مروره.
+               غير مفعلة، حتى تراجعها الادارة وتفعلها.
                ------------------------------------------------------------ */
             if (resData.activated !== true || !resData.password) {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = 'تسجيل الدخول';
-                const waMsg = encodeURIComponent("حسابي غير مفعل، ارجو تفعيله وارسال كلمة المرور. الاسم المستخدم: " + rId);
-                loginError.innerHTML =
-                    "<i class='fas fa-user-lock'></i> <strong>حسابك غير مفعل بعد</strong>" +
-                    "<br>راجع الادارة لتفعيل حسابك واستلام كلمة المرور." +
-                    '<br><a href="https://wa.me/966539864443?text=' + waMsg + '" target="_blank" rel="noopener" ' +
-                    'style="display:inline-block; background-color:#25D366; color:white; padding:10px 20px; border-radius:8px; ' +
-                    'text-decoration:none; margin-top:12px; font-weight:bold; font-size:15px;">' +
-                    '<i class="fab fa-whatsapp"></i> تواصل مع الدعم الفني</a>';
-                loginError.style.display = "block";
-                return;
+                throw new Error("invalid");
             }
 
             const check = await verifyPassword(pass, resData.password);
@@ -10076,19 +9970,67 @@
             divActions.style.gap = "8px";
 
             if (hasPerm('قائمة الباحثين')) {
-                /* زر واتساب لتسليم بيانات الحساب */
+                /* ------------------------------------------------------------
+                   زرا التفعيل والغاء التفعيل
+                   ------------------------------------------------------------
+                   حالة الحساب تحدد ايهما يعمل: لا يمكن تفعيل حساب مفعل
+                   ولا الغاء تفعيل حساب غير مفعل. فيرى المدير حالة الحساب
+                   من الزر النشط بلا حاجة لقراءة العمود.
+                   ------------------------------------------------------------ */
+                const isActive = (r.activated === true);
+
+                /* زر التفعيل: يولد كلمة مؤقتة ويرسلها عبر الواتساب */
+                const btnAct = document.createElement("button");
+                btnAct.type = "button";
+                btnAct.className = "btn-icon-watermark icon-whatsapp btn-table btn-activate-row";
+                btnAct.textContent = "تفعيل";
+
+                if (isActive) {
+                    btnAct.disabled = true;
+                    btnAct.style.opacity = "0.45";
+                    btnAct.style.cursor = "not-allowed";
+                    btnAct.title = "الحساب مفعل بالفعل";
+                } else if (!validSaudiPhone(r.phone)) {
+                    btnAct.disabled = true;
+                    btnAct.style.opacity = "0.45";
+                    btnAct.style.cursor = "not-allowed";
+                    btnAct.title = "لا يوجد رقم جوال مسجل، ولا يمكن ارسال كلمة المرور بدونه";
+                } else {
+                    btnAct.title = "تفعيل الحساب وارسال كلمة مرور مؤقتة الى " + r.empName;
+                    btnAct.onclick = function() { window.activateResearcher(r.id); };
+                }
+                divActions.appendChild(btnAct);
+
+                /* زر الغاء التفعيل: يمحو كلمة المرور ويمنع الدخول */
+                const btnDeact = document.createElement("button");
+                btnDeact.type = "button";
+                btnDeact.className = "btn-icon-watermark icon-user-lock btn-table btn-deactivate-row";
+                btnDeact.textContent = "الغاء تفعيل";
+
+                if (!isActive) {
+                    btnDeact.disabled = true;
+                    btnDeact.style.opacity = "0.45";
+                    btnDeact.style.cursor = "not-allowed";
+                    btnDeact.title = "الحساب غير مفعل اصلا";
+                } else {
+                    btnDeact.title = "الغاء تفعيل حساب " + r.empName + " ومنعه من الدخول";
+                    btnDeact.onclick = function() { window.confirmDeactivateResearcher(r.id); };
+                }
+                divActions.appendChild(btnDeact);
+
+                /* زر ارسال البيانات بلا تغيير كلمة المرور */
                 const btnWa = document.createElement("button");
                 btnWa.type = "button";
                 btnWa.className = "btn-icon-watermark icon-whatsapp btn-table btn-whatsapp-row";
-                btnWa.textContent = "واتساب";
-                if (validSaudiPhone(r.phone)) {
-                    btnWa.title = "فتح محادثة واتساب مع " + r.empName;
+                btnWa.textContent = "البيانات";
+                if (validSaudiPhone(r.phone) && isActive) {
+                    btnWa.title = "ارسال بيانات الحساب الى " + r.empName + " بلا تغيير كلمة المرور";
                     btnWa.onclick = function() { window.sendResearcherCard(r.id); };
                 } else {
                     btnWa.disabled = true;
-                    btnWa.style.opacity = "0.5";
+                    btnWa.style.opacity = "0.45";
                     btnWa.style.cursor = "not-allowed";
-                    btnWa.title = "لا يوجد رقم جوال مسجل لهذا الباحث";
+                    btnWa.title = isActive ? "لا يوجد رقم جوال مسجل" : "الحساب غير مفعل";
                 }
                 divActions.appendChild(btnWa);
 
@@ -10617,19 +10559,14 @@
 
     window.toggleAddResearcherForm = function() {
         const section = document.getElementById("addResearcherSection");
-        const passInput = document.getElementById("newResPass");
         if (section.style.display === "none" || section.style.display === "") {
             editingResearcherId = null;
             document.getElementById("addResearcherTitle").textContent = "بيانات الباحث الجديد";
             document.getElementById("btnSaveResearcher").textContent = "حفظ الباحث";
-            passInput.placeholder = "يجب ان تتكون من 6 خانات، ارقام وحروف، وحرف انجليزي كبير";
-            passInput.value = "";
 
             document.getElementById("newResPhone").value = "";
             fillRegionSelect(document.getElementById("newResRegion"));
             fillWorkTypeSelect(document.getElementById("newResWorkType"));
-            const gp0 = document.getElementById("genPassPreview");
-            if (gp0) gp0.style.display = "none";
 
             /* اسم مستخدم مقترح تلقائيا بصيغة OSB#### وقابل للتعديل */
             document.getElementById("newResId").value = suggestResearcherId();
@@ -10646,13 +10583,8 @@
             document.getElementById("newResPhone").value = "";
             document.getElementById("newResRegion").value = "";
             document.getElementById("newResWorkType").value = "";
-            const gp1 = document.getElementById("genPassPreview");
-            if (gp1) gp1.style.display = "none";
             const rHint0 = document.getElementById("resIdHint");
             if (rHint0) rHint0.style.display = "none";
-            passInput.value = "";
-            passInput.type = "password";
-            document.getElementById("toggleResPassIcon").className = "fas fa-eye";
             editingResearcherId = null;
         }
     };
@@ -10675,9 +10607,6 @@
         const rHintE = document.getElementById("resIdHint");
         if (rHintE) rHintE.style.display = "none";
 
-        const passInput = document.getElementById("newResPass");
-        passInput.value = "";
-        passInput.placeholder = "اتركه فارغا للابقاء على كلمة المرور الحالية";
 
         document.getElementById("addResearcherTitle").textContent = "تعديل بيانات الباحث";
         document.getElementById("btnSaveResearcher").textContent = "تحديث الباحث";
@@ -10692,8 +10621,9 @@
 
         const name = document.getElementById("newResName").value.trim();
         const id = window.toEnglishDigits(document.getElementById("newResId").value.trim());
-        const rawPass = document.getElementById("newResPass").value;
-        const pass = window.toEnglishDigits(rawPass);
+        /* لا كلمة مرور في النموذج: الحساب يضاف غير مفعل دائما،
+           وتولد كلمته المؤقتة عند التفعيل من القائمة */
+        const pass = "";
 
         /* رقم الجوال اختياري، لكن ان كتب فلا بد ان يكون صحيحا.
            يوحد الى الصيغة الدولية قبل الحفظ كبقية ارقام النظام */
@@ -10844,9 +10774,6 @@
             document.getElementById("newResName").value = "";
             document.getElementById("newResId").value = "";
             document.getElementById("newResPhone").value = "";
-            document.getElementById("newResPass").value = "";
-            document.getElementById("newResPass").type = "password";
-            document.getElementById("toggleResPassIcon").className = "fas fa-eye";
             editingResearcherId = null;
 
             setTimeout(function() {
@@ -11219,15 +11146,80 @@
         window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
     }
 
-    /* ------------------------------------------------------------------
-       زر واتساب في قائمة الباحثين
-       ------------------------------------------------------------------
-       متاح لكل مدير يملك صلاحية "قائمة الباحثين"، بخلاف زر المدراء
-       المقصور على المبرمج والمدير العام.
-       ------------------------------------------------------------------ */
-    /* الباحث المختار حاليا لارسال بياناته */
-    let waTargetResearcher = null;
+    /* ==================================================================
+       الغاء تفعيل حساب الباحث
+       ==================================================================
+       يمحو كلمة المرور تماما ويرفع علامة التفعيل، فيصبح الحساب كأنه
+       غير موجود من جهة الدخول: مهما كتب صاحبه من بيانات صحيحة تظهر
+       له رسالة "بيانات غير صحيحة" المعتادة.
 
+       ولا يمس بياناته باي شكل: اسمه ومنطقته وزياراته وتقاريره كلها
+       باقية كما هي، فالالغاء منع دخول لا حذف سجل.
+       ================================================================== */
+    let deactivateTargetId = null;
+
+    window.confirmDeactivateResearcher = function(docId) {
+        if (!hasPerm("قائمة الباحثين")) { denyAccess(); return; }
+
+        const r = researchersList.find(function(x) { return x.id === docId; });
+        if (!r) { toast("لم يعد هذا الباحث موجودا في القائمة.", "error"); return; }
+        if (r.activated !== true) { toast("الحساب غير مفعل اصلا.", "warn"); return; }
+
+        deactivateTargetId = docId;
+        document.getElementById("deactName").textContent = r.empName + " (" + r.empId + ")";
+        document.getElementById("deactModal").style.display = "flex";
+    };
+
+    window.closeDeactivateModal = function() {
+        document.getElementById("deactModal").style.display = "none";
+        deactivateTargetId = null;
+    };
+
+    window.doDeactivateResearcher = async function() {
+        if (!hasPerm("قائمة الباحثين")) { denyAccess(); return; }
+        if (!requireOnline()) return;
+
+        const r = researchersList.find(function(x) { return x.id === deactivateTargetId; });
+        if (!r) { window.closeDeactivateModal(); return; }
+
+        const btn = document.getElementById("btnDoDeactivate");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الالغاء...';
+
+        try {
+            await updateDoc(doc(db, "researchers", r.id), {
+                /* محو كلمة المرور تماما: لا تبقى بصمة يمكن الدخول بها */
+                password: "",
+                activated: false,
+                mustChangePassword: false
+            });
+
+            r.activated = false;
+
+            logAudit("الغاء تفعيل حساب باحث",
+                (r.empName || "") + " (" + r.empId + ") | محيت كلمة المرور ومنع الدخول");
+
+            window.closeDeactivateModal();
+            toast("تم الغاء تفعيل حساب " + r.empName + ". لن يستطيع الدخول حتى تعيد تفعيله.", "success");
+
+            renderResearchersTable(currentFilterStatus || 'all');
+        } catch (e) {
+            toast("تعذر الغاء التفعيل: " + ((e && e.code) || "خطأ غير معروف"), "error");
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = "تأكيد الغاء التفعيل";
+    };
+
+    /* ------------------------------------------------------------------
+       ارسال بيانات الحساب عبر الواتساب
+       ------------------------------------------------------------------
+       يرسل البيانات المعروفة بلا اي تغيير على كلمة المرور، فهي مخزنة
+       مشفرة ولا يمكن استرجاعها اصلا.
+
+       لتغيير كلمة المرور يستخدم زر التفعيل، فهو يولد كلمة مؤقتة
+       جديدة ويرسلها. وهذا الزر للتذكير بالبيانات وحده.
+       ------------------------------------------------------------------ */
     window.sendResearcherCard = function(docId) {
         if (!hasPerm("قائمة الباحثين")) { denyAccess(); return; }
 
@@ -11238,97 +11230,13 @@
             toast("لا يوجد رقم جوال مسجل لهذا الباحث، فلا يمكن فتح محادثة.", "warn");
             return;
         }
-
-        waTargetResearcher = r;
-
-        /* نافذة الخيار: بيانات فقط، ام بيانات مع كلمة مرور جديدة */
-        document.getElementById("waChoiceName").textContent = r.empName + " (" + r.empId + ")";
-
-        /* الحساب غير المفعل: نوضح ان الخيار الثاني هو ما يفعله */
-        const inactiveNote = document.getElementById("waInactiveNote");
-        const infoBtn = document.getElementById("btnWaInfoOnly");
         if (r.activated !== true) {
-            if (inactiveNote) inactiveNote.style.display = "block";
-            /* البيانات وحدها بلا فائدة لحساب لا يمكن الدخول به */
-            if (infoBtn) { infoBtn.disabled = true; infoBtn.style.opacity = "0.5"; infoBtn.style.cursor = "not-allowed"; }
-        } else {
-            if (inactiveNote) inactiveNote.style.display = "none";
-            if (infoBtn) { infoBtn.disabled = false; infoBtn.style.opacity = ""; infoBtn.style.cursor = ""; }
+            toast("الحساب غير مفعل. استخدم زر التفعيل لارسال بياناته وكلمة مروره.", "warn");
+            return;
         }
-
-        document.getElementById("waChoiceModal").style.display = "flex";
-    };
-
-    window.closeWaChoice = function() {
-        document.getElementById("waChoiceModal").style.display = "none";
-        waTargetResearcher = null;
-    };
-
-    /* ------------------------------------------------------------------
-       ارسال البيانات بلا اعادة تعيين
-       ------------------------------------------------------------------
-       الرسالة المعتادة: الاسم والاسم المستخدم والصفة والمنطقة، بلا اي
-       ذكر لكلمة المرور، فهي مخزنة مشفرة ولا يمكن استرجاعها اصلا.
-       ------------------------------------------------------------------ */
-    window.waSendInfoOnly = function() {
-        const r = waTargetResearcher;
-        if (!r) return;
-        closeWaChoice();
 
         openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region, null, r.workType);
         logAudit("فتح محادثة بيانات حساب", (r.empName || "") + " (" + r.empId + ")");
-    };
-
-    /* ------------------------------------------------------------------
-       ارسال البيانات مع اعادة تعيين كلمة المرور
-       ------------------------------------------------------------------
-       يولد كلمة مرور مؤقتة، يحفظها مشفرة، ويضع على الحساب علامة
-       mustChangePassword فيلزم الباحث بتغييرها عند اول دخول. ثم يفتح
-       الواتساب برسالة تحوي البيانات وكلمة المرور المؤقتة.
-
-       ترتيب مقصود: نحفظ اولا ثم نفتح الرسالة. فلو فشل الحفظ لم ترسل
-       للباحث كلمة مرور لا تعمل.
-       ------------------------------------------------------------------ */
-    window.waSendWithReset = async function() {
-        const r = waTargetResearcher;
-        if (!r) return;
-        if (!hasPerm("قائمة الباحثين")) { denyAccess(); return; }
-        if (!requireOnline()) return;
-
-        const btn = document.getElementById("btnWaReset");
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التعيين...';
-
-        try {
-            const tempPass = generateTempPassword();
-
-            /* التفعيل يتم هنا: ارسال كلمة المرور هو لحظة جاهزية الحساب */
-            const wasInactive = (r.activated !== true);
-
-            await updateDoc(doc(db, "researchers", r.id), {
-                password: await hashPassword(tempPass),
-                mustChangePassword: true,
-                activated: true
-            });
-
-            /* تحديث النسخة المحلية فورا فتظهر الحالة الجديدة بلا اعادة تحميل */
-            r.activated = true;
-
-            logAudit(wasInactive ? "تفعيل حساب باحث" : "اعادة تعيين كلمة مرور باحث",
-                (r.empName || "") + " (" + r.empId + ") | ارسلت عبر الواتساب");
-
-            closeWaChoice();
-            openWhatsAppCard(r.phone, r.empName, r.empId, RESEARCHER_TITLE, r.region, tempPass, r.workType);
-            toast(wasInactive ? "تم تفعيل الحساب وارسال كلمة المرور." : "تم تعيين كلمة مرور جديدة وفتح الواتساب.", "success");
-
-            /* اعادة رسم الجدول لتظهر حالة التفعيل الجديدة */
-            renderResearchersTable(currentFilterStatus || 'all');
-        } catch (e) {
-            toast("تعذر تعيين كلمة المرور: " + ((e && e.code) || "خطأ غير معروف"), "error");
-        }
-
-        btn.disabled = false;
-        btn.innerHTML = "مع اعادة تعيين كلمة المرور";
     };
 
     /* ==================================================================
@@ -11658,8 +11566,6 @@
             editingManagerId = null;
             document.getElementById("addManagerTitle").textContent = "بيانات المدير الجديد";
             document.getElementById("btnSaveManager").textContent = "حفظ المدير";
-            passInput.placeholder = "يجب ان تتكون من 6 خانات، ارقام وحروف، وحرف انجليزي كبير";
-            passInput.value = "";
 
             /* تعبئة الاسم المستخدم المقترح تلقائيا (قابل للتعديل) */
             document.getElementById("newManId").value = suggestManagerId();
@@ -11677,8 +11583,6 @@
             document.getElementById("newManId").value = "";
             const hint0 = document.getElementById("manIdHint");
             if (hint0) hint0.style.display = "none";
-            passInput.value = "";
-            passInput.type = "password";
             document.getElementById("toggleManPassIcon").className = "fas fa-eye";
             document.getElementById("newManRole").value = "custom";
             window.togglePermissionsDiv();
@@ -11702,8 +11606,6 @@
         if (hintE) hintE.style.display = "none";
 
         const passInput = document.getElementById("newManPass");
-        passInput.value = "";
-        passInput.placeholder = "اتركه فارغا للابقاء على كلمة المرور الحالية";
 
         document.getElementById("newManRole").value = manager.role || 'custom';
         window.togglePermissionsDiv();
