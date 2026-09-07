@@ -2868,6 +2868,19 @@
         .rc-btn-excel { background: #1d6f42 !important; }
         .rc-btn-pdf   { background: #a8402f !important; }
         .rc-btn-clear { background: #6c7a80 !important; padding: 8px 12px !important; }
+        .rc-btn-balances { background: #4a8794 !important; }
+        .rc-btn-reports  { background: #2c5f8a !important; position: relative; }
+        .rc-btn-carry    { background: #7a6aa8 !important; }
+
+        /* تسمية صغيرة داخل صف الادوات */
+        .rc-label {
+            font-size: 13px; font-weight: 800; color: #4a8794;
+            flex: 0 0 auto; margin-left: 4px;
+        }
+        body.dark-mode .rc-label { color: #8fc4cf; }
+
+        /* شارة الطلبات المعلقة فوق زر البلاغات المضغوط */
+        .rc-btn .action-badge { top: -6px; left: -6px; }
 
         /* خانة البحث */
         .rc-search { gap: 10px; }
@@ -5184,35 +5197,49 @@
         </div>
         <h2>طلبات الاجازات</h2>
 
-        <button class="btn-manager btn-icon-watermark icon-users" onclick="openLeaveBalances()">ارصدة الباحثين</button>
         <div class="readonly-badge" data-perm="طلبات الاجازات" style="display:none;">
             <i class="fas fa-eye"></i>
             وضع العرض فقط: يمكنك الاطلاع والبحث والفلترة، ولا تملك صلاحية التعديل في هذه الشاشة.
         </div>
 
-
-        <!-- تبويبات التصفية مع عداد لكل حالة -->
-        <div class="sorting-controls">
-            <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-filter"></i> تصفية حسب حالة الطلب:</strong>
-            <div class="sorting-buttons-row" id="leaveStatusFilterRow">
-                <button type="button" class="btn-sort active-sort" onclick="filterLeaves('pending', this)">قيد المراجعة (<span id="lcount_pending">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterLeaves('approved', this)">مقبولة (<span id="lcount_approved">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterLeaves('rejected', this)">مرفوضة (<span id="lcount_rejected">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterLeaves('cancelled', this)">ملغاة (<span id="lcount_cancelled">0</span>)</button>
-                <button type="button" class="btn-sort" onclick="filterLeaves('all', this)">الكل (<span id="lcount_all">0</span>)</button>
+        <!-- ==========================================================
+             شريط ادوات مضغوط
+             ----------------------------------------------------------
+             الازرار الثلاثة والفرز في مساحة صغيرة، فتظهر الطلبات
+             مباشرة تحتها ولا تحتاج تمريرا لرؤيتها. وهذا مهم هنا
+             تحديدا: الطلبات تنتظر قرارا، وما لا يرى لا يقرر فيه.
+             ========================================================== -->
+        <div class="res-controls">
+            <!-- ادوات الشاشة -->
+            <div class="rc-row">
+                <button type="button" class="rc-btn rc-btn-balances" onclick="openLeaveBalances()">
+                    <i class="fas fa-users"></i> ارصدة الباحثين
+                </button>
+                <button type="button" class="rc-btn rc-btn-reports" data-action-badge="leave-report" onclick="openRequests('leave')">
+                    <i class="fas fa-flag"></i> البلاغات
+                </button>
+                <button type="button" class="rc-btn rc-btn-carry" data-requires-perm="طلبات الاجازات" onclick="toggleCarrySection()">
+                    <i class="fas fa-right-left"></i> ترحيل رصيد
+                </button>
             </div>
 
-            <strong style="font-size: 16px; margin: 12px 0 5px 0;"><i class="fas fa-layer-group"></i> تصفية حسب نوع الاجازة:</strong>
-            <div class="sorting-buttons-row" id="leaveTypeFilterRow">
-                <button type="button" class="btn-sort active-sort" onclick="filterLeaveType('all', this)">الكل</button>
-                <button type="button" class="btn-sort" onclick="filterLeaveType('annual', this)">اعتيادية</button>
-                <button type="button" class="btn-sort" onclick="filterLeaveType('sick', this)">مرضية</button>
+            <!-- حالة الطلب -->
+            <div class="rc-row" id="leaveStatusFilterRow">
+                <button type="button" class="btn-sort btn-sort-sm active-sort" onclick="filterLeaves('pending', this)">قيد المراجعة (<span id="lcount_pending">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('approved', this)">مقبولة (<span id="lcount_approved">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('rejected', this)">مرفوضة (<span id="lcount_rejected">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('cancelled', this)">ملغاة (<span id="lcount_cancelled">0</span>)</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaves('all', this)">الكل (<span id="lcount_all">0</span>)</button>
+            </div>
+
+            <!-- نوع الاجازة -->
+            <div class="rc-row" id="leaveTypeFilterRow">
+                <span class="rc-label"><i class="fas fa-layer-group"></i> النوع:</span>
+                <button type="button" class="btn-sort btn-sort-sm active-sort" onclick="filterLeaveType('all', this)">الكل</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaveType('annual', this)">اعتيادية</button>
+                <button type="button" class="btn-sort btn-sort-sm" onclick="filterLeaveType('sick', this)">مرضية</button>
             </div>
         </div>
-
-        <!-- قسم ترحيل الرصيد بين السنوات -->
-        <button class="btn-reports-navy btn-icon-watermark icon-flag" data-action-badge="leave-report" onclick="openRequests('leave')">بلاغات طلبات الإجازات</button>
-        <button class="btn-manager btn-icon-watermark icon-exchange" data-requires-perm="طلبات الاجازات" onclick="toggleCarrySection()">ترحيل رصيد اجازات باحث</button>
 
         <div id="carrySection" class="add-form-section" style="display:none;">
             <h3>ترحيل الرصيد المتبقي الى السنة التالية</h3>
