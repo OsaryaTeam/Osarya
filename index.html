@@ -12123,7 +12123,35 @@
             add(false, "القراءة من قاعدة البيانات", "رمز الخطأ: " + esc(e && e.code));
         }
 
-        /* 4) الكتابة: الاختبار الحاسم */
+        /* 4) هوية المصادقة: هل انشئت جلسة للجهاز؟ */
+        if (authUid) {
+            add(true, "هوية جلسة الجهاز", "المعرف: " + esc(authUid));
+        } else {
+            add(false, "هوية جلسة الجهاز",
+                "لم تنشأ جلسة مصادقة. تأكد ان Anonymous مفعل في Firebase Authentication.");
+        }
+
+        /* 5) الربط: هل يعرف الخادم من صاحب هذه الجلسة؟ */
+        if (authUid) {
+            try {
+                const linkSnap = await getDoc(doc(db, "user_sessions", authUid));
+                if (linkSnap.exists()) {
+                    const d = linkSnap.data();
+                    add(true, "ربط الجلسة بالحساب",
+                        "الاسم المستخدم: " + esc(d.empId) +
+                        " | النوع: " + esc(d.type === "manager" ? "مدير" : "باحث") +
+                        " | الصلاحيات: " + esc((d.permissions || []).length) +
+                        (d.isMaster ? " | مبرمج" : ""));
+                } else {
+                    add(false, "ربط الجلسة بالحساب",
+                        "الجلسة موجودة لكن لم يكتب مستند الربط. سجل خروجا ودخولا مرة اخرى.");
+                }
+            } catch (e) {
+                add(false, "ربط الجلسة بالحساب", "رمز الخطأ: " + esc(e && e.code));
+            }
+        }
+
+        /* 6) الكتابة: الاختبار الحاسم */
         let testId = null;
         try {
             const ref = await addDoc(collection(db, "conn_test"), {
@@ -12143,7 +12171,7 @@
             add(false, "الكتابة في قاعدة البيانات", why);
         }
 
-        /* 5) الحذف: تنظيف اثر الاختبار */
+        /* 7) الحذف: تنظيف اثر الاختبار */
         if (testId) {
             try {
                 await deleteDoc(doc(db, "conn_test", testId));
