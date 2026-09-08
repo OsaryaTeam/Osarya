@@ -7261,26 +7261,36 @@
        فالخلط بينها سبب شائع لفشل الدخول.
        ------------------------------------------------------------------ */
     function generateTempPassword() {
-        /* ------------------------------------------------------------
-           كلمة مرور مؤقتة: ارقام وحروف ورموز
-           ------------------------------------------------------------
-           تحديثان مهمان على النسخة السابقة:
+        /* ==============================================================
+           كلمة مرور مؤقتة: قصيرة وقوية وسهلة النقل
+           ==============================================================
+           تسلم للباحث في رسالة يقرأها ويكتبها بيده، فالاولوية لسهولة
+           القراءة لا لطول الكلمة.
 
-           1) العشوائية من crypto لا من Math.random. الثانية متوقعة
-              رياضيا ولا تصلح لتوليد كلمات مرور.
+           الشروط المطبقة:
+             * ست خانات
+             * حرف كبير وحرف صغير ورقم ورمز على الاقل
+             * لا تبدأ ولا تنتهي برقم او رمز
 
-           2) اضيفت الرموز لزيادة قوتها، مع اقتصارها على رموز واضحة
-              في لوحة مفاتيح الجوال العربية والانجليزية، وتجنب ما قد
-              يلتبس او يفسد نسخ النص في الرسائل.
+           لماذا لا تبدأ ولا تنتهي برقم او رمز؟
+             لان الطرفين اكثر ما يخطئ فيه القارئ: قد يظن الرمز جزءا من
+             علامات الترقيم في الرسالة، او يبتلع الرقم مع ما قبله.
+             فالبدء والانتهاء بحرف يجعل حدود الكلمة واضحة.
 
-           والاحرف والارقام المتشابهة بصريا مستبعدة (O و 0، l و 1 و I)
-           لان الباحث يقرأها من رسالة ويكتبها يدويا.
-           ------------------------------------------------------------ */
+           الرموز المعتمدة: @ # $ % &
+             مشهورة وموجودة في كل لوحات المفاتيح، وواضحة الشكل.
+             واستبعدت علامة التعجب صراحة لانها تشبه حرف l والرقم 1،
+             وكذلك * و + و = و ? لالتباسها او صعوبة موضعها.
+
+           والحروف والارقام المتشابهة بصريا مستبعدة ايضا:
+             O و 0، l و I و 1.
+           ============================================================== */
         const upper   = "ABCDEFGHJKLMNPQRSTUVWXYZ";   /* بلا I و O */
         const lower   = "abcdefghijkmnpqrstuvwxyz";   /* بلا l و o */
         const digits  = "23456789";                   /* بلا 0 و 1 */
-        const symbols = "@#%&*+=?!";                  /* رموز واضحة وسهلة الكتابة */
-        const all = upper + lower + digits + symbols;
+        const symbols = "@#$%&";                      /* رموز مشهورة واضحة */
+        const letters = upper + lower;
+        const middle  = upper + lower + digits + symbols;
 
         const pickOne = function(set) {
             const buf = new Uint32Array(1);
@@ -7288,18 +7298,34 @@
             return set.charAt(buf[0] % set.length);
         };
 
-        /* نضمن كل نوع بحرف واحد على الاقل ثم نكمل الباقي عشوائيا */
-        const chars = [pickOne(upper), pickOne(lower), pickOne(digits), pickOne(symbols)];
-        while (chars.length < 10) chars.push(pickOne(all));
+        const shuffle = function(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const buf = new Uint32Array(1);
+                crypto.getRandomValues(buf);
+                const j = buf[0] % (i + 1);
+                const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+            }
+            return arr;
+        };
 
-        /* خلط امن حتى لا تقع الانواع في مواضع ثابتة متوقعة */
-        for (let i = chars.length - 1; i > 0; i--) {
-            const buf = new Uint32Array(1);
-            crypto.getRandomValues(buf);
-            const j = buf[0] % (i + 1);
-            const t = chars[i]; chars[i] = chars[j]; chars[j] = t;
-        }
-        return chars.join("");
+        /* ------------------------------------------------------------
+           البناء: نضمن الشروط بالتركيب لا بالمحاولة والخطأ
+           ------------------------------------------------------------
+           الخانتان الاولى والاخيرة حرفان دائما، ونضمن ان يكون احدهما
+           كبيرا والاخر صغيرا. والاربع الوسطى تحوي رقما ورمزا مضمونين
+           مع خانتين حرتين، ثم تخلط.
+           ------------------------------------------------------------ */
+        const core = shuffle([
+            pickOne(digits),
+            pickOne(symbols),
+            pickOne(middle),
+            pickOne(middle)
+        ]);
+
+        /* الطرفان: كبير وصغير بترتيب عشوائي */
+        const ends = shuffle([pickOne(upper), pickOne(lower)]);
+
+        return ends[0] + core.join("") + ends[1];
     }
     function isHashed(v) { return typeof v === "string" && /^sha256\$[a-f0-9]{64}$/.test(v); }
 
@@ -8454,6 +8480,8 @@
         session = null;
         clearStoredSession();
         clearAuthSession();
+        mustChangeRedirected = false;
+        updateMustChangeBar();
         if (idleTimer) clearTimeout(idleTimer);
         if (permSyncTimer) { clearInterval(permSyncTimer); permSyncTimer = null; }
         hideTopBar();
@@ -8939,6 +8967,8 @@
         /* الخروج الصريح ينهي حتى الجلسة المحفوظة بخيار "تذكرني" */
         clearStoredSession();
         clearAuthSession();
+        mustChangeRedirected = false;   /* يعاد التوجيه لو دخل مجددا */
+        updateMustChangeBar();          /* اخفاء فوري بلا انتظار اعادة رسم */
         if (idleTimer) clearTimeout(idleTimer);
 
         document.getElementById("managerIdLogin").value = "";
@@ -8962,6 +8992,8 @@
         /* الخروج الصريح ينهي حتى الجلسة المحفوظة بخيار "تذكرني" */
         clearStoredSession();
         clearAuthSession();
+        mustChangeRedirected = false;   /* يعاد التوجيه لو دخل مجددا */
+        updateMustChangeBar();          /* اخفاء فوري بلا انتظار اعادة رسم */
         if (idleTimer) clearTimeout(idleTimer);
 
         document.getElementById("resIdLogin").value = "";
@@ -17018,7 +17050,22 @@
     function updateMustChangeBar() {
         const bar = document.getElementById("mustChangeBar");
         if (!bar) return;
-        const needed = !!(session && session.mustChangePassword);
+
+        /* ------------------------------------------------------------
+           شرطان لا شرط واحد
+           ------------------------------------------------------------
+           1) وجود جلسة فيها الزام بتغيير كلمة المرور
+           2) ان تكون الشاشة الحالية من شاشات ما بعد الدخول
+
+           الشرط الثاني هو ما يخفي الشريط عند الخروج والعودة للقائمة
+           الرئيسية او شاشات الدخول: فالمستخدم خرج من حسابه، ولا معنى
+           لملاحقته بتنبيه يخص حسابا لم يعد داخله.
+           ------------------------------------------------------------ */
+        const PUBLIC_SCREENS = ["mainScreen", "researcherLoginScreen", "managerScreen", "forgotPasswordScreen"];
+        const active = document.querySelector(".screen.active-screen");
+        const onPublicScreen = !active || PUBLIC_SCREENS.indexOf(active.id) !== -1;
+
+        const needed = !!(session && session.mustChangePassword) && !onPublicScreen;
         bar.style.display = needed ? "flex" : "none";
 
         /* عند اول ظهور بعد الدخول ناخذه مباشرة الى شاشة الحساب، فلا
