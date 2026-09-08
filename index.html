@@ -17018,7 +17018,8 @@
             });
             showMsg("accPassSuccess", "<i class='fas fa-check-circle'></i> تم تغيير كلمة المرور بنجاح. استخدمها في تسجيل دخولك القادم.");
         } catch (e) {
-            showMsg("accPassError", "<i class='fas fa-wifi'></i> تعذر تغيير كلمة المرور، حاول مرة اخرى.");
+            console.error("خطأ في تغيير كلمة المرور:", e);
+            showMsg("accPassError", dbErrorMessage(e, "تغيير كلمة المرور"));
         }
 
         btn.disabled = false;
@@ -18724,6 +18725,20 @@
         await loadPasswordRequests();
     };
 
+    /* ------------------------------------------------------------------
+       من يرى اي طلب استعادة؟
+       ------------------------------------------------------------------
+       طلبات الباحثين: كل من يملك صلاحية استعادة كلمة المرور.
+       طلبات المدراء: المبرمج والمدير العام وحدهما، فحساب المدير
+       اوسع صلاحية، ولا يليق ان يعيد تعيينه من هو دونه.
+       ------------------------------------------------------------------ */
+    function canHandlePwRequest(req) {
+        if (req.accountColl === "managers") {
+            return isMaster() || (isManager() && session.role === "general");
+        }
+        return true;
+    }
+
     async function loadPasswordRequests() {
         const loading = document.getElementById("pwLoading");
         hideMsg("pwError");
@@ -18732,7 +18747,11 @@
         try {
             const snap = await getDocs(query(collection(db, "password_requests"), limit(REQUESTS_LIMIT)));
             pwRequests = [];
-            snap.forEach(function(d) { pwRequests.push(Object.assign({ id: d.id }, d.data())); });
+            snap.forEach(function(d) {
+                const r = Object.assign({ id: d.id }, d.data());
+                /* طلبات المدراء لا تعرض الا للمبرمج والمدير العام */
+                if (canHandlePwRequest(r)) pwRequests.push(r);
+            });
             pwRequests.sort(function(a, b) {
                 return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
             });
