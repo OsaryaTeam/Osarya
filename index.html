@@ -197,10 +197,12 @@
                وهذا يجبر المتصفح على اعادة رسم الصفحة كاملة 60 مرة في الثانية.
                تم تثبيت التدرج، والحركة اصبحت في الاشكال الملونة اسفله فقط
                لانها تتحرك عبر transform وهو مسرع بكرت الشاشة */
-            background: linear-gradient(-45deg, #f4f9f5, #e0eff1, #fcf6f0, #f9fbf9);
+            /* تدرج رملي هادئ مشتق من الوان الهوية، اخفض سطوعا من
+               الابيض الناصع فلا يتعب العين في الجلسات الطويلة */
+            background: linear-gradient(-45deg, #e8eeea, #d9e7ea, #efe6da, #e5ebe6);
             margin: 0; 
             padding: 20px; 
-            color: #2c3e50;
+            color: #2b3a44;
             min-height: 100vh;
             min-height: 100dvh;
             position: relative;
@@ -333,10 +335,12 @@
             contain: layout style;
             max-width: 800px;
             margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.94); 
+            /* ابيض مكسور لا ناصع: يبقى الفرق عن الخلفية محسوسا
+               دون ان يقفز التباين الى حد مزعج */
+            background: rgba(252, 251, 248, 0.96); 
             /* خففنا التمويه من 20 الى 8 بكسل: الفرق البصري طفيف جدا
                والتكلفة تقل كثيرا، خصوصا مع الحاويات الطويلة */
-            border: 1px solid rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.55);
             padding: 45px; 
             border-radius: 20px; 
             /* ظل واحد بدل ظلين مركبين: كل ظل يحسب على حدة */
@@ -625,7 +629,7 @@
         button:hover { transform: translateY(-3px); }
         button:hover::after { left: 120%; opacity: 1; }
         button:active { transform: translateY(3px); }
-        button:disabled { background: #9cbdae; cursor: not-allowed; transform: none; box-shadow: none; color: #f0f7f3; }
+        button:disabled { background: #9cbdae; cursor: not-allowed; transform: none; box-shadow: none; color: #e6efe9; }
         body.dark-mode button:disabled { background: #283d42; color: #556c70; }
 
         /* الوان الازرار الرئيسية */
@@ -1165,7 +1169,7 @@
            ما خلف الصف هو لون الحاوية لا صورة تحتاج تمويها.
            ------------------------------------------------------------------ */
         tr {
-            background: rgba(255, 255, 255, 0.86);
+            background: rgba(252, 251, 248, 0.90);
             box-shadow: 0 4px 10px rgba(0,0,0,0.03);
             /* الحركة على التحويل والظل فقط، لا على كل الخصائص */
             transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -1194,9 +1198,7 @@
         }
         body.dark-mode table input { background: rgba(14, 25, 28, 0.8); border-color: rgba(255,255,255,0.1); color: #fff; }
         
-        #editVisitsTable td:nth-child(2) input { 
-            min-width: 220px; 
-        }
+
 
         /* ---------------- بطاقات الصلاحيات ---------------- */
         .perm-badge {
@@ -1238,7 +1240,7 @@
         /* ---------------- النوافذ المنبثقة للاضافة ---------------- */
         .add-form-section {
             margin-top: 20px; 
-            background: rgba(255, 255, 255, 0.9); 
+            background: rgba(252, 251, 248, 0.93); 
             padding: 25px; 
             border-radius: 15px; 
             border: 1px solid #c3dae2;
@@ -1282,7 +1284,7 @@
             border-color: rgba(74,135,148,0.3);
             color: #e2ecee;
         }
-        .perm-item:hover { background: rgba(255,255,255,0.9); border-color: #de8c43; }
+        .perm-item:hover { background: rgba(252,251,248,0.93); border-color: #de8c43; }
         body.dark-mode .perm-item:hover { background: rgba(20,35,39,0.9); border-color: #de8c43; }
         .perm-item input[type="checkbox"] { width: 18px; height: 18px; margin: 0; box-shadow: none; cursor: pointer; }
 
@@ -1422,7 +1424,7 @@
             #printableTableArea { display: block !important; width: 100%; }
             table { border-collapse: collapse !important; width: 100% !important; border: 1px solid #000 !important; }
             th, td { border: 1px solid #000 !important; padding: 10px !important; color: #000 !important; text-align: center; font-size: 12px; background: #fff !important; border-radius: 0 !important; }
-            th { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; color-adjust: exact; font-weight: bold; }
+            th { background-color: #e9e6e0 !important; -webkit-print-color-adjust: exact; color-adjust: exact; font-weight: bold; }
             tr { box-shadow: none !important; transform: none !important; background: #fff !important; }
         }
     
@@ -1494,7 +1496,7 @@
             max-width: 90vw;
         }
         .toast {
-            background: rgba(255,255,255,0.95);
+            background: rgba(252,251,248,0.96);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-right: 5px solid #4a8794;
@@ -2065,7 +2067,7 @@
             font-size: 14px;
             resize: vertical;
             box-sizing: border-box;
-            background: rgba(255,255,255,0.9);
+            background: rgba(252,251,248,0.93);
             color: #2c3e50;
         }
         body.dark-mode .reject-input { background: rgba(14,25,28,0.8); color: #fff; border-color: rgba(255,157,157,0.35); }
@@ -2107,7 +2109,7 @@
             font-family: 'Tajawal', sans-serif;
             font-weight: 700;
             font-size: 15px;
-            background: rgba(255,255,255,0.85);
+            background: rgba(252,251,248,0.90);
             color: #2c3e50;
             cursor: pointer;
         }
@@ -2913,7 +2915,7 @@
             font-family: 'Tajawal', sans-serif;
             border-radius: 9px;
             border: 1px solid rgba(74,135,148,0.3);
-            background: rgba(255,255,255,0.9);
+            background: rgba(252,251,248,0.93);
             color: #2c3e50;
             cursor: pointer;
         }
@@ -3016,7 +3018,7 @@
             font-family: 'Tajawal', sans-serif;
             border-radius: 11px;
             border: 2px solid rgba(74,135,148,0.35);
-            background: rgba(255,255,255,0.95);
+            background: rgba(252,251,248,0.96);
             color: #2c3e50;
             margin: 0;
         }
@@ -3129,12 +3131,12 @@
             text-align: center;
             padding: 12px;
             border-radius: 9px;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(252, 251, 248, 0.90);
             color: #1a1a1a;
             user-select: all;      /* نقرة واحدة تحدد الكلمة كاملة */
             word-break: break-all;
         }
-        body.dark-mode .gen-pass-value { background: rgba(255, 255, 255, 0.92); }
+        body.dark-mode .gen-pass-value { background: rgba(252, 251, 248, 0.94); }
 
         .gen-pass-hint {
             font-size: 12.5px;
@@ -3144,6 +3146,35 @@
             margin: 9px 0;
         }
         body.dark-mode .gen-pass-hint { color: #9aabae; }
+
+        /* ---------------- صندوق التأكيد الخاص بالمجموعات الحرجة ---------------- */
+        .reset-confirm-box {
+            margin-top: 9px;
+            padding: 10px 12px;
+            border-radius: 9px;
+            background: rgba(192, 57, 43, 0.10);
+            border: 1px dashed rgba(192, 57, 43, 0.55);
+        }
+        body.dark-mode .reset-confirm-box { background: rgba(192, 57, 43, 0.18); }
+
+        .rcb-label { font-size: 12.5px; font-weight: 800; color: #c0392b; margin-bottom: 6px; }
+        body.dark-mode .rcb-label { color: #ff9d9d; }
+
+        .rcb-input {
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Tajawal', sans-serif;
+            border-radius: 8px;
+            border: 1.5px solid rgba(192, 57, 43, 0.5);
+            background: rgba(252,251,248,0.94);
+            color: #2c3e50;
+            margin: 0;
+            text-align: center;
+        }
+        body.dark-mode .rcb-input { background: rgba(20,35,40,0.95); color: #e8eef0; }
+        .rcb-input:focus { outline: none; border-color: #c0392b; }
 
         /* ---------------- نتيجة فحص الاتصال ---------------- */
         .conn-test-box {
@@ -3547,7 +3578,7 @@
             font-family: 'Tajawal', sans-serif;
             white-space: pre-wrap;
             word-break: break-word;
-            background: rgba(255,255,255,0.85);
+            background: rgba(252,251,248,0.90);
             border: 1px dashed rgba(74,135,148,0.4);
             border-radius: 14px;
             padding: 20px;
@@ -4445,10 +4476,9 @@
         
         <div id="managerAccessError" class="error-message" style="display:none; font-size: 16px; padding: 15px; margin-bottom: 15px;"></div>
         
-        <div class="manager-dashboard-grid">
+        <div class="manager-dashboard-grid researcher-dashboard-grid">
             <button class="btn-manager btn-icon-watermark icon-results" onclick="checkPermissionAndGo('managerControlScreen')">الاستعلام عن زيارات</button>
             <button class="btn-manager btn-icon-watermark icon-search" data-action-badge="visit" onclick="checkPermissionAndGo('managerQueryScreen')">التعديل على زيارة</button>
-            <button class="btn-manager btn-icon-watermark icon-edit" onclick="checkPermissionAndGo('editVisits')">تعديل السجلات</button>
             <button class="btn-manager btn-icon-watermark icon-users" onclick="checkPermissionAndGo('loadResearchersList')">قائمة الباحثين</button>
             
             <button class="btn-manager btn-icon-watermark icon-leave" data-action-badge="leave" onclick="checkPermissionAndGo('loadLeaveRequests')">طلبات الاجازات</button>
@@ -4601,6 +4631,18 @@
                         <i class="fas fa-lightbulb"></i> رقم مقترح تلقائيا حسب التسلسل، ويمكنك تعديله.
                     </div>
                 </div>
+                <div class="input-group">
+                    <label for="newManPhone">رقم الجوال:</label>
+                    <div class="input-with-icon">
+                        <input type="tel" id="newManPhone" inputmode="tel" dir="ltr" placeholder="0512345678  او  +966512345678">
+                        <i class="fas fa-phone right-icon"></i>
+                    </div>
+                    <div class="field-hint" style="display:block;">
+                        <i class="fas fa-lightbulb"></i>
+                        يفعل زر الواتساب لارسال بيانات الحساب، ويستخدم في التواصل مع المدير.
+                    </div>
+                </div>
+
                 <div class="input-group full-width">
                     <label for="newManPass">كلمة المرور:</label>
                     <div class="password-wrapper">
@@ -4622,7 +4664,6 @@
                     <label>الصلاحيات المحددة:</label>
                     <div class="permissions-grid">
                         <label class="perm-item"><input type="checkbox" value="الاستعلام عن زيارة والتعديل على بياناتها" class="perm-checkbox"> الاستعلام عن زيارة والتعديل على بياناتها</label>
-                        <label class="perm-item"><input type="checkbox" value="تعديل السجلات" class="perm-checkbox"> تعديل السجلات</label>
                         <label class="perm-item"><input type="checkbox" value="قائمة الباحثين" class="perm-checkbox"> قائمة الباحثين</label>
                         <label class="perm-item"><input type="checkbox" value="طلبات الاجازات" class="perm-checkbox"> طلبات الاجازات</label>
                         <label class="perm-item"><input type="checkbox" value="التنبيهات والانذارات" class="perm-checkbox"> التنبيهات والانذارات</label>
@@ -4654,6 +4695,13 @@
                 حدد بالضبط ما تريد مسحه. لن يمس شيء لم تحدده،
                 <strong>وما يمسح لا يمكن استرجاعه اطلاقا</strong>.
             </p>
+
+            <div class="rule-note rule-note-danger">
+                <i class="fas fa-shield-halved"></i>
+                <strong>الزيارات وحسابات الباحثين وحسابات المدراء</strong> بيانات حرجة لا تعوض،
+                فلكل منها تأكيد خاص يظهر عند تحديدها ويطلب كتابة كلمتها صراحة،
+                زيادة على كلمة التأكيد العامة في الاسفل.
+            </div>
 
             <div class="danger-box">
                 <div class="danger-box-title">اختر ما تريد تصفيره:</div>
@@ -5014,91 +5062,10 @@
         </div>
 </div>
 
-    <div id="editVisitsScreen" class="container screen" style="max-width: 1100px;">
-        <div style="text-align: left; margin-bottom: 10px;">
-            <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
-        </div>
-        <h2>تعديل بيانات توثيق الزيارات</h2>
-        
-        <div id="managerEditLoading" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
-        <div id="managerEditError" class="error-message"></div>
-        <div id="managerEditSuccess" class="success-message"></div>
-        
-        <div class="sorting-controls">
-            <strong style="font-size: 16px; margin-bottom: 5px;"><i class="fas fa-filter"></i> فرز السجلات:</strong>
-            <div class="sorting-buttons-row">
-                <div class="sort-dropdown">
-                    <button type="button" class="btn-sort active-sort" id="edit_sort_main">تاريخ التوثيق <i class="fas fa-chevron-down" style="margin-right: 5px; font-size: 12px;"></i></button>
-                    <div class="sort-dropdown-content">
-                        <button type="button" id="edit_sort_default" class="active-sort" onclick="sortEdit('reg_desc', this)">الاحدث اولا</button>
-                        <button type="button" onclick="sortEdit('reg_asc', this)">الاقدم اولا</button>
-                    </div>
-                </div>
+    <!-- ملاحظة: حذفت من هنا شاشة "تعديل السجلات".
+         وظيفتها صارت مكررة مع "التعديل على زيارة" بعد تطويره الى
+         قائمتين منسدلتين، فحذفها يبسط البوابة ويزيل صلاحية زائدة. -->
 
-                <div class="sort-dropdown">
-                    <button type="button" class="btn-sort">تاريخ التنفيذ <i class="fas fa-chevron-down" style="margin-right: 5px; font-size: 12px;"></i></button>
-                    <div class="sort-dropdown-content">
-                        <button type="button" onclick="sortEdit('date_desc', this)">الاحدث اولا</button>
-                        <button type="button" onclick="sortEdit('date_asc', this)">الاقدم اولا</button>
-                    </div>
-                </div>
-
-                <div class="sort-dropdown">
-                    <button type="button" class="btn-sort">اسم الباحث <i class="fas fa-chevron-down" style="margin-right: 5px; font-size: 12px;"></i></button>
-                    <div class="sort-dropdown-content">
-                        <button type="button" onclick="sortEdit('name_asc', this)">ا - ي</button>
-                        <button type="button" onclick="sortEdit('name_desc', this)">ي - ا</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- حالة الفراغ: تظهر داخل الشاشة بدل منع فتحها -->
-        <div id="editVisitsEmpty" class="empty-state" style="display:none;">
-            <i class="fas fa-folder-open"></i>
-            لا توجد اي زيارات مسجلة لتعديلها حاليا
-        </div>
-
-        <div class="table-container">
-            <table id="editVisitsTable">
-                <thead>
-                    <tr>
-                        <th>م</th>
-                        <th>اسم الباحث</th>
-                        <th>الاسم المستخدم</th>
-                        <th>رقم الزيارة</th>
-                        <th>تاريخ التنفيذ</th>
-                        <th>تاريخ التوثيق</th>
-                        <th>الاجراء</th>
-                    </tr>
-                </thead>
-                <tbody id="editTableBody">
-                </tbody>
-            </table>
-        </div>
-
-        <!-- عداد السجلات وزر تحميل الصفحة التالية (ترقيم الصفحات) -->
-        <div id="editCountInfo" class="records-info"></div>
-        <div id="editMoreWrap" class="more-wrap" style="display:none;">
-            <button type="button" id="btnLoadMoreEdit" class="btn-neutral btn-icon-watermark icon-results" onclick="loadMoreEdit()">عرض المزيد من السجلات</button>
-        </div>
-    
-        <!-- زر العودة السفلي: موحد في كل الشاشات، لمن انتهى من المحتوى
-             فلا يضطر للتمرير الى الاعلى -->
-        <div class="btn-group bottom-return">
-            <button class="btn-neutral btn-icon-watermark icon-back" onclick="switchScreen('managerPortal')">العودة للبوابة</button>
-        </div>
-</div>
-
-
-    <!-- ==============================================================
-         شاشة الباحث: طلب اجازة
-         --------------------------------------------------------------
-         تعرض ملخص رصيد السنة المختارة في اربع بطاقات، ثم نموذج تحديد
-         نطاق التاريخ. عدد الايام يحسب مباشرة اثناء اختيار التواريخ.
-         التحقق من الرصيد ومن تعارض التواريخ يتم في الدالة
-         submitLeaveRequest داخل القسم 22 من الجافاسكربت.
-         ============================================================== -->
     <div id="leaveRequestScreen" class="container screen">
         <div style="text-align: left; margin-bottom: 10px;">
             <button class="btn-neutral btn-small btn-icon-watermark icon-return" onclick="switchScreen('researcherPortal')">العودة للبوابة</button>
@@ -5713,7 +5680,7 @@
 
         <div class="input-group">
             <label for="noticeResSelect">الباحث (على رأس العمل):</label>
-            <select id="noticeResSelect" class="year-select" style="width:100%;"></select>
+            <select id="noticeResSelect" class="year-select" style="width:100%;" onchange="onNoticeResearcherChange()"></select>
         </div>
 
         <div class="input-group" style="margin-top: 15px;">
@@ -5734,10 +5701,14 @@
             <!-- رقم الزيارة: اختياري، ويمكن اضافته او تعديله لاحقا من
                  شاشة سجل التنبيهات والانذارات بعد توثيق الزيارة -->
             <div class="input-group">
-                <label for="noticeVisitId">رقم الزيارة المخالفة (اختياري):</label>
-                <div class="input-with-icon">
-                    <input type="text" id="noticeVisitId" inputmode="numeric" placeholder="يمكن تركه فارغا واضافته لاحقا">
-                    <i class="fas fa-hashtag right-icon"></i>
+                <label for="noticeVisitId">الزيارة المخالفة (اختياري):</label>
+                <select id="noticeVisitId" class="year-select" style="width:100%;" disabled>
+                    <option value="">-- اختر الباحث اولا --</option>
+                </select>
+                <div class="field-hint" style="display:block;">
+                    <i class="fas fa-lightbulb"></i>
+                    تعرض زيارات الباحث المختار من الاحدث الى الاقدم. اتركها فارغة ان لم تحدد الزيارة بعد،
+                    ويمكنك اضافتها لاحقا من سجل التنبيهات.
                 </div>
             </div>
         </div>
@@ -7164,7 +7135,6 @@
 
     let session = null;
     let fetchedVisits = [];
-    let editVisits = [];
     let researchersList = [];
     let managersList = [];
     let currentFilterStatus = 'all';
@@ -7734,7 +7704,24 @@
         if (!el) return;
         el.innerHTML = html;
         el.style.display = "block";
-        if (type === "hide") el.style.display = "none";
+        if (type === "hide") { el.style.display = "none"; return; }
+
+        /* ------------------------------------------------------------
+           جلب الرسالة الى مجال النظر
+           ------------------------------------------------------------
+           كانت الرسالة تظهر اعلى النموذج بينما زر الحفظ في اسفله،
+           فيضغط المستخدم الزر ولا يرى شيئا فيظن النظام معلقا.
+
+           نمررها اليه ان كانت خارج الشاشة فقط، فلا نزعج التمرير حين
+           تكون ظاهرة اصلا.
+           ------------------------------------------------------------ */
+        setTimeout(function() {
+            if (el.style.display === "none") return;
+            const r = el.getBoundingClientRect();
+            if (r.top < 0 || r.bottom > window.innerHeight) {
+                try { el.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+            }
+        }, 60);
     }
     function hideMsg(elId) {
         const el = document.getElementById(elId);
@@ -8531,7 +8518,6 @@
         if (id === 'researchersListScreen') window.loadResearchersList();
         else if (id === 'leaveManageScreen') window.loadLeaveRequests();
         else if (id === 'noticeLogScreen') window.openNoticeLog();
-        else if (id === 'editVisitsScreen') window.loadVisitsForEditing();
         else if (id === 'adminPermissionsScreen') window.loadManagersList();
         else if (id === 'auditLogScreen') window.openAuditLog();
     }
@@ -8759,7 +8745,6 @@
         const reloaders = {
             researchersListScreen:   function() { window.loadResearchersList(); },
             adminPermissionsScreen:  function() { window.loadManagersList(); },
-            editVisitsScreen:        function() { window.loadVisitsForEditing(); },
             leaveManageScreen:       function() { window.loadLeaveRequests(); },
             noticeLogScreen:         function() { window.openNoticeLog(); },
             requestsScreen:          function() { window.openRequests(reqType); },
@@ -8798,7 +8783,6 @@
         const b = document.getElementById("btnOpenEdit");
         if (w) w.style.display = "none";
         if (b) b.style.display = "block";
-        window.loadVisitsForEditing();
     };
     window.cancelEditData = function() {
         const w = document.getElementById("editWarningSection");
@@ -8813,7 +8797,7 @@
 
     const PROTECTED_SCREENS = {
         managerPortal: 'manager', adminPermissionsScreen: 'manager', managerControlScreen: 'manager',
-        managerQueryScreen: 'manager', researchersListScreen: 'manager', editVisitsScreen: 'manager',
+        managerQueryScreen: 'manager', researchersListScreen: 'manager',
         resultsScreen: 'manager',
         researcherPortal: 'researcher', researcherScreen: 'researcher', visitTypeScreen: 'researcher', researcherQueryScreen: 'researcher',
         /* شاشات نظام الاجازات */
@@ -8939,7 +8923,7 @@
         if (w) w.style.display = "none";
         if (b) b.style.display = "block";
 
-        fetchedVisits = []; editVisits = []; researchersList = []; managersList = [];
+        fetchedVisits = []; researchersList = []; managersList = [];
         window.switchScreen('mainScreen');
     };
 
@@ -9233,7 +9217,6 @@
 
         if (action === 'managerControlScreen') { window.switchScreen('managerControlScreen'); loadSearchResearchers(); }
         else if (action === 'managerQueryScreen') window.switchScreen('managerQueryScreen');
-        else if (action === 'editVisits') window.loadVisitsForEditing();
         else if (action === 'loadResearchersList') window.loadResearchersList();
         else if (action === 'loadManagersList') window.loadManagersList();
         else if (action === 'loadLeaveRequests') window.loadLeaveRequests();
@@ -10176,289 +10159,13 @@
         if (wrap) wrap.style.display = resultsHasMore ? "block" : "none";
     }
 
-    /* ==================================================================
-       (16) تعديل السجلات (مع ترقيم الصفحات)
-       ================================================================== */
-
-    window.loadVisitsForEditing = async function() {
-        /* الشاشة مفتوحة لكل المدراء، والصلاحية تحكم الحفظ والحذف فقط */
-        if (!isManager()) { window.switchScreen('managerScreen'); return; }
-        lastEditDoc = null;
-        editVisits = [];
-        editClientMode = false;
-        await runEditQuery(true);
-    };
-
-    window.loadMoreEdit = async function() {
-        if (!(await guardLive('تعديل السجلات'))) return;
-        await runEditQuery(false);
-    };
-
-    async function runEditQuery(isFirstPage) {
-        const cLoading = document.getElementById("managerControlLoading");
-        const btnMore = document.getElementById("btnLoadMoreEdit");
-
-        hideMsg("managerControlError");
-        hideMsg("managerEditError");
-        hideMsg("managerEditSuccess");
-
-        if (isFirstPage) {
-            cLoading.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري جلب السجلات للتحرير...';
-            cLoading.style.display = "block";
-        } else if (btnMore) {
-            btnMore.disabled = true;
-            btnMore.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';
-        }
-
-        let pageVisits = [];
-        try {
-            const cons = [orderBy("regDate", "desc")];
-            if (!isFirstPage && lastEditDoc) cons.push(startAfter(lastEditDoc));
-            cons.push(limit(PAGE_SIZE));
-            const snap = await getDocs(query.apply(null, [collection(db, "visits")].concat(cons)));
-
-            /* نفس كشف الذاكرة المحلية المشروح في شاشة الاستعلام */
-            if (snap.metadata && snap.metadata.fromCache && snap.empty) {
-                cLoading.style.display = "none";
-                if (btnMore) { btnMore.disabled = false; btnMore.innerHTML = 'عرض المزيد من السجلات'; }
-                showMsg("managerControlError", offlineSourceMessage());
-                return;
-            }
-
-            snap.forEach(function(d) { pageVisits.push(Object.assign({ id: d.id }, d.data())); });
-            lastEditDoc = snap.docs.length ? snap.docs[snap.docs.length - 1] : lastEditDoc;
-            editHasMore = snap.docs.length === PAGE_SIZE;
-        } catch (error) {
-            cLoading.style.display = "none";
-            if (btnMore) { btnMore.disabled = false; btnMore.innerHTML = 'عرض المزيد من السجلات'; }
-            showMsg("managerControlError", "<i class='fas fa-exclamation-triangle'></i> حدث خطأ في استرجاع البيانات السحابية.");
-            return;
-        }
-
-        cLoading.style.display = "none";
-        if (btnMore) { btnMore.disabled = false; btnMore.innerHTML = 'عرض المزيد من السجلات'; }
-
-        editVisits = isFirstPage ? pageVisits : editVisits.concat(pageVisits);
-
-        /* ------------------------------------------------------------------
-           الشاشة تفتح دائما حتى لو لم توجد سجلات
-           ------------------------------------------------------------------
-           كان الكود يعرض رسالة "لا توجد زيارات" ثم يخرج قبل فتح الشاشة،
-           فيبقى المدير في البوابة ويظن ان الزر معطل. الصحيح ان تفتح
-           الشاشة وتعرض حالة الفراغ بداخلها، فيرى ادوات الفرز والعودة
-           ويفهم ان النظام يعمل ولا سجلات فيه بعد.
-           ------------------------------------------------------------------ */
-        if (isFirstPage) {
-            document.querySelectorAll('#editVisitsScreen .btn-sort, #editVisitsScreen .sort-dropdown-content button').forEach(function(b) { b.classList.remove('active-sort'); });
-            const sm = document.getElementById('edit_sort_main');
-            const sd = document.getElementById('edit_sort_default');
-            if (sm) sm.classList.add('active-sort');
-            if (sd) sd.classList.add('active-sort');
-        }
-
-        renderEditTable();
-        if (isFirstPage) window.switchScreen('editVisitsScreen');
-
-        /* حالة الفراغ تعرض داخل الشاشة لا قبل فتحها */
-        const editEmpty = document.getElementById("editVisitsEmpty");
-        if (editEmpty) editEmpty.style.display = (editVisits.length === 0) ? "block" : "none";
-    }
-
-    window.sortEdit = function(criteria, btnElement) {
-        document.querySelectorAll('#editVisitsScreen .btn-sort, #editVisitsScreen .sort-dropdown-content button').forEach(function(b) { b.classList.remove('active-sort'); });
-        if (btnElement) {
-            btnElement.classList.add('active-sort');
-            if (btnElement.parentElement.classList.contains('sort-dropdown-content')) {
-                btnElement.parentElement.previousElementSibling.classList.add('active-sort');
-            }
-        }
-        sortList(editVisits, criteria);
-        renderEditTable();
-    };
-
-    function renderEditTable() {
-        const tbody = document.getElementById("editTableBody");
-        /* اتلاف نسخ التقويم القديمة قبل المسح منعا لتراكمها في الذاكرة */
-        destroyDatePickersIn(tbody);
-        tbody.innerHTML = "";
-
-        /* البناء داخل الذاكرة اولا ثم الادراج دفعة واحدة (اسرع بكثير) */
-        const frag = document.createDocumentFragment();
-        const lazyDateInputs = [];
-
-        editVisits.forEach(function(v, idx) {
-            const tr = document.createElement("tr");
-
-            const tdSerial = document.createElement("td");
-            tdSerial.textContent = idx + 1;
-            tdSerial.style.fontWeight = "900";
-            tdSerial.style.backgroundColor = "rgba(222, 140, 67, 0.1)";
-            tr.appendChild(tdSerial);
-
-            const mk = function(id, value, cls, placeholder) {
-                const td = document.createElement("td");
-                const input = document.createElement("input");
-                input.type = "text";
-                input.value = value === undefined || value === null ? "" : value;
-                input.id = id;
-                if (cls) input.className = cls;
-                if (placeholder) input.placeholder = placeholder;
-                /* حقول التاريخ تسجل هنا لتهيئتها تهيئة مؤجلة عند اول لمسة */
-                /* بدون صلاحية التعديل تكون الحقول للقراءة فقط */
-                if (!hasPerm('تعديل السجلات')) input.readOnly = true;
-                else if (cls === "custom-date-picker") lazyDateInputs.push(input);
-                td.appendChild(input);
-                return td;
-            };
-
-            tr.appendChild(mk("editName_" + idx, v.empName));
-            tr.appendChild(mk("editId_" + idx, v.empId));
-            tr.appendChild(mk("editVisitId_" + idx, v.visitId));
-            tr.appendChild(mk("editExecDate_" + idx, v.execDate, "custom-date-picker", "يوم / شهر / سنة"));
-
-            const tdRegDate = document.createElement("td");
-            tdRegDate.textContent = window.formatDateTimeToEnglish(v.regDate);
-            tr.appendChild(tdRegDate);
-
-            const tdAction = document.createElement("td");
-            const divActions = document.createElement("div");
-            divActions.id = "actions_container_" + idx;
-            divActions.style.display = "flex";
-            divActions.style.flexDirection = "column";
-            divActions.style.gap = "8px";
-
-            /* ازرار الاجراءات لا تظهر الا لمن يملك صلاحية تعديل السجلات.
-               اما من لا يملكها فيستعرض السجلات ويفلترها دون تعديل */
-            if (hasPerm('تعديل السجلات')) {
-                const btnSave = document.createElement("button");
-                btnSave.type = "button";
-                btnSave.textContent = 'حفظ';
-                btnSave.className = "btn-icon-watermark icon-save btn-table btn-manager";
-                btnSave.onclick = function() { window.showConfirmationRow(idx, 'save', v.id, v.visitId); };
-                divActions.appendChild(btnSave);
-
-                const btnDelete = document.createElement("button");
-                btnDelete.type = "button";
-                btnDelete.textContent = 'حذف';
-                btnDelete.className = "btn-icon-watermark icon-times btn-table btn-neutral";
-                btnDelete.onclick = function() { window.showConfirmationRow(idx, 'delete', v.id, v.visitId); };
-                divActions.appendChild(btnDelete);
-            } else {
-                const note = document.createElement("span");
-                note.className = "no-perm-note";
-                note.textContent = "عرض فقط";
-                divActions.appendChild(note);
-            }
-
-            tdAction.appendChild(divActions);
-            tr.appendChild(tdAction);
-            frag.appendChild(tr);
-        });
-
-        tbody.appendChild(frag);
-        window.applyCardLabels("editVisitsTable");
-
-        const wrap = document.getElementById("editMoreWrap");
-        const info = document.getElementById("editCountInfo");
-        if (info) info.textContent = "عدد السجلات المعروضة: " + editVisits.length;
-        if (wrap) wrap.style.display = editHasMore ? "block" : "none";
-
-        /* لا ننشئ تقويما لكل صف الان، بل عند اول لمسة على الحقل فقط.
-           مع 100 صف كان الإنشاء الفوري يجمد الصفحة لثوان على الجوال */
-        lazyDateInputs.forEach(function(inp) { window.attachLazyDatePicker(inp); });
-    }
-
-    window.showConfirmationRow = function(idx, type, docId, originalVisitId) {
-        if (!guard('تعديل السجلات')) return;
-        const container = document.getElementById("actions_container_" + idx);
-        if (!container) return;
-        container.innerHTML = "";
-
-        const label = document.createElement("span");
-        label.style.display = "block";
-        label.style.fontSize = "13px";
-        label.style.marginBottom = "8px";
-        label.style.fontWeight = "bold";
-        label.style.color = type === 'save' ? "#4a8794" : "#de8c43";
-        label.textContent = type === 'save' ? "متاكد من الحفظ؟" : "متاكد من الحذف؟";
-        container.appendChild(label);
-
-        const btnYes = document.createElement("button");
-        btnYes.type = "button";
-        btnYes.textContent = "نعم";
-        btnYes.className = "btn-icon-watermark icon-check btn-table " + (type === 'save' ? 'btn-manager' : 'btn-neutral');
-        btnYes.onclick = function() {
-            if (type === 'save') window.saveEditedVisit(idx, docId, originalVisitId);
-            else window.deleteVisit(docId, originalVisitId);
-        };
-        container.appendChild(btnYes);
-
-        const btnNo = document.createElement("button");
-        btnNo.type = "button";
-        btnNo.textContent = "تراجع";
-        btnNo.className = "btn-icon-watermark icon-times btn-table btn-neutral";
-        btnNo.onclick = function() { renderEditTable(); };
-        container.appendChild(btnNo);
-    };
-
-    window.saveEditedVisit = async function(idx, docId, originalVisitId) {
-        if (!(await guardLive('تعديل السجلات'))) return;
-
-        const name = document.getElementById("editName_" + idx).value.trim();
-        const id = window.toEnglishDigits(document.getElementById("editId_" + idx).value.trim());
-        const vId = window.toEnglishDigits(document.getElementById("editVisitId_" + idx).value.trim());
-        const eDate = window.toEnglishDigits(document.getElementById("editExecDate_" + idx).value);
-
-        hideMsg("managerEditError");
-        hideMsg("managerEditSuccess");
-
-        if (!name || !id || !vId || !eDate) {
-            showMsg("managerEditError", "<i class='fas fa-exclamation-circle'></i> لا يمكن ترك الحقول فارغة عند التعديل!");
-            renderEditTable();
-            return;
-        }
-
-        try {
-            if (vId !== originalVisitId) {
-                const snap = await getDocs(query(collection(db, "visits"), where("visitId", "==", vId)));
-                if (!snap.empty) {
-                    showMsg("managerEditError", "<i class='fas fa-times-circle'></i> رقم الزيارة الجديد مسجل مسبقا لزيارة اخرى!");
-                    renderEditTable();
-                    return;
-                }
-            }
-            await updateDoc(doc(db, "visits", docId), { empName: name, empId: id, visitId: vId, execDate: eDate });
-            logAudit("تعديل سجل زيارة", "رقم الزيارة: " + originalVisitId + " -> " + vId + " | الباحث: " + name + " (" + id + ")");
-
-            const item = editVisits.find(function(x) { return x.id === docId; });
-            if (item) { item.empName = name; item.empId = id; item.visitId = vId; item.execDate = eDate; }
-
-            showMsg("managerEditSuccess", "<i class='fas fa-check-circle'></i> تم حفظ التعديلات بنجاح!");
-            renderEditTable();
-        } catch (error) {
-            showMsg("managerEditError", "<i class='fas fa-wifi'></i> حدث خطأ اثناء حفظ التعديل في السحابة.");
-            renderEditTable();
-        }
-    };
-
-    window.deleteVisit = async function(docId, visitIdLabel) {
-        if (!(await guardLive('تعديل السجلات'))) return;
-
-        hideMsg("managerEditError");
-        hideMsg("managerEditSuccess");
-
-        try {
-            await deleteDoc(doc(db, "visits", docId));
-            logAudit("حذف زيارة", "رقم الزيارة: " + (visitIdLabel || docId));
-            editVisits = editVisits.filter(function(x) { return x.id !== docId; });
-            showMsg("managerEditSuccess", "<i class='fas fa-trash-alt'></i> تم حذف الزيارة بنجاح!");
-            renderEditTable();
-        } catch (error) {
-            showMsg("managerEditError", "<i class='fas fa-wifi'></i> حدث خطأ اثناء محاولة الحذف.");
-            renderEditTable();
-        }
-    };
-
+    /* ------------------------------------------------------------------
+       ملاحظة: حذف من هنا منطق شاشة "تعديل السجلات"
+       ------------------------------------------------------------------
+       كان يعرض كل الزيارات في جدول قابل للتعديل المباشر مع ترقيم
+       صفحات. صارت وظيفته مكررة مع "التعديل على زيارة" الذي يصل الى
+       الزيارة عبر قائمتين منسدلتين، وهو اضبط واقل عرضة للخطأ.
+       ------------------------------------------------------------------ */
 
     /* ==================================================================
        (17) قائمة الباحثين
@@ -12070,7 +11777,6 @@
        ================================================================== */
 
     const RESET_COLLECTIONS = [
-        { name: "visits",            label: "الزيارات الموثقة",            unit: "زيارة" },
         { name: "leaves",            label: "طلبات الاجازات",              unit: "طلب" },
         { name: "leave_files",       label: "مرفقات الاعذار الطبية",       unit: "مرفق" },
         { name: "leave_file_chunks", label: "اجزاء المرفقات",              unit: "جزء" },
@@ -12083,8 +11789,16 @@
         { name: "password_requests", label: "طلبات استعادة كلمة المرور",   unit: "طلب" },
         { name: "notifications",     label: "الاشعارات",                   unit: "اشعار" },
         { name: "audit_log",         label: "سجل التدقيق",                 unit: "سجل", danger: true },
-        { name: "researchers",       label: "حسابات الباحثين",             unit: "حساب", danger: true },
-        { name: "managers",          label: "حسابات المدراء",              unit: "حساب", danger: true }
+
+        /* ------------------------------------------------------------
+           المجموعات الحرجة: تحتاج تأكيدا خاصا بكتابة كلمتها
+           ------------------------------------------------------------
+           هذه بيانات لا تعوض ومسحها نادر جدا، فلا يكفي فيها التأكيد
+           العام. لكل واحدة كلمة تكتب صراحة قبل ان تمسح.
+           ------------------------------------------------------------ */
+        { name: "visits",            label: "الزيارات الموثقة",            unit: "زيارة", danger: true, critical: true, word: "الزيارات" },
+        { name: "researchers",       label: "حسابات الباحثين",             unit: "حساب", danger: true, critical: true, word: "الباحثين" },
+        { name: "managers",          label: "حسابات المدراء",              unit: "حساب", danger: true, critical: true, word: "المدراء" }
     ];
 
     /* ==================================================================
@@ -12262,6 +11976,28 @@
                 n.textContent = (c.n === 0) ? "لا توجد سجلات" : (c.n + " " + c.unit);
                 txt.appendChild(n);
 
+                /* المجموعات الحساسة: صندوق تأكيد خاص يظهر عند تحديدها */
+                if (c.critical) {
+                    const conf = document.createElement("div");
+                    conf.className = "reset-confirm-box";
+                    conf.id = "resetConfirmBox_" + c.name;
+                    conf.style.display = "none";
+                    conf.innerHTML =
+                        '<div class="rcb-label">للتأكيد اكتب: <strong>' + esc(c.word) + '</strong></div>' +
+                        '<input type="text" class="rcb-input" id="resetConfirmInput_' + c.name +
+                        '" placeholder="اكتب: ' + esc(c.word) + '" autocomplete="off">';
+                    txt.appendChild(conf);
+
+                    /* يظهر الصندوق عند التحديد ويختفي عند الغائه */
+                    cb.addEventListener("change", function() {
+                        conf.style.display = cb.checked ? "block" : "none";
+                        if (!cb.checked) {
+                            const inp = document.getElementById("resetConfirmInput_" + c.name);
+                            if (inp) inp.value = "";
+                        }
+                    });
+                }
+
                 if (c.name === "managers") {
                     const w = document.createElement("span");
                     w.className = "reset-row-warn";
@@ -12330,8 +12066,29 @@
             return;
         }
         if (typed !== "تصفير") {
-            showMsg("resetError", "<i class='fas fa-times-circle'></i> كلمة التأكيد غير مطابقة. لم يحذف اي شيء.");
+            showMsg("resetError", "<i class='fas fa-times-circle'></i> كلمة التأكيد العامة غير مطابقة. لم يحذف اي شيء.");
             return;
+        }
+
+        /* ------------------------------------------------------------
+           التأكيد الخاص للمجموعات الحرجة
+           ------------------------------------------------------------
+           يفحص بعد التأكيد العام، فيعرف المبرمج ان الاجراء توقف عند
+           مجموعة بعينها لا عند الكلمة العامة.
+           ------------------------------------------------------------ */
+        for (let i = 0; i < chosen.length; i++) {
+            const c = chosen[i];
+            if (!c.critical) continue;
+            const inp = document.getElementById("resetConfirmInput_" + c.name);
+            const val = inp ? inp.value.trim() : "";
+            if (val !== c.word) {
+                showMsg("resetError", "<i class='fas fa-times-circle'></i> <strong>تأكيد ناقص: " + esc(c.label) + "</strong>" +
+                    "<br>هذه بيانات حرجة لا تعوض، فاكتب كلمة <strong>" + esc(c.word) +
+                    "</strong> في الصندوق الخاص بها لتأكيد مسحها." +
+                    "<br>لم يحذف اي شيء.");
+                if (inp) { try { inp.focus(); } catch (e) {} }
+                return;
+            }
         }
 
         btn.disabled = true;
@@ -12413,6 +12170,7 @@
             hideMsg("addManError");
             hideMsg("addManSuccess");
             document.getElementById("newManRole").value = "custom";
+            document.getElementById("newManPhone").value = "";
             window.togglePermissionsDiv();
         } else {
             section.style.display = "none";
@@ -12422,6 +12180,7 @@
             if (hint0) hint0.style.display = "none";
             document.getElementById("toggleManPassIcon").className = "fas fa-eye";
             document.getElementById("newManRole").value = "custom";
+            document.getElementById("newManPhone").value = "";
             window.togglePermissionsDiv();
             document.querySelectorAll('.perm-checkbox').forEach(function(cb) { cb.checked = false; });
             editingManagerId = null;
@@ -12445,6 +12204,7 @@
         const passInput = document.getElementById("newManPass");
 
         document.getElementById("newManRole").value = manager.role || 'custom';
+        document.getElementById("newManPhone").value = manager.phone || "";
         window.togglePermissionsDiv();
 
         document.querySelectorAll('.perm-checkbox').forEach(function(cb) {
@@ -12519,8 +12279,19 @@
         const pass = window.toEnglishDigits(rawPass);
         const role = document.getElementById("newManRole").value;
 
+        /* رقم الجوال: اختياري، لكن ان كتب فلا بد ان يكون صحيحا،
+           ويوحد الى الصيغة الدولية كبقية ارقام النظام */
+        const rawManPhone = document.getElementById("newManPhone").value.trim();
+        const manPhone = rawManPhone ? normalizeSaudiPhone(rawManPhone) : "";
+
         hideMsg("addManError");
         hideMsg("addManSuccess");
+
+        if (rawManPhone && !validSaudiPhone(manPhone)) {
+            showMsg("addManError", "<i class='fas fa-times-circle'></i> <strong>رقم الجوال غير صحيح</strong>" +
+                "<br>اكتبه بصيغة <strong>05xxxxxxxx</strong> او <strong>+966xxxxxxxxx</strong>، او اتركه فارغا.");
+            return;
+        }
 
         let selectedPerms = [];
         if (role === 'general') {
@@ -12584,6 +12355,9 @@
 
             if (editingManagerId) {
                 const payload = { empName: name, empId: id, role: role, permissions: selectedPerms };
+                /* الجوال يحدث فقط ان كتب شيئا، فلا يمسح رقما مسجلا
+                   لمجرد ترك الحقل فارغا اثناء تعديل بيانات اخرى */
+                if (rawManPhone) payload.phone = manPhone;
                 if (!keepOldPass) payload.password = await hashPassword(pass);
                 await updateDoc(doc(db, "managers", editingManagerId), payload);
                 logAudit("تعديل بيانات مدير", name + " (" + id + ") | الصفة: " + roleTitle(role) + (keepOldPass ? "" : " | تم تغيير كلمة المرور"));
@@ -12592,6 +12366,7 @@
             } else {
                 await addDoc(collection(db, "managers"), {
                     empName: name, empId: id, password: await hashPassword(pass),
+                    phone: manPhone,
                     role: role, permissions: selectedPerms, createdAt: new Date().toISOString()
                 });
                 logAudit("اضافة مدير", name + " (" + id + ") | الصفة: " + roleTitle(role));
@@ -12607,6 +12382,7 @@
             document.getElementById("toggleManPassIcon").className = "fas fa-eye";
             document.querySelectorAll('.perm-checkbox').forEach(function(cb) { cb.checked = false; });
             document.getElementById("newManRole").value = "custom";
+            document.getElementById("newManPhone").value = "";
             window.togglePermissionsDiv();
             editingManagerId = null;
 
@@ -15996,6 +15772,70 @@
 
     /* ---------------- اصدار تنبيه او انذار ---------------- */
 
+    /* ==================================================================
+       زيارات الباحث في نموذج التنبيه
+       ==================================================================
+       كانت خانة نصية يكتب فيها المدير رقم الزيارة يدويا، فيخطئ سهوا
+       فيسجل التنبيه على زيارة لا تخص الباحث او لا وجود لها.
+
+       صارت قائمة منسدلة مقفلة حتى يختار الباحث، ثم تفتح بزياراته
+       وحدها مرتبة من الاحدث الى الاقدم، مع خيار فارغ في اعلاها لمن
+       لم يحدد الزيارة بعد.
+       ================================================================== */
+    /* يستدعى عند تغيير الباحث في نموذج التنبيه */
+    window.onNoticeResearcherChange = function() {
+        const sel = document.getElementById("noticeResSelect");
+        const resId = sel ? sel.value : "";
+        /* قيمة القائمة معرف المستند، ونحتاج الاسم المستخدم للبحث */
+        const r = activeResearchers.find(function(x) { return x.id === resId; });
+        loadNoticeVisits(r ? r.empId : "");
+    };
+
+    async function loadNoticeVisits(empId) {
+        const sel = document.getElementById("noticeVisitId");
+        if (!sel) return;
+
+        if (!empId) {
+            sel.innerHTML = '<option value="">-- اختر الباحث اولا --</option>';
+            sel.disabled = true;
+            return;
+        }
+
+        sel.disabled = true;
+        sel.innerHTML = '<option value="">جاري تحميل زيارات الباحث...</option>';
+
+        try {
+            const snap = await getDocs(query(collection(db, "visits"), where("empId", "==", empId)));
+            const list = [];
+            snap.forEach(function(d) { list.push(Object.assign({ id: d.id }, d.data())); });
+
+            /* الاحدث تنفيذا اولا، فالمخالفة غالبا قريبة */
+            list.sort(function(a, b) {
+                const c = String(b.execDate || "").localeCompare(String(a.execDate || ""));
+                return c !== 0 ? c : String(b.regDate || "").localeCompare(String(a.regDate || ""));
+            });
+
+            /* الخيار الفارغ اولا دائما */
+            sel.innerHTML = '<option value="">-- بلا تحديد زيارة --</option>';
+
+            list.forEach(function(v) {
+                const o = document.createElement("option");
+                o.value = v.visitId;
+                const cfg = VISIT_TYPES[v.visitType || "done"] || VISIT_TYPES.done;
+                o.textContent = "زيارة " + v.visitId + "  -  " + fmtDate(v.execDate) + "  -  " + cfg.label;
+                sel.appendChild(o);
+            });
+
+            if (list.length === 0) {
+                sel.innerHTML = '<option value="">لا توجد زيارات موثقة لهذا الباحث</option>';
+            }
+            sel.disabled = false;
+        } catch (e) {
+            sel.innerHTML = '<option value="">تعذر تحميل الزيارات</option>';
+            sel.disabled = false;
+        }
+    }
+
     window.openNoticeCreate = async function(type) {
         if (!(await guardLive('التنبيهات والانذارات'))) return;
         noticeType = (type === "alert") ? "alert" : "notice";
@@ -16008,7 +15848,11 @@
         hideMsg("noticeCreateError");
         hideMsg("noticeCreateSuccess");
         document.getElementById("noticeNote").value = "";
-        document.getElementById("noticeVisitId").value = "";
+
+        /* قائمة الزيارات تبدأ مقفلة حتى يختار المدير الباحث */
+        const vSel = document.getElementById("noticeVisitId");
+        vSel.innerHTML = '<option value="">-- اختر الباحث اولا --</option>';
+        vSel.disabled = true;
 
         /* تاريخ المخالفة يبدأ باليوم الحالي ويمكن للمدير تغييره */
         const dEl = document.getElementById("noticeDate");
