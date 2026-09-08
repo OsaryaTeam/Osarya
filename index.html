@@ -4829,13 +4829,42 @@
         <!-- صندوق بلاغات الزيارات الخاطئة المرفوعة من الباحثين -->
         <button class="btn-reports-navy btn-icon-watermark icon-flag" data-action-badge="visit-report" onclick="openRequests('visit')">بلاغات الزيارة الخاطئة</button>
         
-        <div class="input-group" style="margin-top: 15px;">
-            <label for="queryVisitIdMan">رقم الزيارة المراد الاستعلام عنها:</label>
-            <div class="input-with-icon">
-                <input type="text" id="queryVisitIdMan" placeholder="ادخل رقم الزيارة للتحقق منها">
-                <i class="fas fa-search right-icon"></i>
+        <!-- ==========================================================
+             الوصول الى الزيارة عبر قائمتين مترابطتين
+             ----------------------------------------------------------
+             بدل كتابة رقم الزيارة يدويا وما فيه من احتمال الخطأ،
+             يختار المدير الباحث اولا فتفتح قائمة زياراته وحدها.
+             ولان الباحثين قد يكونون كثيرين، يصفيهم بحالتهم اولا.
+             ========================================================== -->
+        <div class="res-controls" style="margin-top: 15px;">
+            <div class="rc-row rc-selects">
+                <select id="mqStatusFilter" class="rc-select" onchange="loadMqResearchers()" aria-label="حالة الباحثين">
+                    <option value="active">على رأس العمل</option>
+                    <option value="suspended">ايقاف مؤقت</option>
+                    <option value="excluded">مستبعد</option>
+                    <option value="all">جميع الباحثين</option>
+                </select>
+                <select id="mqResearcher" class="rc-select" onchange="loadMqVisits()" aria-label="الباحث">
+                    <option value="">-- اختر الباحث --</option>
+                </select>
+            </div>
+
+            <div class="rc-row rc-selects">
+                <select id="mqVisit" class="rc-select" style="flex:1 1 100%;" onchange="onMqVisitPicked()" disabled aria-label="الزيارة">
+                    <option value="">-- اختر الباحث اولا --</option>
+                </select>
+            </div>
+
+            <div class="rc-row">
+                <span class="rc-help" style="cursor:default;">؟</span>
+                <span style="font-size:12.5px; font-weight:600; color:#6c757d; line-height:1.7;">
+                    اختر حالة الباحثين ثم الباحث، فتفتح قائمة زياراته من الاحدث الى الاقدم.
+                </span>
             </div>
         </div>
+
+        <!-- يبقى للتوافق مع منطق الاستعلام، ويملأ من القائمة اعلاه -->
+        <input type="hidden" id="queryVisitIdMan">
 
         <div id="queryLoadingMan" class="loading-message"><i class="fas fa-spinner fa-spin"></i> جاري البحث...</div>
         <div id="queryErrorMan" class="error-message"></div>
@@ -8997,6 +9026,10 @@
         loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
 
         try {
+            /* جلسة مصادقة قبل الاستعلام: القواعد تشترطها للقراءة،
+               وبدونها يفشل البحث في المتصفح المتخفي */
+            await ensureAuth();
+
             const q = query(collection(db, "researchers"), where("empId", "==", rId));
             const snapshot = await getDocs(q);
             if (snapshot.empty) throw new Error("invalid");
@@ -9090,6 +9123,16 @@
             updateMustChangeBar();
             window.switchScreen('researcherPortal');
         } catch (e) {
+            /* خطأ صلاحيات لا خطأ بيانات: لا نحتسبه محاولة فاشلة
+               ولا نخبر المستخدم ان بياناته خاطئة وهي صحيحة */
+            if (String((e && e.code) || "").indexOf("permission-denied") !== -1) {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'تسجيل الدخول';
+                showMsg("resLoginError", "<i class='fas fa-shield-halved'></i> <strong>تعذر التحقق من بياناتك</strong>" +
+                    "<br>حدث الصفحة بالضغط على Ctrl+Shift+R ثم اعد المحاولة." +
+                    "<br><span style='font-size:12px;'>رمز الخطأ: permission-denied</span>");
+                return;
+            }
             const info = lockAddTry("res", rId);
             let extra = "";
             if (info.until && Date.now() < info.until) {
@@ -9132,6 +9175,9 @@
                البيانات وحدها. حساب المبرمج لم يعد له مسار خاص في الكود
                بعد نقله، ويتميز بحقل isMaster على مستنده لا اكثر. */
 
+            /* نفس سبب جلسة المصادقة في دخول الباحث */
+            await ensureAuth();
+
             const q = query(collection(db, "managers"), where("empId", "==", mId));
             const snapshot = await getDocs(q);
             if (snapshot.empty) throw new Error("invalid");
@@ -9171,6 +9217,15 @@
             logAudit("تسجيل دخول", "دخول مدير");
             window.goToManagerPortal();
         } catch (e) {
+            /* نفس تمييز خطأ الصلاحيات في دخول الباحث */
+            if (String((e && e.code) || "").indexOf("permission-denied") !== -1) {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'تسجيل الدخول';
+                showMsg("managerError", "<i class='fas fa-shield-halved'></i> <strong>تعذر التحقق من بياناتك</strong>" +
+                    "<br>حدث الصفحة بالضغط على Ctrl+Shift+R ثم اعد المحاولة." +
+                    "<br><span style='font-size:12px;'>رمز الخطأ: permission-denied</span>");
+                return;
+            }
             const info = lockAddTry("man", mId);
             let extra = "";
             if (info.until && Date.now() < info.until) {
@@ -9216,7 +9271,7 @@
         await window.syncPermissions(false);
 
         if (action === 'managerControlScreen') { window.switchScreen('managerControlScreen'); loadSearchResearchers(); }
-        else if (action === 'managerQueryScreen') window.switchScreen('managerQueryScreen');
+        else if (action === 'managerQueryScreen') { window.switchScreen('managerQueryScreen'); loadMqResearchers(); }
         else if (action === 'loadResearchersList') window.loadResearchersList();
         else if (action === 'loadManagersList') window.loadManagersList();
         else if (action === 'loadLeaveRequests') window.loadLeaveRequests();
@@ -9675,6 +9730,113 @@
     /* ==================================================================
        (14) الاستعلام عن زيارة مفردة
        ================================================================== */
+
+    /* ==================================================================
+       شاشة التعديل على زيارة: قوائم مترابطة
+       ==================================================================
+       ثلاث قوائم متسلسلة: حالة الباحثين -> الباحث -> زياراته.
+       كل واحدة تفتح التي بعدها، فلا يكتب المدير رقما يدويا ولا يخطئ
+       في زيارة لا تخص من يقصده.
+       ================================================================== */
+    let mqResearchers = [];
+
+    window.loadMqResearchers = async function() {
+        const sel = document.getElementById("mqResearcher");
+        const vSel = document.getElementById("mqVisit");
+        if (!sel) return;
+
+        /* تصفير قائمة الزيارات مع كل تغيير في الباحثين */
+        if (vSel) {
+            vSel.innerHTML = '<option value="">-- اختر الباحث اولا --</option>';
+            vSel.disabled = true;
+        }
+        document.getElementById("queryVisitIdMan").value = "";
+
+        const status = (document.getElementById("mqStatusFilter") || {}).value || "active";
+        sel.innerHTML = '<option value="">جاري التحميل...</option>';
+
+        try {
+            const snap = await getDocs(collection(db, "researchers"));
+            const list = [];
+            snap.forEach(function(d) {
+                const r = Object.assign({ id: d.id }, d.data());
+                const st = r.status || "active";
+                if (status === "all" || st === status) list.push(r);
+            });
+            list.sort(function(a, b) { return String(a.empName).localeCompare(String(b.empName), 'ar'); });
+
+            mqResearchers = list;
+
+            sel.innerHTML = list.length
+                ? '<option value="">-- اختر الباحث --</option>'
+                : '<option value="">لا يوجد باحثون في هذه الحالة</option>';
+
+            list.forEach(function(r) {
+                const o = document.createElement("option");
+                o.value = r.empId;
+                o.textContent = r.empName + "  (" + r.empId + ")";
+                sel.appendChild(o);
+            });
+        } catch (e) {
+            sel.innerHTML = '<option value="">تعذر تحميل الباحثين</option>';
+        }
+    };
+
+    window.loadMqVisits = async function() {
+        const sel = document.getElementById("mqVisit");
+        const empId = (document.getElementById("mqResearcher") || {}).value || "";
+        if (!sel) return;
+
+        document.getElementById("queryVisitIdMan").value = "";
+        hideMsg("queryErrorMan");
+        const box = document.getElementById("singleVisitResultMan");
+        if (box) box.style.display = "none";
+
+        if (!empId) {
+            sel.innerHTML = '<option value="">-- اختر الباحث اولا --</option>';
+            sel.disabled = true;
+            return;
+        }
+
+        sel.disabled = true;
+        sel.innerHTML = '<option value="">جاري تحميل الزيارات...</option>';
+
+        try {
+            const snap = await getDocs(query(collection(db, "visits"), where("empId", "==", empId)));
+            const list = [];
+            snap.forEach(function(d) { list.push(Object.assign({ id: d.id }, d.data())); });
+
+            /* الاحدث تنفيذا اولا */
+            list.sort(function(a, b) {
+                const c = String(b.execDate || "").localeCompare(String(a.execDate || ""));
+                return c !== 0 ? c : String(b.regDate || "").localeCompare(String(a.regDate || ""));
+            });
+
+            sel.innerHTML = '<option value="">-- اختر الزيارة --</option>';
+            list.forEach(function(v) {
+                const o = document.createElement("option");
+                o.value = v.visitId;
+                const cfg = VISIT_TYPES[v.visitType || "done"] || VISIT_TYPES.done;
+                o.textContent = "زيارة " + v.visitId + "  -  " + fmtDate(v.execDate) + "  -  " + cfg.label;
+                sel.appendChild(o);
+            });
+
+            if (list.length === 0) {
+                sel.innerHTML = '<option value="">لا توجد زيارات موثقة لهذا الباحث</option>';
+            }
+            sel.disabled = false;
+        } catch (e) {
+            sel.innerHTML = '<option value="">تعذر تحميل الزيارات</option>';
+            sel.disabled = false;
+        }
+    };
+
+    /* عند اختيار زيارة: نملأ الحقل المخفي ونعرضها مباشرة */
+    window.onMqVisitPicked = function() {
+        const vId = (document.getElementById("mqVisit") || {}).value || "";
+        document.getElementById("queryVisitIdMan").value = vId;
+        if (vId) window.searchSingleVisit('manager');
+    };
 
     window.searchSingleVisit = async function(type) {
         if (type === 'Res' && !isResearcher()) { window.switchScreen('researcherLoginScreen'); return; }
