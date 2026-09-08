@@ -8482,6 +8482,8 @@
         clearAuthSession();
         mustChangeRedirected = false;
         updateMustChangeBar();
+        hidePhoneReminder();
+        phoneReminderDismissed = false;
         if (idleTimer) clearTimeout(idleTimer);
         if (permSyncTimer) { clearInterval(permSyncTimer); permSyncTimer = null; }
         hideTopBar();
@@ -8969,6 +8971,8 @@
         clearAuthSession();
         mustChangeRedirected = false;   /* يعاد التوجيه لو دخل مجددا */
         updateMustChangeBar();          /* اخفاء فوري بلا انتظار اعادة رسم */
+        hidePhoneReminder();            /* تذكير الجوال يخص الحساب فيختفي معه */
+        phoneReminderDismissed = false;
         if (idleTimer) clearTimeout(idleTimer);
 
         document.getElementById("managerIdLogin").value = "";
@@ -8994,6 +8998,8 @@
         clearAuthSession();
         mustChangeRedirected = false;   /* يعاد التوجيه لو دخل مجددا */
         updateMustChangeBar();          /* اخفاء فوري بلا انتظار اعادة رسم */
+        hidePhoneReminder();            /* تذكير الجوال يخص الحساب فيختفي معه */
+        phoneReminderDismissed = false;
         if (idleTimer) clearTimeout(idleTimer);
 
         document.getElementById("resIdLogin").value = "";
@@ -11805,6 +11811,9 @@
            ------------------------------------------------------------ */
         lines.push("");
         lines.push("رابط النظام:");
+        /* سطر فارغ قبل الرابط: يجعله يظهر مستقلا في تطبيقات المراسلة
+           فتعرض معه معاينة الموقع، ويسهل الضغط عليه */
+        lines.push("");
         lines.push(SYSTEM_URL);
         const wa = String(phone).replace(/^\+/, "");
         window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
@@ -17079,7 +17088,21 @@
         if (!needed) mustChangeRedirected = false;
     }
 
+    /* الشاشات العامة: ما قبل تسجيل الدخول */
+    function onPublicScreenNow() {
+        const PUBLIC_SCREENS = ["mainScreen", "researcherLoginScreen", "managerScreen", "forgotPasswordScreen"];
+        const active = document.querySelector(".screen.active-screen");
+        return !active || PUBLIC_SCREENS.indexOf(active.id) !== -1;
+    }
+
     function checkPhoneReminder() {
+        /* ------------------------------------------------------------
+           لا تذكير في الشاشات العامة
+           ------------------------------------------------------------
+           الخارج من حسابه لا يلاحق بتنبيه يخص حسابا لم يعد داخله.
+           ------------------------------------------------------------ */
+        if (!session || onPublicScreenNow()) { hidePhoneReminder(); return; }
+
         const bar = document.getElementById("phoneReminder");
         if (!bar || !session) return;
 
@@ -18938,7 +18961,10 @@
             const tempPass = generateTempPassword();
             await updateDoc(accRef, {
                 password: await hashPassword(tempPass),
-                mustChangePassword: true
+                mustChangePassword: true,
+                /* اصدار كلمة مرور مؤقتة يفعل الحساب ايضا، فلا يبقى
+                   معطلا بعد ان سلمت لصاحبه كلمة يدخل بها */
+                activated: true
             });
 
             await updateDoc(doc(db, "password_requests", docId), {
