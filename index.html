@@ -8605,7 +8605,8 @@
        مهم لدالة reconcileResolvedNotifications في قسم الجرس، حتى لا
        تعتبر خطأ اي اشعار وارد "محلولا" فقط لان بياناته لم تصل بعد. */
     let pendingIdSets = { leaves: null, leave_reports: null, visit_reports: null, password_requests: null };
-    let actionBadgeUnsubs = [];   /* دوال الغاء الاشتراك في المستمعين الاربعة */
+    let actionBadgeUnsubs = [];   /* دوال الغاء الاشتراك في المستمعين */
+    let badgesRetried = false;    /* يمنع تكرار اعادة الربط بلا نهاية */
 
     function idSetSize(s) { return s ? s.size : 0; }
 
@@ -8663,9 +8664,13 @@
        عادة قليلة (لا تشمل الارشيف الكامل)، فالتكلفة الاجمالية اقل
        من اعادة العد الدوري القديم على المدى المتوسط.
        ------------------------------------------------------------------ */
-    window.startActionBadgeListeners = function() {
+    window.startActionBadgeListeners = async function() {
         window.stopActionBadgeListeners();
         if (!isManager()) return;
+
+        /* نفس سبب انتظار المصادقة في مستمع الاشعارات */
+        await ensureAuth();
+        badgesRetried = false;
 
         const specs = [
             { coll: "leaves",            key: "leaves" },
@@ -8694,7 +8699,17 @@
                 reconcileResolvedNotifications();
                 updateNotifBadge();
             }, function(err) {
-                console.warn("تعذر متابعة الطلبات المعلقة (" + s.coll + "):", err && err.message);
+                console.warn("تعذر متابعة الطلبات المعلقة (" + s.coll + "):", err && err.code, err && err.message);
+
+                /* رفض الصلاحيات: نعيد الربط ونحاول مرة واحدة */
+                if (String((err && err.code) || "").indexOf("permission-denied") !== -1 && !badgesRetried) {
+                    badgesRetried = true;
+                    if (session) {
+                        linkAuthSession(session).then(function(ok) {
+                            if (ok) window.startActionBadgeListeners();
+                        });
+                    }
+                }
             });
             actionBadgeUnsubs.push(unsub);
         });
@@ -12964,6 +12979,8 @@
        فلا تزاحم الاشعارات العامة اشعارات الباحث الشخصية ابدا.
        ------------------------------------------------------------------ */
     let notifBuckets = { personal: [], broadcast: [] };
+    /* يمنع تكرار محاولة اعادة الربط بلا نهاية */
+    let notifRetried = false;
     let notifUnsubs  = { personal: null, broadcast: null };
 
     /* اظهار الشريط العلوي بحسب نوع المستخدم الحالي */
@@ -13113,11 +13130,16 @@
        (الفهرس غير جاهز بعد) يتحول تلقائيا لمستمع بديل بلا ترتيب مع
        الترتيب محليا بعد كل دفعة، فلا ينكسر شيء قبل إنشاء الفهرس.
        ================================================================== */
-    function startNotificationsListener() {
+    async function startNotificationsListener() {
         stopNotificationsListener();
         if (!NOTIF_ENABLED || !session) return;
 
+        /* ننتظر جاهزية المصادقة: القواعد تشترط جلسة مرتبطة، فبدء
+           الاستماع قبلها يرفض ويبقى الجرس فارغا */
+        await ensureAuth();
+
         notifBuckets = { personal: [], broadcast: [] };
+        notifRetried = false;
 
         /* سلة شخصية: كل ما وجه لهذا المستخدم بالتحديد */
         attachNotifBucket("personal", session.empId, true);
@@ -13153,9 +13175,21 @@
                     console.warn("تعذر الترتيب من الخادم لسلة الاشعارات (" + bucket + ")، التحويل للوضع البسيط:", err && err.message);
                     attachNotifBucket(bucket, toValue, false);
                 } else {
-                    console.warn("تعذر متابعة سلة الاشعارات (" + bucket + "):", err && err.message);
+                    console.warn("تعذر متابعة سلة الاشعارات (" + bucket + "):", err && err.code, err && err.message);
                     notifBuckets[bucket] = [];
                     rebuildNotifications();
+
+                    /* رفض الصلاحيات يعني ان الجلسة غير مرتبطة بعد.
+                       نعيد الربط ثم نحاول مرة واحدة، فلا يبقى الجرس
+                       فارغا بسبب سباق زمني عابر */
+                    if (String((err && err.code) || "").indexOf("permission-denied") !== -1 && !notifRetried) {
+                        notifRetried = true;
+                        if (session) {
+                            linkAuthSession(session).then(function(ok) {
+                                if (ok) startNotificationsListener();
+                            });
+                        }
+                    }
                 }
             }
         );
