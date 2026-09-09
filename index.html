@@ -28,7 +28,7 @@
                   { action, details, actorName, actorId, actorType, at }
   notifications : اشعارات الجرس التي تصل للمستخدمين
                   { title, body, to, audience, type, createdAt }
-                  to = الاسم المستخدم للمستلم او "all" للجميع
+                  to = رقم الهوية للمستلم او "all" للجميع
 
   3) المسارات الرئيسية
   --------------------
@@ -1487,8 +1487,9 @@
            ------------------------------------------------------------------ */
         .toast-container {
             position: fixed;
-            bottom: 25px;
-            right: 25px;
+            /* فوق زر الدعم دائما، وترتفع اكثر ان ظهر زر التثبيت */
+            bottom: 88px;
+            right: 20px;
             z-index: 12000;
             display: flex;
             flex-direction: column;
@@ -1519,7 +1520,7 @@
         .toast-hide { animation: toastOut 0.35s ease forwards; }
 
         /* ترفع الرسائل فوق زر التثبيت حين يكون ظاهرا */
-        body.has-install-btn .toast-container { bottom: 92px; }
+        body.has-install-btn .toast-container { bottom: 156px; }
         body.dark-mode .toast { background: rgba(26,47,52,0.96); color: #e2ecee; }
         body.dark-mode .toast-success { color: #75d1a1; }
         body.dark-mode .toast-error { color: #ff9d9d; }
@@ -1572,7 +1573,7 @@
            (جديد) الشريط العلوي الموحد للمستخدم المسجل دخوله
            ------------------------------------------------------------------
            شريط واحد يخدم الباحث والمدير معا:
-           - يعرض اسم المستخدم واسمه المستخدم
+           - يعرض اسم المستخدم ورقم هويته
            - يحتوي على جرس الاشعارات مع عداد الرسائل غير المقروءة
            الفرق بينهما هو اللون فقط:
            .top-bar-manager   = برتقالي (لون الادارة)
@@ -1598,7 +1599,7 @@
         .top-bar-researcher { background: linear-gradient(135deg, #4a8794, #396d78); }
 
         /* الصف الداخلي: كل المحتوى موسط في منتصف الشريط،
-           والجرس يأتي مباشرة بعد الاسم والاسم المستخدم */
+           والجرس يأتي مباشرة بعد الاسم ورقم الهوية */
         .top-bar-inner {
             max-width: 1100px;
             margin: 0 auto;
@@ -1619,12 +1620,12 @@
         }
         .top-bar-user i { font-size: 20px; opacity: 0.9; flex-shrink: 0; }
         /* ------------------------------------------------------------------
-           نص الشريط العلوي (الاسم والاسم المستخدم)
+           نص الشريط العلوي (الاسم ورقم الهوية)
            ------------------------------------------------------------------
            بني كحاوية واحدة #topBarText تضم عدة اجزاء فرعية: تسمية الصفة
-           (المدير / الباحث)، الاسم، فاصل، تسمية الاسم المستخدم، والرقم.
+           (المدير / الباحث)، الاسم، فاصل، تسمية رقم الهوية، والرقم.
            على الحاسب تظهر كل الاجزاء في سطر واحد. على الجوال تختفي
-           التسميات النصية (الصفة و"الاسم المستخدم:") تلقائيا عبر media query
+           التسميات النصية (الصفة و"رقم الهوية:") تلقائيا عبر media query
            ادناه، فيبقى فقط "الاسم | الرقم" وهو اقصر بكثير، ويسمح بالتفاف
            السطر ان لزم بدل قص المحتوى، فلا يضيع اي جزء من الاسم او الرقم
            مهما طال الاسم او ضاق العرض.
@@ -1920,7 +1921,7 @@
                ----------------------------------------------------------
                المساحة ضيقة (زر الحساب + زر الجرس + الاسم + الرقم)، لذلك:
                1) تختفي تسمية الصفة ("المدير:" / "الباحث:") وتسمية
-                  "الاسم المستخدم:"، فيتبقى "الاسم | الرقم" فقط وهو اقصر
+                  "رقم الهوية:"، فيتبقى "الاسم | الرقم" فقط وهو اقصر
                   بكثير ويحمل نفس المعلومة كاملة.
                2) يسمح بالتفاف النص على سطرين بدل قصه بثلاث نقاط، حتى
                   تبقى الاسماء الطويلة ظاهرة بالكامل مهما كانت.
@@ -1944,8 +1945,8 @@
             /* زر الوضع الليلي ابعد قليلا عن الحافة */
             .theme-toggle-btn { bottom: 15px; left: 15px; width: 46px; height: 46px; font-size: 18px; }
 
-            .toast-container { bottom: 15px; right: 15px; left: 15px; }
-            body.has-install-btn .toast-container { bottom: 78px; }
+            .toast-container { bottom: 80px; right: 14px; left: 14px; }
+            body.has-install-btn .toast-container { bottom: 144px; }
             .toast { font-size: 14px; padding: 12px 15px; }
 
             .footer-cols { grid-template-columns: 1fr; gap: 22px; text-align: center; }
@@ -2311,7 +2312,7 @@
         .btn-dev:hover { opacity: 0.75; }
 
         /* ==================================================================
-           (جديد) تلميح الاسم المستخدم المقترح
+           (جديد) تلميح رقم الهوية المقترح
            ================================================================== */
         .field-hint {
             display: none;
@@ -3068,6 +3069,16 @@
            الحاسب. وعلى الجوال يبقى مطويا دائما لتوفير المساحة، فالايقونة
            وحدها مفهومة.
            ================================================================== */
+        /* ------------------------------------------------------------
+           ترتيب العناصر العائمة اسفل الشاشة
+           ------------------------------------------------------------
+           اسفل اليمين عمود واحد من اسفل الى اعلى:
+             زر الدعم الفني   ->  20px
+             زر تثبيت التطبيق ->  88px  (فوقه مباشرة)
+             الرسائل المنبثقة ->  156px (فوقهما)
+
+           واسفل اليسار زر الوضع الليلي وحده، فلا يزاحم شيئا.
+           ------------------------------------------------------------ */
         .support-fab {
             position: fixed;
             bottom: 20px;
@@ -3130,7 +3141,7 @@
 
         /* على الجوال: ايقونة وحدها دائما، وارتفاع اصغر قليلا */
         @media (max-width: 768px) {
-            .support-fab { height: 52px; bottom: 18px; right: 15px; }
+            .support-fab { height: 52px; bottom: 16px; right: 14px; }
             .support-fab i { width: 52px; flex: 0 0 52px; font-size: 24px; }
             .support-fab:hover .support-fab-text { max-width: 0; opacity: 0; padding: 0; }
         }
@@ -3804,8 +3815,9 @@
            ================================================================== */
         .install-btn {
             position: fixed;
-            bottom: 25px;
-            right: 25px;
+            /* فوق زر الدعم الفني مباشرة، فلا يتداخلان */
+            bottom: 88px;
+            right: 20px;
             z-index: 9000;
             width: auto;
             margin: 0;
@@ -3908,7 +3920,7 @@
         .icon-install::before { content: "\f019"; }
 
         @media (max-width: 768px) {
-            .install-btn { bottom: 18px; right: 15px; padding: 12px 18px; font-size: 14px; }
+            .install-btn { bottom: 80px; right: 14px; padding: 12px 18px; font-size: 14px; }
         }
 
         /* لا يظهر زر التثبيت عند الطباعة */
@@ -3970,7 +3982,7 @@
      مخفي افتراضيا (hidden) ويظهر تلقائيا بعد تسجيل الدخول عبر
      الدالة showTopBar() الموجودة في القسم 21 من الجافاسكربت.
      يحتوي على:
-       - اسم المستخدم واسمه المستخدم
+       - اسم المستخدم ورقم هويته
        - جرس الاشعارات مع عداد الرسائل غير المقروءة ولوحة منسدلة
      لون الشريط يتغير تلقائيا: برتقالي للادارة، ازرق مخضر للباحث.
      ============================================================== -->
@@ -4050,7 +4062,7 @@
         <!-- لوحة تشخيص تبين اي متطلب ناقص عند تعذر التثبيت -->
         <div id="installDiag" class="install-diag" style="display:none;"></div>
         <div class="btn-group">
-            <button class="btn-neutral btn-icon-watermark icon-check" onclick="closeInstallHelp()">فهمت، اغلاق</button>
+            <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeInstallHelp()">فهمت، اغلاق</button>
         </div>
     </div>
 </div>
@@ -4183,7 +4195,7 @@
     <!-- ==============================================================
          شاشة استعادة كلمة المرور
          --------------------------------------------------------------
-         يدخل المستخدم اسمه المستخدم ورقم جواله المسجل في النظام،
+         يدخل المستخدم رقم هويته ورقم جواله المسجل في النظام،
          فيتحقق النظام من تطابقهما ثم يرفع طلبا للمدير المختص.
 
          ان لم يكن قد سجل رقم جواله سابقا، فلا سبيل للتحقق من هويته
@@ -4197,15 +4209,15 @@
 
         <div class="rule-note">
             <i class="fas fa-circle-info"></i>
-            ادخل اسمك المستخدم ورقم جوالك المسجل في النظام. بعد التحقق يصل طلبك
+            ادخل رقم هويتك ورقم جوالك المسجل في النظام. بعد التحقق يصل طلبك
             للمدير المختص، فيصدر لك كلمة مرور مؤقتة ويرسلها الى جوالك، ويلزمك
             تغييرها فور دخولك.
         </div>
 
         <div class="input-group" style="margin-top: 18px;">
-            <label for="fpEmpId">الاسم المستخدم:</label>
+            <label for="fpEmpId">رقم الهوية:</label>
             <div class="input-with-icon">
-                <input type="text" id="fpEmpId" placeholder="ادخل اسمك المستخدم">
+                <input type="text" id="fpEmpId" placeholder="ادخل رقم هويتك">
                 <i class="fas fa-id-badge right-icon"></i>
             </div>
         </div>
@@ -4248,7 +4260,7 @@
              مكتملة البيانات بدل رسالة ناقصة يضطر الدعم لمراسلة صاحبها
              مرارا ليكملها.
              الاسم والجوال الزاميان لانهما وسيلة التعرف والتواصل،
-             والاسم المستخدم اختياري لان الشخص قد يكون نسيه فعلا.
+             ورقم الهوية اختياري لان الشخص قد يكون نسيه فعلا.
              ========================================================== -->
         <div id="supportFormBox" class="add-form-section" style="display:none;">
             <h3><i class="fab fa-whatsapp"></i> بيانات التواصل مع الدعم الفني</h3>
@@ -4274,7 +4286,7 @@
             </div>
 
             <div class="input-group" style="margin-top: 15px;">
-                <label for="supEmpId">الاسم المستخدم (اختياري):</label>
+                <label for="supEmpId">رقم الهوية (اختياري):</label>
                 <div class="input-with-icon">
                     <input type="text" id="supEmpId" placeholder="اتركه فارغا اذا كنت لا تتذكره">
                     <i class="fas fa-id-badge right-icon"></i>
@@ -4304,9 +4316,9 @@
         <h2>شاشة الباحث: تسجيل الدخول</h2>
 
         <div class="input-group">
-            <label for="resIdLogin">الاسم المستخدم:</label>
+            <label for="resIdLogin">رقم الهوية:</label>
             <div class="input-with-icon">
-                <input type="text" id="resIdLogin" inputmode="text" autocomplete="username" placeholder="ادخل الاسم المستخدم للباحث">
+                <input type="text" id="resIdLogin" inputmode="text" autocomplete="username" placeholder="ادخل رقم الهوية للباحث">
                 <i class="fas fa-id-badge right-icon"></i>
             </div>
         </div>
@@ -4418,7 +4430,7 @@
          شاشة الباحث: نموذج توثيق الزيارة
          --------------------------------------------------------------
          شاشة واحدة تخدم الانواع الخمسة، تظهر الحقول الخاصة بكل نوع
-         وتخفي ما لا يخصه. الاسم والاسم المستخدم يؤخذان من الجلسة ولا
+         وتخفي ما لا يخصه. الاسم ورقم الهوية يؤخذان من الجلسة ولا
          يعدلان، فلا يمكن توثيق زيارة باسم باحث اخر.
          ============================================================== -->
     <div id="researcherScreen" class="container screen">
@@ -4453,9 +4465,9 @@
             </div>
 
             <div class="input-group">
-                <label for="empId">الاسم المستخدم:</label>
+                <label for="empId">رقم الهوية:</label>
                 <div class="input-with-icon">
-                    <input type="text" id="empId" placeholder="ادخل اسمك المستخدم" readonly style="background: rgba(0,0,0,0.05); color: #666;">
+                    <input type="text" id="empId" placeholder="ادخل رقم هويتك" readonly style="background: rgba(0,0,0,0.05); color: #666;">
                     <i class="fas fa-id-badge right-icon"></i>
                 </div>
             </div>
@@ -4529,9 +4541,9 @@
             <h2>شاشة الادارة: تسجيل الدخول</h2>
             
             <div class="input-group">
-                <label for="managerIdLogin">الاسم المستخدم:</label>
+                <label for="managerIdLogin">رقم الهوية:</label>
                 <div class="input-with-icon">
-                    <input type="text" id="managerIdLogin" autocomplete="username" placeholder="ادخل الاسم المستخدم للادارة">
+                    <input type="text" id="managerIdLogin" autocomplete="username" placeholder="ادخل رقم الهوية للادارة">
                     <i class="fas fa-id-badge right-icon"></i>
                 </div>
             </div>
@@ -4662,7 +4674,7 @@
                         <th>العملية</th>
                         <th>التفاصيل</th>
                         <th>اسم المنفذ</th>
-                        <th>الاسم المستخدم</th>
+                        <th>رقم الهوية</th>
                         <th>صفة المنفذ</th>
                         <th>التاريخ والوقت</th>
                     </tr>
@@ -4752,9 +4764,9 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="newManId">الاسم المستخدم:</label>
+                    <label for="newManId">رقم الهوية:</label>
                     <div class="input-with-icon">
-                        <input type="text" id="newManId" inputmode="text" placeholder="ادخل الاسم المستخدم">
+                        <input type="text" id="newManId" inputmode="text" placeholder="ادخل رقم الهوية">
                         <i class="fas fa-id-badge right-icon"></i>
                     </div>
                     <!-- يظهر عند اضافة مدير جديد ليوضح ان الرقم مقترح وقابل للتعديل -->
@@ -4862,8 +4874,8 @@
             <div id="resetProgress" class="loading-message" style="display:none;"></div>
 
             <div class="btn-group">
-                <button id="btnConfirmReset" class="btn-danger btn-icon-watermark icon-times" onclick="confirmResetSystem()">تنفيذ التصفير النهائي</button>
-                <button class="btn-neutral btn-icon-watermark icon-check" onclick="closeResetPanel()">الغاء والعودة</button>
+                <button id="btnConfirmReset" class="btn-danger btn-icon-watermark icon-check" onclick="confirmResetSystem()">تنفيذ التصفير النهائي</button>
+                <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeResetPanel()">الغاء والعودة</button>
             </div>
         </div>
 
@@ -4876,7 +4888,7 @@
                     <tr>
                         <th>م</th>
                         <th>اسم المدير</th>
-                        <th class="full-access-col">الاسم المستخدم</th>
+                        <th class="full-access-col">رقم الهوية</th>
                         <th class="full-access-col">كلمة المرور</th>
                         <th>الصفة</th>
                         <th>الصلاحيات</th>
@@ -4902,7 +4914,7 @@
         <h2>الاستعلام عن زيارات</h2>
         
         <div class="form-grid">
-            <!-- الترتيب المعتمد: الاسم المستخدم، ثم رقم الزيارة، ثم نطاق التواريخ -->
+            <!-- الترتيب المعتمد: رقم الهوية، ثم رقم الزيارة، ثم نطاق التواريخ -->
             <div class="input-group full-width">
                 <label for="searchEmpId">اسم الباحث (اختياري):</label>
                 <select id="searchEmpId" class="year-select" style="width:100%;">
@@ -5025,7 +5037,7 @@
              حذف الباحث يمسح معه كل سجلاته: الاجازات ومرفقاتها الطبية
              والتنبيهات والانذارات والاشعارات. العملية غير قابلة
              للتراجع، لذلك تعرض هنا ارقام حقيقية لما سيمسح، ويطلب من
-             المدير كتابة الاسم المستخدم للباحث بيده كتأكيد نهائي.
+             المدير كتابة رقم الهوية للباحث بيده كتأكيد نهائي.
              ========================================================== -->
         <div id="deleteResPanel" class="danger-panel" style="display:none;">
             <div class="danger-title">
@@ -5048,15 +5060,15 @@
                 <div id="deleteResVisitsCount" class="safe-box-row"></div>
                 <div class="safe-box-note">
                     الزيارات الموثقة سجل عمل دائم للجمعية وليست بيانات شخصية، لذلك تبقى كما هي
-                    ويبقى معها اسم الباحث واسمه المستخدم داخل كل زيارة، حفاظا على صحة احصاءات
+                    ويبقى معها اسم الباحث ورقم هويته داخل كل زيارة، حفاظا على صحة احصاءات
                     الجمعية وسجلاتها التاريخية. كذلك يبقى سجل التدقيق كاملا دون مساس.
                 </div>
             </div>
 
             <div class="input-group" style="margin-top:15px;">
-                <label for="deleteResConfirmInput">للتأكيد النهائي، اكتب الاسم المستخدم للباحث:</label>
+                <label for="deleteResConfirmInput">للتأكيد النهائي، اكتب رقم الهوية للباحث:</label>
                 <div class="input-with-icon">
-                    <input type="text" id="deleteResConfirmInput" placeholder="اكتب الاسم المستخدم بالضبط">
+                    <input type="text" id="deleteResConfirmInput" placeholder="اكتب رقم الهوية بالضبط">
                     <i class="fas fa-keyboard right-icon"></i>
                 </div>
             </div>
@@ -5064,8 +5076,8 @@
             <div id="deleteResError" class="error-message"></div>
 
             <div class="btn-group">
-                <button id="btnConfirmDeleteRes" class="btn-danger btn-icon-watermark icon-times" onclick="confirmDeleteResearcher()">تأكيد الحذف النهائي</button>
-                <button class="btn-neutral btn-icon-watermark icon-check" onclick="cancelDeleteResearcher()">الغاء والعودة</button>
+                <button id="btnConfirmDeleteRes" class="btn-danger btn-icon-watermark icon-check" onclick="confirmDeleteResearcher()">تأكيد الحذف النهائي</button>
+                <button class="btn-neutral btn-icon-watermark icon-times" onclick="cancelDeleteResearcher()">الغاء والعودة</button>
             </div>
         </div>
 
@@ -5109,7 +5121,7 @@
             <div class="rc-row rc-search">
                 <div class="rc-search-wrap">
                     <i class="fas fa-magnifying-glass rc-search-icon"></i>
-                    <input type="text" id="resSearchBox" placeholder="ابحث بالاسم او الاسم المستخدم او الجوال او المنطقة..." oninput="applyRegionFilter()">
+                    <input type="text" id="resSearchBox" placeholder="ابحث بالاسم او رقم الهوية او الجوال او المنطقة..." oninput="applyRegionFilter()">
                     <button type="button" class="rc-search-clear" onclick="clearResearcherSearch()" title="مسح البحث">
                         <i class="fas fa-xmark"></i>
                     </button>
@@ -5131,9 +5143,9 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="newResId">الاسم المستخدم:</label>
+                    <label for="newResId">رقم الهوية:</label>
                     <div class="input-with-icon">
-                        <input type="text" id="newResId" placeholder="ادخل الاسم المستخدم">
+                        <input type="text" id="newResId" placeholder="ادخل رقم الهوية">
                         <i class="fas fa-id-badge right-icon"></i>
                     </div>
                     <!-- يظهر عند اضافة باحث جديد: رقم مولد عشوائيا بصيغة OSB#### -->
@@ -5201,7 +5213,7 @@
                     <tr>
                         <th>م</th>
                         <th>اسم الباحث</th>
-                        <th>الاسم المستخدم</th>
+                        <th>رقم الهوية</th>
                         <th>المنطقة</th>
                         <th>نوع العمل</th>
                         <th>رقم الجوال</th>
@@ -5574,7 +5586,7 @@
                         <th>م</th>
                         <th>النوع</th>
                         <th>اسم الباحث</th>
-                        <th>الاسم المستخدم</th>
+                        <th>رقم الهوية</th>
                         <th>من تاريخ</th>
                         <th>الى تاريخ</th>
                         <th>عدد الايام</th>
@@ -5730,7 +5742,7 @@
             <div class="rc-row rc-search">
                 <div class="rc-search-wrap">
                     <i class="fas fa-magnifying-glass rc-search-icon"></i>
-                    <input type="text" id="lbSearch" placeholder="ابحث بالاسم او الاسم المستخدم او المنطقة..." oninput="renderLeaveBalances()">
+                    <input type="text" id="lbSearch" placeholder="ابحث بالاسم او رقم الهوية او المنطقة..." oninput="renderLeaveBalances()">
                     <button type="button" class="rc-search-clear" onclick="clearLeaveBalanceSearch()" title="مسح البحث">
                         <i class="fas fa-xmark"></i>
                     </button>
@@ -5753,7 +5765,7 @@
                     <tr>
                         <th>م</th>
                         <th>اسم الباحث</th>
-                        <th>الاسم المستخدم</th>
+                        <th>رقم الهوية</th>
                         <th>المنطقة</th>
                         <th>الرصيد الكلي</th>
                         <th>المستخدم</th>
@@ -6032,7 +6044,7 @@
                         <th>م</th>
                         <th>النوع</th>
                         <th>اسم الباحث</th>
-                        <th>الاسم المستخدم</th>
+                        <th>رقم الهوية</th>
                         <th>السبب</th>
                         <th>ملاحظة الادارة</th>
                         <th>رقم الزيارة</th>
@@ -6118,7 +6130,7 @@
     <!-- ==============================================================
          شاشة حسابي (للباحث والمدير معا)
          --------------------------------------------------------------
-         الاسم والاسم المستخدم للعرض فقط ولا يعدلان الا من الادارة.
+         الاسم ورقم الهوية للعرض فقط ولا يعدلان الا من الادارة.
          رقم الجوال يسجله المستخدم بنفسه، وهو شرط لازم قبل السماح
          بتغيير كلمة المرور، حتى يكون لدى الجمعية وسيلة تواصل موثقة
          مع كل حساب.
@@ -6136,7 +6148,7 @@
                 <span class="account-value" id="accName">-</span>
             </div>
             <div class="account-row">
-                <span class="account-label"><i class="fas fa-id-badge"></i> الاسم المستخدم:</span>
+                <span class="account-label"><i class="fas fa-id-badge"></i> رقم الهوية:</span>
                 <span class="account-value" id="accId">-</span>
             </div>
             <div class="account-row">
@@ -6156,7 +6168,7 @@
             </div>
             <div class="account-note">
                 <i class="fas fa-lock"></i>
-                الاسم والاسم المستخدم لا يعدلان من هنا. لتغييرهما راجع الادارة.
+                الاسم ورقم الهوية لا يعدلان من هنا. لتغييرهما راجع الادارة.
             </div>
         </div>
 
@@ -6821,7 +6833,7 @@
 
     const OFFICIAL_HOSTS = ["osaryateam.github.io"];
 
-    /* الاسم المستخدم المحجوز لحساب المبرمج، يمنع اسناده لاي حساب اخر */
+    /* رقم الهوية المحجوز لحساب المبرمج، يمنع اسناده لاي حساب اخر */
     const RESERVED_MASTER_USERNAME = "OSP0001";
 
     /* رابط النظام الرسمي، يرسل مع بيانات الحساب في رسائل الواتساب.
@@ -7075,7 +7087,7 @@
          من شاشة الادارة العامة ويمنحه صفته.
        * كلمة مروره تغير من شاشة "حسابي" كاي مستخدم، لا من الكود.
 
-       الاسم المستخدم OSP0001 يبقى خارج نظام الترقيم العشوائي
+       رقم الهوية OSP0001 يبقى خارج نظام الترقيم العشوائي
        (OSM#### للمدراء و OSB#### للباحثين) فلا يتعارض معهما.
        ================================================================== */
 
@@ -7978,7 +7990,7 @@
 
         if (session && session.empId) {
             msg += "\n\nالاسم: " + (session.name || "") +
-                   "\nالاسم المستخدم: " + session.empId;
+                   "\nرقم الهوية: " + session.empId;
         }
 
         window.open("https://wa.me/" + SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank");
@@ -8084,8 +8096,8 @@
                عملياته تسجل في قاعدة البيانات كغيرها ولا تحذف منها ابدا،
                لكنها لا تعرض في هذه الشاشة. الغرض ان يكون السجل نافذة
                على عمل الفريق لا على عمل صاحب الشاشة نفسه.
-               التمييز بالاسم المستخدم لا بالاسم، فالاسماء قد تتشابه
-               بينما الاسم المستخدم فريد ومحجوز.
+               التمييز برقم الهوية لا بالاسم، فالاسماء قد تتشابه
+               بينما رقم الهوية فريد ومحجوز.
                ------------------------------------------------------------ */
             auditRecords = list.filter(function(r) {
                 return String(r.actorId || "").trim().toUpperCase() !== RESERVED_MASTER_USERNAME;
@@ -9301,7 +9313,7 @@
         loginError.style.display = "none";
 
         if (!rId || !pass) {
-            showMsg("resLoginError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال الاسم المستخدم وكلمة المرور.");
+            showMsg("resLoginError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال رقم الهوية وكلمة المرور.");
             return;
         }
 
@@ -9405,7 +9417,7 @@
             document.getElementById("empName").value = session.name;
             document.getElementById("empId").value = session.empId;
 
-            /* اظهار الشريط العلوي للباحث (الاسم + الاسم المستخدم + جرس الاشعارات) */
+            /* اظهار الشريط العلوي للباحث (الاسم + رقم الهوية + جرس الاشعارات) */
             showTopBar();
             window.startPermSync();
             checkPhoneReminder();
@@ -9427,7 +9439,7 @@
             if (info.until && Date.now() < info.until) {
                 extra = "<br>تم ايقاف المحاولات مؤقتا لمدة " + Math.ceil(LOCKOUT_MS / 1000) + " ثانية.";
             }
-            showMsg("resLoginError", "<i class='fas fa-times-circle'></i> الاسم المستخدم او كلمة المرور غير صحيحة." + extra);
+            showMsg("resLoginError", "<i class='fas fa-times-circle'></i> رقم الهوية او كلمة المرور غير صحيحة." + extra);
         }
         loginBtn.disabled = false;
         loginBtn.innerHTML = 'تسجيل الدخول';
@@ -9445,7 +9457,7 @@
         hideMsg("managerLoginError");
 
         if (!mId || !pass) {
-            showMsg("managerLoginError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال الاسم المستخدم وكلمة المرور.");
+            showMsg("managerLoginError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال رقم الهوية وكلمة المرور.");
             return;
         }
 
@@ -9520,7 +9532,7 @@
             if (info.until && Date.now() < info.until) {
                 extra = "<br>تم ايقاف المحاولات مؤقتا لمدة " + Math.ceil(LOCKOUT_MS / 1000) + " ثانية.";
             }
-            showMsg("managerLoginError", "<i class='fas fa-times-circle'></i> الاسم المستخدم او كلمة المرور غير صحيحة." + extra);
+            showMsg("managerLoginError", "<i class='fas fa-times-circle'></i> رقم الهوية او كلمة المرور غير صحيحة." + extra);
         }
         loginBtn.disabled = false;
         loginBtn.innerHTML = 'تسجيل الدخول';
@@ -9683,7 +9695,7 @@
 
         currentVisitType = type;
 
-        /* الاسم والاسم المستخدم من الجلسة لا من ادخال المستخدم */
+        /* الاسم ورقم الهوية من الجلسة لا من ادخال المستخدم */
         document.getElementById("empName").value = session.name || "";
         document.getElementById("empId").value = session.empId || "";
         document.getElementById("visitId").value = "";
@@ -9786,7 +9798,7 @@
             return;
         }
 
-        /* الاسم والاسم المستخدم يؤخذان من الجلسة وليس من الحقول لمنع التزوير */
+        /* الاسم ورقم الهوية يؤخذان من الجلسة وليس من الحقول لمنع التزوير */
         const name = session.name;
         const id = session.empId;
         const vId = window.toEnglishDigits(document.getElementById("visitId").value.trim());
@@ -10175,7 +10187,7 @@
                 const canEdit = hasPerm(PERM_VISIT_EDIT);
                 let html =
                     '<div style="margin-bottom:8px;"><i class="fas fa-user" style="width:25px; text-align:center;"></i> <strong>اسم الباحث:</strong> ' + esc(matchedVisit.empName) + '</div>' +
-                    '<div style="margin-bottom:8px;"><i class="fas fa-id-badge" style="width:25px; text-align:center;"></i> <strong>الاسم المستخدم:</strong> ' + esc(matchedVisit.empId) + '</div>' +
+                    '<div style="margin-bottom:8px;"><i class="fas fa-id-badge" style="width:25px; text-align:center;"></i> <strong>رقم الهوية:</strong> ' + esc(matchedVisit.empId) + '</div>' +
                     '<div style="margin-bottom:8px;"><i class="fas fa-hashtag" style="width:25px; text-align:center;"></i> <strong>رقم الزيارة:</strong> ' + esc(matchedVisit.visitId) + '</div>' +
                     '<div style="margin-bottom:8px;"><i class="fas fa-clock" style="width:25px; text-align:center;"></i> <strong>تاريخ التوثيق:</strong> ' + esc(window.formatDateTimeToEnglish(matchedVisit.regDate)) + '</div>' +
                     /* موقع الباحث لحظة التوثيق: دليل تواجده في موقع الزيارة */
@@ -10211,7 +10223,7 @@
                     setTimeout(function() { window.initializeDatePickers(); }, 100);
                 }
             } else {
-                const labels = ["اسم الباحث", "الاسم المستخدم", "رقم الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق"];
+                const labels = ["اسم الباحث", "رقم الهوية", "رقم الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق"];
                 const icons = ["fa-user", "fa-id-badge", "fa-hashtag", "fa-calendar-alt", "fa-clock"];
                 const values = [matchedVisit.empName, matchedVisit.empId, matchedVisit.visitId, matchedVisit.execDate, window.formatDateTimeToEnglish(matchedVisit.regDate)];
                 for (let i = 0; i < labels.length; i++) {
@@ -10298,7 +10310,7 @@
     /* ------------------------------------------------------------------
        تعبئة قائمة الباحثين في شاشة الاستعلام
        ------------------------------------------------------------------
-       القيمة المخزنة هي الاسم المستخدم لان الزيارات تربط به لا بالاسم،
+       القيمة المخزنة هي رقم الهوية لان الزيارات تربط به لا بالاسم،
        والمعروض هو الاسم ليسهل على المدير اختيار الباحث دون حفظ ارقام.
 
        تعرض من هم على رأس العمل فقط. ولو كان في السجلات زيارات لباحث
@@ -10461,8 +10473,8 @@
         const empHeaderDiv = document.getElementById("employeeHeader");
         if (p.empId) {
             empHeaderDiv.textContent = fetchedVisits.length > 0
-                ? ("الباحث: " + fetchedVisits[0].empName + " | الاسم المستخدم: " + p.empId)
-                : ("الاسم المستخدم: " + p.empId + " (لا توجد بيانات مسجلة لهذا الرقم)");
+                ? ("الباحث: " + fetchedVisits[0].empName + " | رقم الهوية: " + p.empId)
+                : ("رقم الهوية: " + p.empId + " (لا توجد بيانات مسجلة لهذا الرقم)");
             empHeaderDiv.style.display = "block";
         } else {
             empHeaderDiv.style.display = "none";
@@ -10472,7 +10484,7 @@
             const thead = document.getElementById("tableHead");
             thead.innerHTML = "";
             const trHead = document.createElement("tr");
-            ["م", "اسم الباحث", "الاسم المستخدم", "رقم الزيارة", "نوع الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق", "موقع التوثيق", "دقة الموقع"].forEach(function(h) {
+            ["م", "اسم الباحث", "رقم الهوية", "رقم الزيارة", "نوع الزيارة", "تاريخ التنفيذ", "تاريخ التوثيق", "موقع التوثيق", "دقة الموقع"].forEach(function(h) {
                 const th = document.createElement("th");
                 th.textContent = h;
                 trHead.appendChild(th);
@@ -10731,7 +10743,7 @@
         /* ------------------------------------------------------------------
            البحث الشامل المرن
            ------------------------------------------------------------------
-           يبحث في كل بيانات الباحث دفعة واحدة: الاسم والاسم المستخدم
+           يبحث في كل بيانات الباحث دفعة واحدة: الاسم ورقم الهوية
            والجوال والمنطقة ونوع العمل والحالة والتفعيل.
 
            ثلاث خصائص تجعله مرنا:
@@ -10994,12 +11006,12 @@
        الزيارات الموثقة لا تحذف ابدا:
        -----------------------------
        هي سجل عمل الجمعية وليست بيانات شخصية للباحث، ويبقى معها اسمه
-       واسمه المستخدم كما هما داخل كل زيارة، حتى تظل احصاءات الجمعية
+       ورقم هويته كما هما داخل كل زيارة، حتى تظل احصاءات الجمعية
        وسجلاتها التاريخية صحيحة وكاملة بعد حذف الحساب.
        لا يوجد في النظام اي مسار يحذف الزيارات عند حذف الباحث.
 
        العملية غير قابلة للتراجع، لذلك تعرض لوحة تحذير تبين عدد
-       السجلات التي ستمسح، وتطلب من المدير كتابة الاسم المستخدم
+       السجلات التي ستمسح، وتطلب من المدير كتابة رقم الهوية
        للباحث بيده كتأكيد نهائي قبل التنفيذ.
        ================================================================== */
 
@@ -11044,7 +11056,7 @@
 
             /* الزيارات تعرض للعلم فقط، ولا تحذف باي حال */
             const vLabel = document.getElementById("deleteResVisitsCount");
-            if (vLabel) vLabel.textContent = counts.visits + " زيارة موثقة باسمه واسمه المستخدم — محفوظة ولن تحذف";
+            if (vLabel) vLabel.textContent = counts.visits + " زيارة موثقة باسمه ورقم هويته — محفوظة ولن تحذف";
         } catch (e) {
             stats.innerHTML = "<div class='delete-stat-row'>تعذر حصر السجلات، وسيجري الحذف على كل حال عند التأكيد.</div>";
         }
@@ -11080,9 +11092,9 @@
 
         hideMsg("deleteResError");
 
-        /* التأكيد النهائي: كتابة الاسم المستخدم بخط اليد */
+        /* التأكيد النهائي: كتابة رقم الهوية بخط اليد */
         if (typed !== String(r.empId).trim().toUpperCase()) {
-            showMsg("deleteResError", "<i class='fas fa-times-circle'></i> الاسم المستخدم الذي كتبته لا يطابق رقم الباحث. لم يتم حذف اي شيء.");
+            showMsg("deleteResError", "<i class='fas fa-times-circle'></i> رقم الهوية الذي كتبته لا يطابق رقم الباحث. لم يتم حذف اي شيء.");
             return;
         }
 
@@ -11114,7 +11126,7 @@
             for (const d of notifSnap.docs) { await deleteDoc(doc(db, "notifications", d.id)); removed.notifications++; }
 
             /* ملاحظة: الزيارات الموثقة لا تحذف ولا تمس اطلاقا،
-               ويبقى فيها اسم الباحث واسمه المستخدم كما سجلا،
+               ويبقى فيها اسم الباحث ورقم هويته كما سجلا،
                لان الاصل حفظها كسجل عمل دائم للجمعية */
 
             /* 5) حساب الباحث نفسه */
@@ -11258,7 +11270,7 @@
         };
 
         const csv = [];
-        csv.push(["م", "اسم الباحث", "الاسم المستخدم", "المنطقة", "نوع العمل",
+        csv.push(["م", "اسم الباحث", "رقم الهوية", "المنطقة", "نوع العمل",
                   "رقم الجوال", "التفعيل", "حالة الباحث"].map(cell).join(";"));
 
         shown.forEach(function(r, i) {
@@ -11299,7 +11311,7 @@
         );
         if (!rows.length) { toast("لا توجد نتائج لتصديرها.", "warn"); return; }
 
-        /* نرجع من الصفوف الى بيانات الباحثين بمطابقة الاسم المستخدم */
+        /* نرجع من الصفوف الى بيانات الباحثين بمطابقة رقم الهوية */
         const shown = [];
         rows.forEach(function(tr) {
             const uid = (tr.children[2] ? tr.children[2].textContent : "").trim();
@@ -11350,7 +11362,7 @@
             body += '<table><thead><tr>' +
                         '<th class="c-num">م</th>' +
                         '<th class="c-name">اسم الباحث</th>' +
-                        '<th class="c-user">الاسم المستخدم</th>' +
+                        '<th class="c-user">رقم الهوية</th>' +
                         '<th class="c-region">المنطقة</th>' +
                         '<th class="c-work">نوع العمل</th>' +
                         '<th class="c-phone">رقم الجوال</th>' +
@@ -11478,7 +11490,7 @@
             fillRegionSelect(document.getElementById("newResRegion"));
             fillWorkTypeSelect(document.getElementById("newResWorkType"));
 
-            /* اسم مستخدم مقترح تلقائيا بصيغة OSB#### وقابل للتعديل */
+            /* رقم هوية مقترح تلقائيا بصيغة OSB#### وقابل للتعديل */
             document.getElementById("newResId").value = suggestResearcherId();
             const rHint = document.getElementById("resIdHint");
             if (rHint) rHint.style.display = "block";
@@ -11601,7 +11613,7 @@
         }
 
         if (!name || !id) {
-            showMsg("addResError", "<i class='fas fa-exclamation-circle'></i> الرجاء تعبئة الاسم والاسم المستخدم.");
+            showMsg("addResError", "<i class='fas fa-exclamation-circle'></i> الرجاء تعبئة الاسم ورقم الهوية.");
             return;
         }
 
@@ -11641,7 +11653,7 @@
 
             if (isDuplicate) {
                 document.getElementById("addResLoading").style.display = "none";
-                showMsg("addResError", "<i class='fas fa-times-circle'></i> هذا الاسم المستخدم مسجل مسبقا لباحث اخر!");
+                showMsg("addResError", "<i class='fas fa-times-circle'></i> هذا رقم الهوية مسجل مسبقا لباحث اخر!");
                 return;
             }
 
@@ -11750,7 +11762,7 @@
 
         thead.innerHTML = "";
         const headers = hasFullAccess
-            ? ["م", "اسم المدير", "الاسم المستخدم", "كلمة المرور", "الصفة", "الصلاحيات", "الاجراء"]
+            ? ["م", "اسم المدير", "رقم الهوية", "كلمة المرور", "الصفة", "الصلاحيات", "الاجراء"]
             : ["م", "اسم المدير", "الصفة", "الصلاحيات"];
         headers.forEach(function(h) {
             const th = document.createElement("th");
@@ -11987,7 +11999,7 @@
     }
 
     /* ------------------------------------------------------------------
-       اقتراح الاسم المستخدم للمدير الجديد
+       اقتراح رقم الهوية للمدير الجديد
        ------------------------------------------------------------------
        الصيغة OSM#### باربعة ارقام عشوائية، والرقم مقترح فقط وقابل
        للتعديل، والقرار النهائي للمدير العام او المبرمج.
@@ -12000,7 +12012,7 @@
         return generateUniqueId(ID_PREFIX_MANAGER, used);
     }
 
-    /* اقتراح الاسم المستخدم للباحث الجديد بصيغة OSB#### */
+    /* اقتراح رقم الهوية للباحث الجديد بصيغة OSB#### */
     function suggestResearcherId() {
         const used = researchersList.map(function(r) { return r.empId; });
         return generateUniqueId(ID_PREFIX_RESEARCHER, used);
@@ -12040,7 +12052,7 @@
         const lines = [
             "الاسم: " + (name || ""),
             "",
-            "الاسم المستخدم: " + (username || ""),
+            "رقم الهوية: " + (username || ""),
             "",
             "الصفة: " + (title || "")
         ];
@@ -12329,7 +12341,7 @@
                 if (linkSnap.exists()) {
                     const d = linkSnap.data();
                     add(true, "ربط الجلسة بالحساب",
-                        "الاسم المستخدم: " + esc(d.empId) +
+                        "رقم الهوية: " + esc(d.empId) +
                         " | النوع: " + esc(d.type === "manager" ? "مدير" : "باحث") +
                         " | الصلاحيات: " + esc((d.permissions || []).length) +
                         (d.isMaster ? " | مبرمج" : ""));
@@ -12623,7 +12635,7 @@
             document.getElementById("addManagerTitle").textContent = "بيانات المدير الجديد";
             document.getElementById("btnSaveManager").textContent = "حفظ المدير";
 
-            /* تعبئة الاسم المستخدم المقترح تلقائيا (قابل للتعديل) */
+            /* تعبئة رقم الهوية المقترح تلقائيا (قابل للتعديل) */
             document.getElementById("newManId").value = suggestManagerId();
             const hint = document.getElementById("manIdHint");
             if (hint) hint.style.display = "block";
@@ -12708,7 +12720,7 @@
         const btnYes = document.createElement("button");
         btnYes.type = "button";
         btnYes.textContent = "نعم";
-        btnYes.className = "btn-icon-watermark icon-check btn-table btn-neutral";
+        btnYes.className = "btn-icon-watermark icon-times btn-table btn-neutral";
         btnYes.onclick = async function() {
             const m = managersList.find(function(x) { return x.id === docId; });
             document.getElementById("manListLoading").style.display = "block";
@@ -12771,19 +12783,19 @@
         }
 
         if (!name || !id) {
-            showMsg("addManError", "<i class='fas fa-exclamation-circle'></i> الرجاء تعبئة الاسم والاسم المستخدم.");
+            showMsg("addManError", "<i class='fas fa-exclamation-circle'></i> الرجاء تعبئة الاسم ورقم الهوية.");
             return;
         }
 
         /* ------------------------------------------------------------
-           حجز الاسم المستخدم الخاص بالمبرمج
+           حجز رقم الهوية الخاص بالمبرمج
            ------------------------------------------------------------
            المقارنة نصية مباشرة بدل البصمة، فالبصمات حذفت من الملف.
-           لا ضرر في ظهور الاسم المستخدم هنا: هو ليس سرا، والسر الوحيد
+           لا ضرر في ظهور رقم الهوية هنا: هو ليس سرا، والسر الوحيد
            (كلمة المرور) محفوظ مشفرا في قاعدة البيانات لا في الكود.
            ------------------------------------------------------------ */
         if (String(id).trim().toUpperCase() === RESERVED_MASTER_USERNAME) {
-            showMsg("addManError", "<i class='fas fa-times-circle'></i> هذا الاسم المستخدم محجوز ولا يمكن استخدامه.");
+            showMsg("addManError", "<i class='fas fa-times-circle'></i> هذا رقم الهوية محجوز ولا يمكن استخدامه.");
             return;
         }
 
@@ -12811,7 +12823,7 @@
 
             if (isDuplicate) {
                 document.getElementById("addManLoading").style.display = "none";
-                showMsg("addManError", "<i class='fas fa-times-circle'></i> هذا الاسم المستخدم مسجل مسبقا لمدير اخر!");
+                showMsg("addManError", "<i class='fas fa-times-circle'></i> هذا رقم الهوية مسجل مسبقا لمدير اخر!");
                 return;
             }
 
@@ -12959,7 +12971,7 @@
             body += '<table><thead><tr>' +
                         '<th class="c-num">م</th>' +
                         '<th class="c-name">اسم الباحث</th>' +
-                        '<th class="c-user">الاسم المستخدم</th>' +
+                        '<th class="c-user">رقم الهوية</th>' +
                         '<th class="c-vid">رقم الزيارة</th>' +
                         '<th class="c-type">حالة الزيارة</th>' +
                         '<th class="c-date">تاريخ التنفيذ</th>' +
@@ -13177,8 +13189,8 @@
        (21) الشريط العلوي الموحد + جرس الاشعارات
        ------------------------------------------------------------------
        شريط واحد يظهر في اعلى الصفحة لاي مستخدم مسجل دخوله:
-         * المدير  -> باللون البرتقالي ويعرض الاسم والاسم المستخدم
-         * الباحث  -> باللون الازرق المخضر ويعرض الاسم والاسم المستخدم
+         * المدير  -> باللون البرتقالي ويعرض الاسم ورقم الهوية
+         * الباحث  -> باللون الازرق المخضر ويعرض الاسم ورقم الهوية
                       بالاضافة الى جرس الاشعارات
 
        الجرس يقرا من مجموعة notifications في قاعدة البيانات، وشكل
@@ -13186,7 +13198,7 @@
          {
            title:     "عنوان الاشعار",
            body:      "نص الرسالة",
-           to:        "الاسم المستخدم للمستلم"  او  "all" للجميع,
+           to:        "رقم الهوية للمستلم"  او  "all" للجميع,
            audience:  "researcher" | "manager" | "all"   (اختياري),
            type:      "info" | "update" | "request"      (اختياري),
            createdAt: "2026-01-01T10:00:00.000Z"
@@ -13236,7 +13248,7 @@
            بناء نص الشريط من اجزاء فرعية (اسبان داخل topBarText)
            ------------------------------------------------------------------
            التقسيم الى اجزاء (tb-role / tb-name / tb-sep / tb-idlabel / tb-id)
-           يتيح لقواعد الجوال في CSS اخفاء تسميتي الصفة والاسم المستخدم فقط
+           يتيح لقواعد الجوال في CSS اخفاء تسميتي الصفة ورقم الهوية فقط
            عند ضيق المساحة، مع بقاء الاسم والرقم نفسيهما ظاهرين كاملين
            دائما. المدير الاول (المبرمج) يظهر بلقبه الخاص بدل "المدير". */
         const roleLabel = (session.type === "manager")
@@ -13247,7 +13259,7 @@
             '<span class="tb-role">' + esc(roleLabel) + ':</span> ' +
             '<span class="tb-name">' + esc(session.name) + '</span>' +
             '<span class="tb-sep"> | </span>' +
-            '<span class="tb-idlabel">الاسم المستخدم:</span> ' +
+            '<span class="tb-idlabel">رقم الهوية:</span> ' +
             '<span class="tb-id">' + esc(session.empId) + '</span>';
 
         /* هل يظهر الجرس لهذا المستخدم؟ */
@@ -13542,7 +13554,7 @@
        الحقول:
          title    : عنوان قصير يظهر بخط عريض
          body     : نص الرسالة
-         to       : الاسم المستخدم للمستلم، او "all" للجميع
+         to       : رقم الهوية للمستلم، او "all" للجميع
          audience : "researcher" | "manager" | "all"
          perm     : اسم الصلاحية المطلوبة لرؤية الاشعار (اختياري)
          type     : نوع الاشعار لاستخدامه لاحقا في التصنيف
@@ -14168,7 +14180,7 @@
         if (!rows.length) { toast("لا توجد نتائج لتصديرها.", "warn"); return; }
 
         const cell = function(v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; };
-        const csv = [["م", "اسم الباحث", "الاسم المستخدم", "المنطقة",
+        const csv = [["م", "اسم الباحث", "رقم الهوية", "المنطقة",
                       "الرصيد الكلي", "المستخدم", "قيد المراجعة", "المتبقي"].map(cell).join(";")];
 
         rows.forEach(function(tr, i) {
@@ -14936,7 +14948,7 @@
         const yes = document.createElement("button");
         yes.type = "button";
         yes.textContent = "نعم";
-        yes.className = "btn-icon-watermark icon-check btn-table btn-neutral";
+        yes.className = "btn-icon-watermark icon-times btn-table btn-neutral";
         yes.onclick = function() { cancelMyLeave(docId); };
         box.appendChild(yes);
 
@@ -15110,7 +15122,7 @@
                 const ok = document.createElement("button");
                 ok.type = "button";
                 ok.textContent = "قبول";
-                ok.className = "btn-icon-watermark icon-check btn-table btn-manager";
+                ok.className = "btn-icon-watermark icon-times btn-table btn-manager";
                 ok.onclick = function() { confirmApproveLeave(idx, l.id); };
                 wrap.appendChild(ok);
 
@@ -15153,7 +15165,7 @@
         const yes = document.createElement("button");
         yes.type = "button";
         yes.textContent = "نعم، اقبل";
-        yes.className = "btn-icon-watermark icon-check btn-table btn-manager";
+        yes.className = "btn-icon-watermark icon-times btn-table btn-manager";
         yes.onclick = function() { decideLeave(docId, "approved", ""); };
         box.appendChild(yes);
 
@@ -15207,7 +15219,7 @@
         const cancel = document.createElement("button");
         cancel.type = "button";
         cancel.textContent = "تراجع";
-        cancel.className = "btn-icon-watermark icon-check btn-table btn-neutral";
+        cancel.className = "btn-icon-watermark icon-times btn-table btn-neutral";
         cancel.onclick = function() { renderLeaveTable(); };
         box.appendChild(cancel);
 
@@ -15605,7 +15617,7 @@
        مرفق الزامي        | لا               | نعم (عذر طبي رسمي)
 
        المرفق يرفع الى Firebase Storage في المسار:
-         sick_leaves/{الاسم المستخدم}/{الوقت}_{اسم الملف}
+         sick_leaves/{رقم الهوية}/{الوقت}_{اسم الملف}
        ويحفظ رابط التحميل داخل مستند الاجازة في حقل fileUrl.
 
        ملاحظة اداء: مكتبة Storage لا تحمل مع الصفحة، بل تستورد
@@ -16248,7 +16260,7 @@
     window.onNoticeResearcherChange = function() {
         const sel = document.getElementById("noticeResSelect");
         const resId = sel ? sel.value : "";
-        /* قيمة القائمة معرف المستند، ونحتاج الاسم المستخدم للبحث */
+        /* قيمة القائمة معرف المستند، ونحتاج رقم الهوية للبحث */
         const r = activeResearchers.find(function(x) { return x.id === resId; });
         loadNoticeVisits(r ? r.empId : "");
     };
@@ -16949,7 +16961,7 @@
         const yes = document.createElement("button");
         yes.type = "button";
         yes.textContent = "نعم، احذف";
-        yes.className = "btn-icon-watermark icon-check btn-table btn-neutral";
+        yes.className = "btn-icon-watermark icon-times btn-table btn-neutral";
         yes.onclick = function() { deleteNotice(docId); };
         box.appendChild(yes);
 
@@ -17056,7 +17068,7 @@
 
        ما يمكن تعديله وما لا يمكن:
        ----------------------------
-       الاسم والاسم المستخدم : للعرض فقط، تعديلهما من صلاحية الادارة
+       الاسم ورقم الهوية : للعرض فقط، تعديلهما من صلاحية الادارة
        رقم الجوال           : يسجله المستخدم بنفسه
        كلمة المرور          : يغيرها بنفسه بعد اثبات معرفته بالحالية
 
@@ -18608,7 +18620,7 @@
 
         const yes = document.createElement("button");
         yes.type = "button";
-        yes.className = "btn-neutral btn-icon-watermark icon-times btn-table";
+        yes.className = "btn-neutral btn-icon-watermark icon-check btn-table";
         yes.textContent = "تأكيد الرفض";
         yes.onclick = function() {
             const reason = ta.value.trim();
@@ -18619,7 +18631,7 @@
 
         const cancel = document.createElement("button");
         cancel.type = "button";
-        cancel.className = "btn-neutral btn-icon-watermark icon-check btn-table";
+        cancel.className = "btn-neutral btn-icon-watermark icon-times btn-table";
         cancel.textContent = "تراجع";
         cancel.onclick = function() { renderRequests(); };
         box.appendChild(cancel);
@@ -18759,14 +18771,14 @@
        دورة الطلب كاملة:
        ------------------
        1) المستخدم يضغط "نسيت كلمة المرور" في شاشة الدخول.
-       2) يدخل اسمه المستخدم ورقم جواله المسجل، فيتحقق النظام من
+       2) يدخل رقم هويته ورقم جواله المسجل، فيتحقق النظام من
           تطابقهما مع سجله في قاعدة البيانات.
        3) يحفظ الطلب في مجموعة password_requests بحالة pending،
           ويصل اشعار للمدراء اصحاب صلاحية "استعادة كلمة المرور".
        4) المدير يفتح شاشة الطلبات ويصدر كلمة مرور مؤقتة، فيحدثها
           النظام في حساب صاحب الطلب ويضع عليه علامة تلزمه بتغييرها.
        5) يجهز النظام للمدير رسالة واتساب جاهزة الى رقم صاحب الطلب
-          تحوي اسمه المستخدم وكلمة المرور المؤقتة.
+          تحوي رقم هويته وكلمة المرور المؤقتة.
        6) عند دخول صاحب الطلب لا يستطيع استخدام النظام حتى يغير
           كلمة المرور من شاشة حسابي.
 
@@ -18826,7 +18838,7 @@
         hideMsg("fpSuccess");
 
         if (!empId) {
-            showMsg("fpError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال اسمك المستخدم.");
+            showMsg("fpError", "<i class='fas fa-exclamation-circle'></i> الرجاء ادخال رقم هويتك.");
             return;
         }
         if (!validSaudiPhone(phone)) {
@@ -18846,11 +18858,11 @@
 
             const account = await findAccountByEmpId(empId);
 
-            /* رسالة موحدة عند عدم التطابق، سواء كان الاسم المستخدم غير
+            /* رسالة موحدة عند عدم التطابق، سواء كان رقم الهوية غير
                موجود او الجوال لا يطابقه، فلا نكشف اي البيانات كان خطأ */
             if (!account || !account.data.phone || account.data.phone !== phone) {
                 showMsg("fpError", "<i class='fas fa-triangle-exclamation'></i> البيانات لا تطابق سجلاتنا. " +
-                    "تأكد من اسمك المستخدم ومن رقم الجوال المسجل، وان لم تكن سجلت جوالك من قبل فتواصل مع الدعم الفني ادناه.");
+                    "تأكد من رقم هويتك ومن رقم الجوال المسجل، وان لم تكن سجلت جوالك من قبل فتواصل مع الدعم الفني ادناه.");
                 btn.disabled = false;
                 btn.innerHTML = "ارسال الطلب";
                 return;
@@ -18937,7 +18949,7 @@
     window.sendSupportMessage = function() {
         const name  = document.getElementById("supName").value.trim();
         const phone = normalizeSaudiPhone(document.getElementById("supPhone").value);
-        /* الاسم المستخدم اختياري: قد يكون نسيه، وهذا سبب تواصله اصلا */
+        /* رقم الهوية اختياري: قد يكون نسيه، وهذا سبب تواصله اصلا */
         const empId = window.toEnglishDigits(document.getElementById("supEmpId").value.trim()).toUpperCase();
 
         hideMsg("supError");
@@ -18959,7 +18971,7 @@
             "",
             "الاسم: " + name,
             "رقم الجوال: " + phone,
-            "الاسم المستخدم: " + (empId || "لا اتذكره"),
+            "رقم الهوية: " + (empId || "لا اتذكره"),
             "نوع الحساب: " + (fpUserType === "manager" ? "مدير" : "باحث"),
             "",
             "ارجو مساعدتي في استعادة حسابي. وشكرا لكم."
@@ -19081,7 +19093,7 @@
             card.appendChild(head);
 
             [
-                { l: "الاسم المستخدم", v: r.empId || "-" },
+                { l: "رقم الهوية", v: r.empId || "-" },
                 { l: "الجوال المسجل", v: r.phone || "-" },
                 { l: "تاريخ الطلب",   v: window.formatDateTimeToEnglish(r.createdAt) }
             ].forEach(function(row) {
@@ -19163,7 +19175,7 @@
 
         const yes = document.createElement("button");
         yes.type = "button";
-        yes.className = "btn-neutral btn-icon-watermark icon-times btn-table";
+        yes.className = "btn-neutral btn-icon-watermark icon-check btn-table";
         yes.textContent = "تأكيد الرفض";
         yes.onclick = function() {
             const reason = ta.value.trim();
@@ -19174,7 +19186,7 @@
 
         const cancel = document.createElement("button");
         cancel.type = "button";
-        cancel.className = "btn-neutral btn-icon-watermark icon-check btn-table";
+        cancel.className = "btn-neutral btn-icon-watermark icon-times btn-table";
         cancel.textContent = "تراجع";
         cancel.onclick = function() { renderPwRequests(); };
         box.appendChild(cancel);
@@ -19298,7 +19310,7 @@
             "",
             "تم اعادة تعيين كلمة مرور حسابك في نظام ادارة الباحثين بناء على طلبك.",
             "",
-            "الاسم المستخدم: " + r.empId,
+            "رقم الهوية: " + r.empId,
             "كلمة المرور المؤقتة: " + tempPass,
             "",
             "يرجى تسجيل الدخول ثم تغييرها فورا من: حسابي ثم تغيير كلمة المرور.",
