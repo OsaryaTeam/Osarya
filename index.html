@@ -3061,6 +3061,84 @@
             .rc-btn { flex: 1 1 auto; }
         }
 
+        /* ==================================================================
+           زر الدعم الفني العائم
+           ------------------------------------------------------------------
+           مطوي الى ايقونة وحدها، ويتمدد ليظهر النص عند المرور عليه على
+           الحاسب. وعلى الجوال يبقى مطويا دائما لتوفير المساحة، فالايقونة
+           وحدها مفهومة.
+           ================================================================== */
+        .support-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9500;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            width: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 0 !important;
+            height: 56px;
+            border: none;
+            border-radius: 28px;
+            background: linear-gradient(135deg, #25D366, #1da851) !important;
+            color: #fff !important;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(29, 168, 81, 0.4) !important;
+            font-family: 'Tajawal', sans-serif;
+            overflow: hidden;
+            transition: gap 0.28s ease, box-shadow 0.28s ease;
+        }
+        .support-fab::after,
+        .support-fab::before { display: none !important; content: none !important; }
+
+        .support-fab i {
+            font-size: 26px;
+            width: 56px;
+            flex: 0 0 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* النص مطوي: عرض صفر حتى يتمدد */
+        .support-fab-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            max-width: 0;
+            opacity: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: max-width 0.28s ease, opacity 0.22s ease, padding 0.28s ease;
+            padding: 0;
+            text-align: right;
+        }
+        .sf-line1 { font-size: 12px; font-weight: 600; opacity: 0.92; line-height: 1.4; }
+        .sf-line2 { font-size: 14px; font-weight: 800; line-height: 1.4; }
+
+        .support-fab:hover {
+            box-shadow: 0 10px 28px rgba(29, 168, 81, 0.55) !important;
+        }
+        .support-fab:hover .support-fab-text {
+            max-width: 220px;
+            opacity: 1;
+            padding: 0 4px 0 18px;
+        }
+
+        /* على الجوال: ايقونة وحدها دائما، وارتفاع اصغر قليلا */
+        @media (max-width: 768px) {
+            .support-fab { height: 52px; bottom: 18px; right: 15px; }
+            .support-fab i { width: 52px; flex: 0 0 52px; font-size: 24px; }
+            .support-fab:hover .support-fab-text { max-width: 0; opacity: 0; padding: 0; }
+        }
+
+        /* يختفي عند الطباعة وفي شاشة انقطاع الاتصال */
+        @media print { .support-fab { display: none !important; } }
+        body.is-offline .support-fab { display: none !important; }
+
         /* ---------------- زرا التفعيل والغاء التفعيل ---------------- */
         .btn-activate-row {
             background: linear-gradient(135deg, #25D366, #1da851) !important;
@@ -4046,6 +4124,23 @@
     </div>
 </div>
 
+<!-- ==============================================================
+     زر الدعم الفني العائم
+     --------------------------------------------------------------
+     ظاهر في كل الشاشات، قبل تسجيل الدخول وبعده. يفتح محادثة واتساب
+     مع رقم الدعم المحدد في SUPPORT_WHATSAPP برسالة جاهزة.
+
+     موضعه اسفل يمين الشاشة بعيدا عن زر الوضع الليلي (اسفل اليسار)
+     وعن زر تثبيت التطبيق، فلا يتزاحمان.
+     ============================================================== -->
+<button id="supportFab" class="support-fab" onclick="openSupportChat()" title="تواصل مع الدعم الفني">
+    <i class="fab fa-whatsapp"></i>
+    <span class="support-fab-text">
+        <span class="sf-line1">تحتاج الى المساعدة؟</span>
+        <span class="sf-line2">تواصل مع الدعم الفني</span>
+    </span>
+</button>
+
 <!-- حاوية الرسائل المنبثقة (Toast) المستخدمة بدل نوافذ alert -->
 <div id="toastContainer" class="toast-container"></div>
 
@@ -4596,6 +4691,42 @@
              اداة تشغيلية للانتقال من مرحلة التجربة الى الاطلاق الرسمي،
              وللصيانة الدورية عند الحاجة. تخفى عن الجميع الا المبرمج.
              ========================================================== -->
+        <!-- ==========================================================
+             اعدادات الدعم الفني
+             ----------------------------------------------------------
+             يظهر للمبرمج وللمدير العام. تغيير الرقم هنا يسري على كل
+             الاجهزة فورا، بلا تعديل الكود ولا رفع ملف.
+             ========================================================== -->
+        <div id="supportSettingsBox" class="add-form-section" style="display:none;">
+            <h3><i class="fab fa-whatsapp"></i> رقم الدعم الفني</h3>
+
+            <div class="rule-note">
+                <i class="fas fa-circle-info"></i>
+                هذا الرقم يستخدم في زر الدعم العائم وفي كل روابط التواصل في النظام.
+                تغييره هنا يسري على جميع المستخدمين.
+            </div>
+
+            <div class="input-group full-width" style="margin-top: 14px;">
+                <label for="supportPhoneInput">رقم واتساب الدعم:</label>
+                <div class="input-with-icon">
+                    <input type="tel" id="supportPhoneInput" inputmode="tel" dir="ltr" placeholder="0512345678  او  +966512345678">
+                    <i class="fas fa-phone right-icon"></i>
+                </div>
+                <div class="field-hint" style="display:block;">
+                    <i class="fas fa-lightbulb"></i>
+                    اكتبه بأي صيغة وسيحول تلقائيا الى الصيغة الدولية.
+                </div>
+            </div>
+
+            <div id="supportMsgError" class="error-message"></div>
+            <div id="supportMsgSuccess" class="success-message"></div>
+
+            <div class="btn-group">
+                <button id="btnSaveSupport" class="btn-manager btn-icon-watermark icon-save" onclick="saveSupportNumber()">حفظ رقم الدعم</button>
+                <button class="btn-neutral btn-icon-watermark icon-whatsapp" onclick="openSupportChat()">تجربة الرقم</button>
+            </div>
+        </div>
+
         <!-- اداة تشخيص الاتصال: للمبرمج وحده -->
         <button id="btnConnTest" class="btn-neutral btn-icon-watermark icon-plug" style="display:none;" onclick="runConnectionTest()">فحص الاتصال بقاعدة البيانات</button>
         <div id="connTestResult" class="conn-test-box" style="display:none;"></div>
@@ -7111,7 +7242,28 @@
              من هويته اليا، فيحول الى الدعم مباشرة برسالة مجهزة.
        PERM_PASSWORD_RECOVERY : الصلاحية التي تخول المدير التعامل مع
              طلبات استعادة كلمة المرور واصدار كلمات مرور مؤقتة. */
-    const SUPPORT_WHATSAPP = "966539864443";
+    /* ------------------------------------------------------------------
+       رقم الدعم الفني
+       ------------------------------------------------------------------
+       يستخدم في زر الدعم العائم وفي كل روابط التواصل في النظام.
+       لتغييره يكفي تعديل هذا السطر وحده فيسري على كل المواضع.
+       يكتب بالصيغة الدولية بلا علامة زائد: 966 ثم الرقم بلا صفر.
+       ------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------
+       رقم الدعم الفني
+       ------------------------------------------------------------------
+       هذا الرقم قيمة احتياطية تستخدم قبل تحميل الاعدادات من قاعدة
+       البيانات، او لو تعذر تحميلها. اما الرقم الفعلي فيقرأ من مستند
+       settings/support ويعدل من داخل النظام بلا لمس الكود.
+       ------------------------------------------------------------------ */
+    const SUPPORT_WHATSAPP_FALLBACK = "966539864443";
+
+    /* الرقم الفعلي المستخدم، يملأ من قاعدة البيانات عند التحميل */
+    let SUPPORT_WHATSAPP = SUPPORT_WHATSAPP_FALLBACK;
+
+    /* نص الرسالة الجاهزة عند فتح محادثة الدعم من الزر العائم */
+    const SUPPORT_DEFAULT_MSG = "السلام عليكم، احتاج مساعدة في نظام ادارة الباحثين.";
+
     const PERM_PASSWORD_RECOVERY = "استعادة كلمة المرور";
 
     /* ---------------- بيانات الحساب الشخصي ----------------
@@ -7736,6 +7888,102 @@
             .toLowerCase();
     }
 
+    /* ------------------------------------------------------------------
+       فتح محادثة الدعم الفني
+       ------------------------------------------------------------------
+       يرفق بالرسالة بيانات المستخدم ان كان مسجل الدخول، فيعرف الدعم
+       من يكلمه بلا سؤال. واذا لم يكن داخلا ترسل رسالة عامة.
+       ------------------------------------------------------------------ */
+    /* ==================================================================
+       اعدادات النظام من قاعدة البيانات
+       ==================================================================
+       مستند واحد settings/support يحمل رقم الدعم. يحمل عند بدء النظام
+       ويحدث من شاشة الادارة العامة.
+
+       لماذا في قاعدة البيانات لا في الكود؟
+       -------------------------------------
+       تغيير الرقم في الكود يعني تعديل الملف ورفعه على GitHub، وهذا
+       متاح لك وحدك. اما هنا فيغيره المدير العام بضغطة ويسري فورا على
+       كل الاجهزة بلا رفع ملف.
+       ================================================================== */
+    async function loadSystemSettings() {
+        try {
+            const snap = await getDoc(doc(db, "settings", "support"));
+            if (snap.exists()) {
+                const d = snap.data();
+                if (d.whatsapp) SUPPORT_WHATSAPP = String(d.whatsapp);
+            }
+        } catch (e) {
+            /* الفشل لا يعطل شيئا: يبقى الرقم الاحتياطي عاملا */
+            console.warn("تعذر تحميل اعدادات الدعم:", e && e.code);
+        }
+    }
+
+    /* حفظ رقم الدعم الجديد */
+    window.saveSupportNumber = async function() {
+        if (!isMaster() && !(isManager() && session.role === "general")) { denyAccess(); return; }
+        if (!requireOnline("supportMsgError")) return;
+
+        const raw = document.getElementById("supportPhoneInput").value.trim();
+        const btn = document.getElementById("btnSaveSupport");
+
+        hideMsg("supportMsgError");
+        hideMsg("supportMsgSuccess");
+
+        const norm = normalizeSaudiPhone(raw);
+        if (!validSaudiPhone(norm)) {
+            showMsg("supportMsgError", "<i class='fas fa-times-circle'></i> <strong>رقم غير صحيح</strong>" +
+                "<br>اكتبه بصيغة <strong>05xxxxxxxx</strong> او <strong>+966xxxxxxxxx</strong>.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+        try {
+            /* يخزن بلا علامة زائد، فهي صيغة روابط الواتساب */
+            const waNumber = norm.replace(/^\+/, "");
+
+            await setDoc(doc(db, "settings", "support"), {
+                whatsapp: waNumber,
+                updatedAt: new Date().toISOString(),
+                updatedBy: session.name || "",
+                updatedById: session.empId || ""
+            });
+
+            SUPPORT_WHATSAPP = waNumber;
+            logAudit("تعديل رقم الدعم الفني", "الرقم الجديد: " + norm);
+
+            showMsg("supportMsgSuccess", "<i class='fas fa-check-circle'></i> تم حفظ رقم الدعم الفني." +
+                "<br>سيعمل على كل الاجهزة فور تحديث الصفحة.");
+        } catch (e) {
+            console.error("خطأ في حفظ رقم الدعم:", e);
+            showMsg("supportMsgError", dbErrorMessage(e, "حفظ رقم الدعم"));
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = "حفظ رقم الدعم";
+    };
+
+    /* تعبئة الحقل بالرقم الحالي عند فتح شاشة الادارة العامة */
+    window.fillSupportField = function() {
+        const inp = document.getElementById("supportPhoneInput");
+        if (!inp) return;
+        /* نعرضه بصيغة مقروءة مع علامة الزائد */
+        inp.value = SUPPORT_WHATSAPP ? ("+" + SUPPORT_WHATSAPP) : "";
+    };
+
+    window.openSupportChat = function() {
+        let msg = SUPPORT_DEFAULT_MSG;
+
+        if (session && session.empId) {
+            msg += "\n\nالاسم: " + (session.name || "") +
+                   "\nالاسم المستخدم: " + session.empId;
+        }
+
+        window.open("https://wa.me/" + SUPPORT_WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank");
+    };
+
     /* رسالة منبثقة موحدة بدلا من alert */
     function toast(msg, type) {
         let box = document.getElementById("toastContainer");
@@ -8267,6 +8515,9 @@
             el.setAttribute("role", "status");
             el.setAttribute("aria-live", "polite");
         });
+
+        /* اعدادات النظام: رقم الدعم وغيره */
+        loadSystemSettings();
 
         /* حالة الاتصال عند اول تحميل */
         updateOfflineBar();
@@ -11480,6 +11731,14 @@
         if (btnReset) btnReset.style.display = isMaster() ? "block" : "none";
         const btnConn = document.getElementById("btnConnTest");
         if (btnConn) btnConn.style.display = isMaster() ? "block" : "none";
+
+        /* اعدادات الدعم: للمبرمج وللمدير العام */
+        const supBox = document.getElementById("supportSettingsBox");
+        if (supBox) {
+            const canEditSupport = isMaster() || (isManager() && session.role === "general");
+            supBox.style.display = canEditSupport ? "block" : "none";
+            if (canEditSupport) window.fillSupportField();
+        }
         const resetPanelEl = document.getElementById("resetPanel");
         if (resetPanelEl && !isMaster()) resetPanelEl.style.display = "none";
 
@@ -18581,6 +18840,10 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
 
         try {
+            /* جلسة مصادقة قبل البحث: القواعد تشترطها، والطلب يقدم
+               قبل تسجيل الدخول فلا جلسة قائمة */
+            await ensureAuth();
+
             const account = await findAccountByEmpId(empId);
 
             /* رسالة موحدة عند عدم التطابق، سواء كان الاسم المستخدم غير
@@ -18634,7 +18897,8 @@
             document.getElementById("fpEmpId").value = "";
             document.getElementById("fpPhone").value = "";
         } catch (e) {
-            showMsg("fpError", "<i class='fas fa-wifi'></i> تعذر ارسال الطلب، تحقق من الاتصال وحاول مرة اخرى.");
+            console.error("خطأ في ارسال طلب الاستعادة:", e);
+            showMsg("fpError", dbErrorMessage(e, "ارسال الطلب"));
         }
 
         btn.disabled = false;
