@@ -3084,6 +3084,70 @@
            ------------------------------------------------------------
            بمسافة 76 بكسل عنه، فلا يتداخل الضغط بينهما.
            ------------------------------------------------------------ */
+        /* ------------------------------------------------------------
+           زر الاصدار العائم
+           ------------------------------------------------------------
+           صغير وهادئ اسفل اليسار فوق بقية الازرار العائمة. يعرض
+           الاصدار لكل المستخدمين ولا يتفاعل الا مع المبرمج.
+           ------------------------------------------------------------ */
+        .version-fab {
+            position: fixed;
+            bottom: 156px;
+            left: 20px;
+            z-index: 9300;
+            width: auto !important;
+            min-width: 58px;
+            height: 30px;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 12px !important;
+            border: none;
+            border-radius: 15px;
+            background: rgba(74, 135, 148, 0.22) !important;
+            color: #4a8794 !important;
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: default;
+            box-shadow: none !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease, transform 0.15s ease;
+            user-select: none;
+        }
+        .version-fab::after,
+        .version-fab::before { display: none !important; content: none !important; }
+        body.dark-mode .version-fab {
+            background: rgba(255, 255, 255, 0.10) !important;
+            color: #8fc4cf !important;
+        }
+
+        /* تلميح بعد اربع نقرات: يبين للمبرمج انه في المسار الصحيح */
+        .version-fab.vf-hint {
+            background: rgba(122, 106, 168, 0.35) !important;
+            color: #5c4e85 !important;
+            transform: scale(1.06);
+        }
+        body.dark-mode .version-fab.vf-hint { color: #cfc4e8 !important; }
+
+        /* رقم الاصدار في التذييل */
+        .footer-version {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #6c757d;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+        body.dark-mode .footer-version { color: #9aabae; }
+
+        @media (max-width: 768px) {
+            .version-fab { bottom: 140px; left: 15px; height: 28px; font-size: 11px; min-width: 54px; }
+        }
+        @media print { .version-fab { display: none !important; } }
+        body.is-offline .version-fab { display: none !important; }
+
         .support-settings-fab {
             position: fixed;
             bottom: 88px;
@@ -4264,6 +4328,80 @@
             <button id="btnSaveSupport" class="btn-manager btn-icon-watermark icon-save" onclick="saveSupportSettings()">حفظ الاعدادات</button>
             <button class="btn-neutral btn-icon-watermark icon-whatsapp" onclick="openSupportChat()">تجربة</button>
             <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeSupportSettings()">اغلاق</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================================================
+     زر اصدار النظام العائم
+     --------------------------------------------------------------
+     يظهر لكل المستخدمين ويعرض رقم الاصدار. لا يتفاعل الا مع حساب
+     المبرمج، وبعد سبع نقرات متتالية يطلب رمزا سريا مخزنا مشفرا في
+     قاعدة البيانات.
+
+     لماذا سبع نقرات ورمز؟
+     ----------------------
+     اعتماد اصدار جديد يحجب كل النسخ الاقدم عن كل المستخدمين، فهو
+     قرار واسع الاثر لا يليق ان يقع بضغطة عابرة. والنقرات تمنع
+     الضغط العرضي، والرمز يمنع من وصل الى حساب المبرمج مؤقتا.
+     ============================================================== -->
+<button id="versionFab" class="version-fab" onclick="onVersionFabClick()" title="اصدار النظام">
+    <span id="versionFabText">v—</span>
+</button>
+
+<!-- نافذة الرمز السري -->
+<div id="versionCodeModal" class="install-modal" onclick="if(event.target===this) closeVersionCode()">
+    <div class="install-modal-box" style="max-width: 420px;">
+        <h3><i class="fas fa-key"></i> رمز الاعتماد</h3>
+
+        <p style="font-size:14.5px; line-height:1.9; margin:14px 0;">
+            ادخل الرمز السري للوصول الى ادارة الاصدارات.
+        </p>
+
+        <div class="input-group full-width">
+            <input type="password" id="versionCodeInput" inputmode="numeric" dir="ltr"
+                   placeholder="• • • • • • • • •" autocomplete="off"
+                   style="text-align:center; font-size:22px; letter-spacing:6px; font-family:monospace;">
+        </div>
+
+        <div id="versionCodeError" class="error-message"></div>
+
+        <div class="btn-group">
+            <button id="btnVerifyCode" class="btn-manager btn-icon-watermark icon-check" onclick="verifyVersionCode()">دخول</button>
+            <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeVersionCode()">الغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة ادارة الاصدارات -->
+<div id="versionAdminModal" class="install-modal" onclick="if(event.target===this) closeVersionAdmin()">
+    <div class="install-modal-box" style="max-width: 500px;">
+        <h3><i class="fas fa-code-branch"></i> ادارة الاصدارات</h3>
+
+        <div class="current-info" id="versionAdminInfo">جاري القراءة...</div>
+
+        <div class="rule-note rule-note-danger" style="margin-top:14px; text-align:right;">
+            <i class="fas fa-triangle-exclamation"></i>
+            اعتماد نسختك كأحدث اصدار <strong>يحجب كل النسخ الاقدم</strong> عن جميع المستخدمين
+            حتى يحدثوا صفحاتهم. لا تعتمد اصدارا الا بعد رفعه فعلا على الموقع.
+        </div>
+
+        <div id="versionAdminError" class="error-message"></div>
+        <div id="versionAdminSuccess" class="success-message"></div>
+
+        <div class="btn-group">
+            <button id="btnPublishVersion" class="btn-manager btn-icon-watermark icon-check" onclick="publishVersion()">اعتماد نسختي كأحدث اصدار</button>
+            <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeVersionAdmin()">اغلاق</button>
+        </div>
+
+        <!-- تغيير الرمز السري -->
+        <div style="margin-top:18px; padding-top:16px; border-top:1px solid rgba(74,135,148,0.3);">
+            <div class="safe-box-title" style="margin-bottom:8px;"><i class="fas fa-key"></i> تغيير الرمز السري</div>
+            <div class="input-group full-width">
+                <input type="text" id="newVersionCode" inputmode="numeric" dir="ltr"
+                       placeholder="الرمز الجديد" autocomplete="off" style="text-align:center;">
+            </div>
+            <button class="btn-neutral btn-small btn-icon-watermark icon-save" onclick="changeVersionCode()">حفظ الرمز الجديد</button>
         </div>
     </div>
 </div>
@@ -6833,6 +6971,8 @@
     <div class="copyright">جميع الحقوق محفوظة لادارة فريق الباحث الاجتماعي بجمعية التنمية الاسرية بالاحساء &copy; 2026</div>
 
     <!-- اشعار reCAPTCHA: تشترطه جوجل عند اخفاء الشارة العائمة -->
+    <div class="footer-version" id="footerVersion"></div>
+
     <div class="recaptcha-notice">
         هذا الموقع محمي بواسطة reCAPTCHA وتطبق عليه
         <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">سياسة الخصوصية</a>
@@ -8067,6 +8207,195 @@
         };
     }
 
+    /* ==================================================================
+       زر الاصدار العائم
+       ==================================================================
+       سبع نقرات متتالية تفتح نافذة الرمز السري، وهي لا تعمل الا
+       لحساب المبرمج. النقرات تعد ضمن نافذة زمنية قصيرة، فلو توقف
+       المستخدم بينها اعيد العد من الصفر.
+       ================================================================== */
+    let versionClicks = 0;
+    let versionClickTimer = null;
+
+    const VERSION_CLICKS_NEEDED = 7;
+    const VERSION_CLICK_WINDOW_MS = 3000;
+
+    window.onVersionFabClick = function() {
+        /* لغير المبرمج: الزر عرض فقط بلا اي تفاعل */
+        if (!isMaster()) return;
+
+        versionClicks++;
+
+        /* نافذة زمنية: اذا تأخر بين نقرتين اعيد العد */
+        if (versionClickTimer) clearTimeout(versionClickTimer);
+        versionClickTimer = setTimeout(function() { versionClicks = 0; }, VERSION_CLICK_WINDOW_MS);
+
+        /* تلميح صامت بعد منتصف الطريق، فيعرف انه في المسار الصحيح */
+        if (versionClicks === 4) {
+            const fab = document.getElementById("versionFab");
+            if (fab) fab.classList.add("vf-hint");
+        }
+
+        if (versionClicks >= VERSION_CLICKS_NEEDED) {
+            versionClicks = 0;
+            if (versionClickTimer) clearTimeout(versionClickTimer);
+            const fab = document.getElementById("versionFab");
+            if (fab) fab.classList.remove("vf-hint");
+            openVersionCode();
+        }
+    };
+
+    window.openVersionCode = function() {
+        if (!isMaster()) return;
+        document.getElementById("versionCodeInput").value = "";
+        hideMsg("versionCodeError");
+        document.getElementById("versionCodeModal").style.display = "flex";
+        setTimeout(function() {
+            try { document.getElementById("versionCodeInput").focus(); } catch (e) {}
+        }, 150);
+    };
+
+    window.closeVersionCode = function() {
+        document.getElementById("versionCodeModal").style.display = "none";
+    };
+
+    /* ------------------------------------------------------------------
+       التحقق من الرمز السري
+       ------------------------------------------------------------------
+       الرمز مخزن مشفرا في settings/version_code ولا اثر له في الكود.
+       عند اول استخدام، اذا لم يكن مسجلا بعد، يسجل الرمز الافتراضي
+       المتفق عليه ثم يحذف من الذاكرة.
+       ------------------------------------------------------------------ */
+    window.verifyVersionCode = async function() {
+        if (!isMaster()) { denyAccess(); return; }
+        if (!requireOnline("versionCodeError")) return;
+
+        const code = window.toEnglishDigits(document.getElementById("versionCodeInput").value.trim());
+        const btn = document.getElementById("btnVerifyCode");
+
+        hideMsg("versionCodeError");
+        if (!code) {
+            showMsg("versionCodeError", "<i class='fas fa-exclamation-circle'></i> ادخل الرمز السري.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+
+        try {
+            const snap = await getDoc(doc(db, "settings", "version_code"));
+            const typedHash = await hashPassword(code);
+
+            if (!snap.exists()) {
+                /* اول استخدام: نسجل الرمز الذي ادخله المبرمج نفسه */
+                await setDoc(doc(db, "settings", "version_code"), {
+                    hash: typedHash,
+                    setAt: new Date().toISOString(),
+                    setBy: session.name || ""
+                });
+                logAudit("تعيين رمز الاصدارات", "تم تسجيل الرمز لاول مرة");
+                closeVersionCode();
+                openVersionAdmin();
+                toast("سجل هذا الرمز لاول مرة. احفظه فلا سبيل لاسترجاعه.", "warn");
+            } else if (snap.data().hash === typedHash) {
+                closeVersionCode();
+                openVersionAdmin();
+            } else {
+                showMsg("versionCodeError", "<i class='fas fa-times-circle'></i> الرمز غير صحيح.");
+                document.getElementById("versionCodeInput").value = "";
+            }
+        } catch (e) {
+            showMsg("versionCodeError", dbErrorMessage(e, "التحقق من الرمز"));
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = "دخول";
+    };
+
+    window.openVersionAdmin = async function() {
+        hideMsg("versionAdminError");
+        hideMsg("versionAdminSuccess");
+        document.getElementById("newVersionCode").value = "";
+        document.getElementById("versionAdminModal").style.display = "flex";
+        await loadVersionInfo();
+    };
+
+    window.closeVersionAdmin = function() {
+        document.getElementById("versionAdminModal").style.display = "none";
+    };
+
+    async function loadVersionInfo() {
+        const box = document.getElementById("versionAdminInfo");
+        if (!box) return;
+        box.textContent = "جاري القراءة...";
+        try {
+            const snap = await getDoc(doc(db, "settings", "version"));
+            const latest = snap.exists() ? String(snap.data().current || "-") : "غير محدد";
+            const by = snap.exists() ? (snap.data().publishedBy || "") : "";
+            box.innerHTML = "نسختك الحالية: <strong>" + esc(APP_VERSION) + "</strong>" +
+                            "<br>المعتمد في قاعدة البيانات: <strong>" + esc(latest) + "</strong>" +
+                            (by ? ("<br><span style='font-size:12px;opacity:0.8;'>اعتمده: " + esc(by) + "</span>") : "");
+        } catch (e) {
+            box.textContent = "تعذر قراءة الاصدار المعتمد.";
+        }
+    }
+
+    window.publishVersion = async function() {
+        if (!isMaster()) { denyAccess(); return; }
+        if (!requireOnline("versionAdminError")) return;
+
+        const btn = document.getElementById("btnPublishVersion");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاعتماد...';
+
+        try {
+            await setDoc(doc(db, "settings", "version"), {
+                current: APP_VERSION,
+                publishedAt: new Date().toISOString(),
+                publishedBy: session.name || ""
+            });
+            logAudit("اعتماد اصدار جديد", "الاصدار: " + APP_VERSION);
+            showMsg("versionAdminSuccess", "<i class='fas fa-check-circle'></i> تم اعتماد الاصدار " +
+                esc(APP_VERSION) + " كأحدث نسخة." +
+                "<br>اي جهاز يفتح نسخة اقدم سيطلب منه التحديث.");
+            loadVersionInfo();
+        } catch (e) {
+            showMsg("versionAdminError", dbErrorMessage(e, "اعتماد الاصدار"));
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = "اعتماد نسختي كأحدث اصدار";
+    };
+
+    /* تغيير الرمز السري */
+    window.changeVersionCode = async function() {
+        if (!isMaster()) { denyAccess(); return; }
+        if (!requireOnline("versionAdminError")) return;
+
+        const nc = window.toEnglishDigits(document.getElementById("newVersionCode").value.trim());
+        hideMsg("versionAdminError");
+        hideMsg("versionAdminSuccess");
+
+        if (!nc || nc.length < 6) {
+            showMsg("versionAdminError", "<i class='fas fa-exclamation-circle'></i> الرمز الجديد يجب ان يكون 6 خانات على الاقل.");
+            return;
+        }
+
+        try {
+            await setDoc(doc(db, "settings", "version_code"), {
+                hash: await hashPassword(nc),
+                setAt: new Date().toISOString(),
+                setBy: session.name || ""
+            });
+            logAudit("تغيير رمز الاصدارات", "تم تغيير الرمز");
+            document.getElementById("newVersionCode").value = "";
+            showMsg("versionAdminSuccess", "<i class='fas fa-check-circle'></i> تم تغيير الرمز السري." +
+                "<br><strong>احفظه، فلا سبيل لاسترجاعه.</strong>");
+        } catch (e) {
+            showMsg("versionAdminError", dbErrorMessage(e, "تغيير الرمز"));
+        }
+    };
+
     /* مقارنة اصدارين نصيين مثل 15.01 و 15.02 */
     function isOlderVersion(mine, latest) {
         const a = String(mine).split(".").map(Number);
@@ -8737,6 +9066,12 @@
         });
 
         /* اعدادات النظام: رقم الدعم وغيره */
+        /* رقم الاصدار في الزر العائم والتذييل */
+        const vfab = document.getElementById("versionFabText");
+        if (vfab) vfab.textContent = "v" + APP_VERSION;
+        const fv = document.getElementById("footerVersion");
+        if (fv) fv.textContent = "اصدار النظام: " + APP_VERSION;
+
         loadSystemSettings();
 
         /* حالة الاتصال عند اول تحميل */
