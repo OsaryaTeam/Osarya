@@ -3085,53 +3085,13 @@
            بمسافة 76 بكسل عنه، فلا يتداخل الضغط بينهما.
            ------------------------------------------------------------ */
         /* ------------------------------------------------------------
-           زر الاصدار العائم
+           رقم الاصدار في التذييل
            ------------------------------------------------------------
-           صغير وهادئ اسفل اليسار فوق بقية الازرار العائمة. يعرض
-           الاصدار لكل المستخدمين ولا يتفاعل الا مع المبرمج.
+           عرض للجميع، وهو ايضا نقطة الدخول لادارة الاصدارات: سبع
+           نقرات متتالية عليه تفتحها للمبرمج وحده.
+
+           لا نبرز انه قابل للضغط باي شكل، فمن لا يعرف لا يحتاجه.
            ------------------------------------------------------------ */
-        .version-fab {
-            position: fixed;
-            bottom: 156px;
-            left: 20px;
-            z-index: 9300;
-            width: auto !important;
-            min-width: 58px;
-            height: 30px;
-            min-height: 0 !important;
-            margin: 0 !important;
-            padding: 0 12px !important;
-            border: none;
-            border-radius: 15px;
-            background: rgba(74, 135, 148, 0.22) !important;
-            color: #4a8794 !important;
-            font-family: monospace;
-            font-size: 12px;
-            font-weight: 800;
-            cursor: default;
-            box-shadow: none !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s ease, transform 0.15s ease;
-            user-select: none;
-        }
-        .version-fab::after,
-        .version-fab::before { display: none !important; content: none !important; }
-        body.dark-mode .version-fab {
-            background: rgba(255, 255, 255, 0.10) !important;
-            color: #8fc4cf !important;
-        }
-
-        /* تلميح بعد اربع نقرات: يبين للمبرمج انه في المسار الصحيح */
-        .version-fab.vf-hint {
-            background: rgba(122, 106, 168, 0.35) !important;
-            color: #5c4e85 !important;
-            transform: scale(1.06);
-        }
-        body.dark-mode .version-fab.vf-hint { color: #cfc4e8 !important; }
-
-        /* رقم الاصدار في التذييل */
         .footer-version {
             text-align: center;
             font-size: 12px;
@@ -3139,14 +3099,20 @@
             color: #6c757d;
             opacity: 0.8;
             margin-top: 10px;
+            letter-spacing: 0.4px;
+            user-select: none;
+            cursor: default;
+            transition: color 0.2s ease, transform 0.15s ease;
         }
         body.dark-mode .footer-version { color: #9aabae; }
 
-        @media (max-width: 768px) {
-            .version-fab { bottom: 140px; left: 15px; height: 28px; font-size: 11px; min-width: 54px; }
+        /* تلميح بعد اربع نقرات: يبين للمبرمج انه في المسار الصحيح */
+        .footer-version.vf-hint {
+            color: #7a6aa8;
+            transform: scale(1.12);
+            opacity: 1;
         }
-        @media print { .version-fab { display: none !important; } }
-        body.is-offline .version-fab { display: none !important; }
+        body.dark-mode .footer-version.vf-hint { color: #cfc4e8; }
 
         .support-settings-fab {
             position: fixed;
@@ -3532,7 +3498,22 @@
             line-height: 1.9;
             opacity: 0.75;
         }
-        .recaptcha-notice a { text-decoration: underline; }
+        .recaptcha-notice a {
+            text-decoration: underline;
+            color: #2c5f6a;
+            font-weight: 700;
+        }
+        .recaptcha-notice a:hover { color: #a5601f; }
+
+        /* ------------------------------------------------------------
+           الوضع الليلي: الاشعار والروابط
+           ------------------------------------------------------------
+           الشفافية المنخفضة مع الخلفية الداكنة تجعل الروابط شبه
+           غير مقروءة. نرفع الشفافية ونعطي الروابط لونا فاتحا صريحا.
+           ------------------------------------------------------------ */
+        body.dark-mode .recaptcha-notice { opacity: 0.9; color: #9aabae; }
+        body.dark-mode .recaptcha-notice a { color: #8fc4cf; }
+        body.dark-mode .recaptcha-notice a:hover { color: #f0b473; }
 
         /* ==================================================================
            (جديد) شريط انقطاع الاتصال بالانترنت
@@ -4332,22 +4313,9 @@
     </div>
 </div>
 
-<!-- ==============================================================
-     زر اصدار النظام العائم
-     --------------------------------------------------------------
-     يظهر لكل المستخدمين ويعرض رقم الاصدار. لا يتفاعل الا مع حساب
-     المبرمج، وبعد سبع نقرات متتالية يطلب رمزا سريا مخزنا مشفرا في
-     قاعدة البيانات.
-
-     لماذا سبع نقرات ورمز؟
-     ----------------------
-     اعتماد اصدار جديد يحجب كل النسخ الاقدم عن كل المستخدمين، فهو
-     قرار واسع الاثر لا يليق ان يقع بضغطة عابرة. والنقرات تمنع
-     الضغط العرضي، والرمز يمنع من وصل الى حساب المبرمج مؤقتا.
-     ============================================================== -->
-<button id="versionFab" class="version-fab" onclick="onVersionFabClick()" title="اصدار النظام">
-    <span id="versionFabText">v—</span>
-</button>
+<!-- ملاحظة: حذف من هنا زر الاصدار العائم.
+     صار رقم الاصدار في تذييل الصفحة وحده، والنقرات السبع تقع عليه
+     هناك. فالتذييل مكانه الطبيعي، ولا يزاحم الازرار العائمة. -->
 
 <!-- نافذة الرمز السري -->
 <div id="versionCodeModal" class="install-modal" onclick="if(event.target===this) closeVersionCode()">
@@ -6971,7 +6939,9 @@
     <div class="copyright">جميع الحقوق محفوظة لادارة فريق الباحث الاجتماعي بجمعية التنمية الاسرية بالاحساء &copy; 2026</div>
 
     <!-- اشعار reCAPTCHA: تشترطه جوجل عند اخفاء الشارة العائمة -->
-    <div class="footer-version" id="footerVersion"></div>
+    <!-- رقم الاصدار: عرض للجميع، وسبع نقرات عليه تفتح ادارة
+         الاصدارات للمبرمج وحده -->
+    <div class="footer-version" id="footerVersion" onclick="onVersionFabClick()"></div>
 
     <div class="recaptcha-notice">
         هذا الموقع محمي بواسطة reCAPTCHA وتطبق عليه
@@ -7068,7 +7038,7 @@
          1) غير الرقم هنا
          2) حدث settings/version من زر التحديث في نافذة الدعم
        ================================================================== */
-    const APP_VERSION = "15.01";
+    const APP_VERSION = "15.03";
 
     const OFFICIAL_HOSTS = ["osaryateam.github.io"];
 
@@ -8228,19 +8198,23 @@
 
         /* نافذة زمنية: اذا تأخر بين نقرتين اعيد العد */
         if (versionClickTimer) clearTimeout(versionClickTimer);
-        versionClickTimer = setTimeout(function() { versionClicks = 0; }, VERSION_CLICK_WINDOW_MS);
+        versionClickTimer = setTimeout(function() {
+            versionClicks = 0;
+            const fv = document.getElementById("footerVersion");
+            if (fv) fv.classList.remove("vf-hint");
+        }, VERSION_CLICK_WINDOW_MS);
 
         /* تلميح صامت بعد منتصف الطريق، فيعرف انه في المسار الصحيح */
         if (versionClicks === 4) {
-            const fab = document.getElementById("versionFab");
-            if (fab) fab.classList.add("vf-hint");
+            const fv = document.getElementById("footerVersion");
+            if (fv) fv.classList.add("vf-hint");
         }
 
         if (versionClicks >= VERSION_CLICKS_NEEDED) {
             versionClicks = 0;
             if (versionClickTimer) clearTimeout(versionClickTimer);
-            const fab = document.getElementById("versionFab");
-            if (fab) fab.classList.remove("vf-hint");
+            const fv = document.getElementById("footerVersion");
+            if (fv) fv.classList.remove("vf-hint");
             openVersionCode();
         }
     };
@@ -9067,8 +9041,6 @@
 
         /* اعدادات النظام: رقم الدعم وغيره */
         /* رقم الاصدار في الزر العائم والتذييل */
-        const vfab = document.getElementById("versionFabText");
-        if (vfab) vfab.textContent = "v" + APP_VERSION;
         const fv = document.getElementById("footerVersion");
         if (fv) fv.textContent = "اصدار النظام: " + APP_VERSION;
 
