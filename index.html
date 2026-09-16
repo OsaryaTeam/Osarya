@@ -3114,13 +3114,50 @@
         }
         body.dark-mode .footer-version.vf-hint { color: #cfc4e8; }
 
+        /* ==================================================================
+           ترتيب الازرار العائمة الاربعة
+           ==================================================================
+           زوجان متناظران، كلها دائرية بمقاس واحد:
+
+             اسفل اليمين             اسفل اليسار
+               تثبيت التطبيق  88px     اعدادات الدعم  88px
+               واتساب الدعم   20px     الوضع الليلي   20px
+
+           المسافة بين كل زر والذي فوقه 68 بكسل، فلا يتداخل الضغط.
+           ================================================================== */
+
+        /* زر واتساب الدعم: دائري بمقاس بقية الازرار */
+        .support-fab {
+            height: 56px !important;
+            border-radius: 50% !important;
+        }
+        .support-fab i { width: 56px !important; flex: 0 0 56px !important; }
+        /* النص لا يتمدد: الزر دائري ثابت */
+        .support-fab:hover .support-fab-text { max-width: 0 !important; opacity: 0 !important; padding: 0 !important; }
+
+        /* الوضع الليلي: نفس المقاس */
+        .theme-toggle-btn {
+            width: 56px !important;
+            height: 56px !important;
+            bottom: 20px !important;
+            left: 20px !important;
+        }
+
+        @media (max-width: 768px) {
+            .support-fab { height: 52px !important; bottom: 16px !important; right: 14px !important; }
+            .support-fab i { width: 52px !important; flex: 0 0 52px !important; }
+            .install-btn { width: 52px !important; height: 52px !important; bottom: 80px !important; right: 14px !important; }
+            .install-btn i { font-size: 21px !important; }
+            .theme-toggle-btn { width: 52px !important; height: 52px !important; bottom: 16px !important; left: 14px !important; }
+        }
+
         .support-settings-fab {
             position: fixed;
             bottom: 88px;
             left: 20px;
             z-index: 9400;
-            width: 52px !important;
-            height: 52px;
+            width: 56px !important;
+            height: 56px;
             min-height: 0 !important;
             margin: 0 !important;
             padding: 0 !important;
@@ -3153,7 +3190,7 @@
         body.dark-mode .footer-version { color: #9aabae; }
 
         @media (max-width: 768px) {
-            .support-settings-fab { width: 48px !important; height: 48px; font-size: 19px; bottom: 80px; left: 15px; }
+            .support-settings-fab { width: 52px !important; height: 52px !important; font-size: 21px; bottom: 80px !important; left: 14px !important; }
         }
         @media print { .support-settings-fab { display: none !important; } }
         body.is-offline .support-settings-fab { display: none !important; }
@@ -3907,20 +3944,30 @@
            في اسفل يمين الشاشة، مقابل زر الوضع الليلي في اسفل اليسار.
            يختفي تلقائيا بعد تثبيت التطبيق او عند فتحه كتطبيق مثبت.
            ================================================================== */
+        /* ------------------------------------------------------------------
+           زر تثبيت التطبيق
+           ------------------------------------------------------------------
+           دائري مثل بقية الازرار العائمة، فيتسق معها بدل ان يكون
+           مستطيلا عريضا يكسر التناسق.
+
+           موضعه: اسفل اليمين فوق زر الدعم الفني.
+           ------------------------------------------------------------------ */
         .install-btn {
             position: fixed;
-            /* فوق زر الدعم الفني مباشرة، فلا يتداخلان */
             bottom: 88px;
             right: 20px;
             z-index: 9000;
-            width: auto;
-            margin: 0;
-            padding: 14px 22px;
+            width: 56px !important;
+            height: 56px;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
             display: none;            /* يظهر من الجافاسكربت */
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            font-size: 24px;
             border: none;
-            border-radius: 50px;
+            border-radius: 50%;
             background: linear-gradient(135deg, #4a8794, #396d78);
             color: #fff;
             font-family: 'Tajawal', sans-serif;
@@ -4038,6 +4085,63 @@
         .diag-hint { margin-top: 8px; font-size: 12.5px; font-weight: 600; color: #6c757d; line-height: 1.9; }
         body.dark-mode .diag-hint { color: #9aabae; }
 
+
+        /* ==================================================================
+           توحيد الازرار العائمة الاربعة
+           ------------------------------------------------------------------
+           قاعدة ختامية توضع في اخر التنسيقات لتتغلب على اي قياس سابق،
+           فتضمن ان الاربعة بمقاس واحد ومواضع متناظرة.
+
+             اسفل اليمين             اسفل اليسار
+               تثبيت التطبيق  88px     اعدادات الدعم  88px
+               واتساب الدعم   20px     الوضع الليلي   20px
+           ================================================================== */
+        .install-btn,
+        .support-fab,
+        .support-settings-fab,
+        .theme-toggle-btn {
+            width: 56px !important;
+            height: 56px !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border-radius: 50% !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .install-btn          { bottom: 88px !important; right: 20px !important; left: auto !important; }
+        .support-fab          { bottom: 20px !important; right: 20px !important; left: auto !important; }
+        .support-settings-fab { bottom: 88px !important; left: 20px !important; right: auto !important; }
+        .theme-toggle-btn     { bottom: 20px !important; left: 20px !important; right: auto !important; }
+
+        /* زر الواتساب دائري: النص لا يتمدد */
+        .support-fab i { width: 56px !important; flex: 0 0 56px !important; font-size: 25px !important; }
+        .support-fab .support-fab-text { display: none !important; }
+        .install-btn i { font-size: 23px !important; }
+
+        @media (max-width: 768px) {
+            .install-btn,
+            .support-fab,
+            .support-settings-fab,
+            .theme-toggle-btn { width: 52px !important; height: 52px !important; }
+
+            .install-btn          { bottom: 80px !important; right: 14px !important; }
+            .support-fab          { bottom: 16px !important; right: 14px !important; }
+            .support-settings-fab { bottom: 80px !important; left: 14px !important; }
+            .theme-toggle-btn     { bottom: 16px !important; left: 14px !important; }
+
+            .support-fab i { width: 52px !important; flex: 0 0 52px !important; font-size: 23px !important; }
+            .install-btn i { font-size: 21px !important; }
+        }
+
+        /* الرسائل المنبثقة فوق العمود الايمن */
+        .toast-container { bottom: 156px !important; }
+        body.has-install-btn .toast-container { bottom: 156px !important; }
+        @media (max-width: 768px) {
+            .toast-container { bottom: 144px !important; }
+            body.has-install-btn .toast-container { bottom: 144px !important; }
+        }
     </style>
 </head>
 <body>
@@ -4141,9 +4245,8 @@
      يثبت الموقع كتطبيق مستقل على سطح المكتب او شاشة تطبيقات الجوال.
      يختفي تلقائيا بعد التثبيت او عند فتح النظام كتطبيق مثبت.
      ============================================================== -->
-<button type="button" id="installAppBtn" class="install-btn" onclick="installApp()" title="تثبيت التطبيق على جهازك">
+<button type="button" id="installAppBtn" class="install-btn" onclick="installApp()" title="تثبيت التطبيق على جهازك" aria-label="تثبيت التطبيق على جهازك">
     <i class="fas fa-download" aria-hidden="true"></i>
-    <span>تثبيت التطبيق</span>
 </button>
 
 <!-- نافذة ارشادية تظهر في المتصفحات التي لا تتيح التثبيت بضغطة واحدة -->
@@ -4360,6 +4463,23 @@
         <div class="btn-group">
             <button id="btnPublishVersion" class="btn-manager btn-icon-watermark icon-check" onclick="publishVersion()">اعتماد نسختي كأحدث اصدار</button>
             <button class="btn-neutral btn-icon-watermark icon-times" onclick="closeVersionAdmin()">اغلاق</button>
+        </div>
+
+        <!-- ==========================================================
+             ادوات المبرمج
+             ----------------------------------------------------------
+             نقلت من شاشة الادارة العامة الى هنا. والوصول محمي بسبع
+             نقرات ورمز سري، وهو ما يليق باداة تمسح البيانات.
+             ========================================================== -->
+        <div style="margin-top:18px; padding-top:16px; border-top:1px solid rgba(74,135,148,0.3);">
+            <div class="safe-box-title" style="margin-bottom:10px;"><i class="fas fa-screwdriver-wrench"></i> ادوات النظام</div>
+
+            <div class="btn-group" style="margin:0;">
+                <button class="btn-neutral btn-small btn-icon-watermark icon-plug" onclick="runConnectionTest()">فحص الاتصال</button>
+                <button class="btn-danger btn-small btn-icon-watermark icon-times" onclick="openResetFromVersion()">تصفير البيانات</button>
+            </div>
+
+            <div id="connTestResult" class="conn-test-box" style="display:none;"></div>
         </div>
 
         <!-- تغيير الرمز السري -->
@@ -4928,11 +5048,9 @@
              مستقلة يفتحها زر عائم في بوابة الادارة، فلا تزاحم
              شاشة الصلاحيات ولا تتطلب دخولها. -->
 
-        <!-- اداة تشخيص الاتصال: للمبرمج وحده -->
-        <button id="btnConnTest" class="btn-neutral btn-icon-watermark icon-plug" style="display:none;" onclick="runConnectionTest()">فحص الاتصال بقاعدة البيانات</button>
-        <div id="connTestResult" class="conn-test-box" style="display:none;"></div>
-
-        <button id="btnResetSystem" class="btn-danger btn-icon-watermark icon-times" style="display:none;" onclick="openResetPanel()">تصفير بيانات النظام</button>
+        <!-- ملاحظة: نقلت ادوات المبرمج (فحص الاتصال وتصفير البيانات)
+             الى نافذة ادارة الاصدارات، فشاشة الادارة العامة تبدو
+             للمبرمج كما يراها المدير العام تماما. -->
 
         <!-- ملاحظة سابقة: كان هنا زر "تصفير بيانات النظام".
              ازيل عمدا لان كود الصفحة مقروء لاي زائر، فوجود اداة
@@ -7038,7 +7156,7 @@
          1) غير الرقم هنا
          2) حدث settings/version من زر التحديث في نافذة الدعم
        ================================================================== */
-    const APP_VERSION = "15.08";
+    const APP_VERSION = "15.09";
 
     const OFFICIAL_HOSTS = ["osaryateam.github.io"];
 
@@ -8292,6 +8410,20 @@
         document.getElementById("newVersionCode").value = "";
         document.getElementById("versionAdminModal").style.display = "flex";
         await loadVersionInfo();
+    };
+
+    /* فتح لوحة التصفير: تغلق نافذة الاصدارات اولا لان اللوحة
+       تظهر داخل شاشة الادارة العامة لا خلف نافذة منبثقة */
+    window.openResetFromVersion = function() {
+        if (!isMaster()) { denyAccess(); return; }
+        closeVersionAdmin();
+        const active = document.querySelector(".screen.active-screen");
+        if (!active || active.id !== "adminPermissionsScreen") {
+            window.loadManagersList();
+            setTimeout(function() { window.openResetPanel(); }, 500);
+        } else {
+            window.openResetPanel();
+        }
     };
 
     window.closeVersionAdmin = function() {
@@ -12257,10 +12389,8 @@
         if (btnAddMan) btnAddMan.style.display = hasFullAccess ? "block" : "none";
 
         /* اداة التصفير: للمبرمج وحده لا للمدير العام */
-        const btnReset = document.getElementById("btnResetSystem");
-        if (btnReset) btnReset.style.display = isMaster() ? "block" : "none";
-        const btnConn = document.getElementById("btnConnTest");
-        if (btnConn) btnConn.style.display = isMaster() ? "block" : "none";
+        /* ازرار المبرمج نقلت الى نافذة ادارة الاصدارات */
+
 
 
         const resetPanelEl = document.getElementById("resetPanel");
